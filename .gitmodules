@@ -1,0 +1,39 @@
+[submodule "sources/base"]
+	path = sources/base
+	url = https://github.com/karo-electronics/karo-nxp-base
+[submodule "sources/meta-browser"]
+	path = sources/meta-browser
+	url = https://github.com/OSSystems/meta-browser
+[submodule "sources/meta-clang"]
+	path = sources/meta-clang
+	url = https://github.com/kraj/meta-clang
+[submodule "sources/meta-freescale-3rdparty"]
+	path = sources/meta-freescale-3rdparty
+	url = https://github.com/Freescale/meta-freescale-3rdparty
+[submodule "sources/meta-freescale-distro"]
+	path = sources/meta-freescale-distro
+	url = https://github.com/Freescale/meta-freescale-distro
+[submodule "sources/meta-imx"]
+	path = sources/meta-imx
+	url = https://source.codeaurora.org/external/imx/meta-imx
+[submodule "sources/meta-karo-nxp-distro"]
+	path = sources/meta-karo-nxp-distro
+	url = https://github.com/karo-electronics/meta-karo-nxp-distro
+[submodule "sources/meta-nxp-demo-experience"]
+	path = sources/meta-nxp-demo-experience
+	url = https://source.codeaurora.org/external/imxsupport/meta-nxp-demo-experience
+[submodule "sources/meta-openembedded"]
+	path = sources/meta-openembedded
+	url = https://github.com/openembedded/meta-openembedded
+[submodule "sources/meta-python2"]
+	path = sources/meta-python2
+	url = https://git.openembedded.org/meta-python2
+[submodule "sources/meta-qt5"]
+	path = sources/meta-qt5
+	url = https://github.com/meta-qt5/meta-qt5
+[submodule "sources/meta-timesys"]
+	path = sources/meta-timesys
+	url = https://github.com/TimesysGit/meta-timesys
+[submodule "sources/poky"]
+	path = sources/poky
+	url = https://github.com/karo-electronics/poky
