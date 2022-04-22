@@ -1,0 +1,17 @@
+{
+    "search.exclude": {
+        "**/.repo": true,
+        "**/build*": true,
+        "**/downloads": true,
+        "**/sstate-cache": true
+    },
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/.repo/**": true,
+        "**/build/**": true,
+        "**/build_wsl/**": true,
+        "**/downloads/**": true,
+        "**/sstate-cache/**": true
+    }
+}
