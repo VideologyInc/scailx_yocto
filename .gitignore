@@ -1,0 +1,4 @@
+build*
+downloads*
+sstate-cache*
+.repo*
