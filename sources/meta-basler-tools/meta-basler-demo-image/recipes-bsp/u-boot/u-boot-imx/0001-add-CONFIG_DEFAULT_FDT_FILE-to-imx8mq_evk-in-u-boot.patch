@@ -1,0 +1,36 @@
+From 246e66195a45908c3aa4bf844221a4782e95c0c8 Mon Sep 17 00:00:00 2001
+From: mstickel <michael.stickel@baslerweb.com>
+Date: Fri, 25 Oct 2019 15:48:48 +0200
+Subject: [PATCH] add CONFIG_DEFAULT_FDT_FILE to imx8mq_evk in u-boot
+
+---
+ include/configs/imx8mq_evk.h | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/include/configs/imx8mq_evk.h b/include/configs/imx8mq_evk.h
+index 1769c8c790..6811dd4f31 100644
+--- a/include/configs/imx8mq_evk.h
++++ b/include/configs/imx8mq_evk.h
+@@ -10,6 +10,10 @@
+ #include <asm/arch/imx-regs.h>
+ #include "imx_env.h"
+ 
++#ifndef CONFIG_DEFAULT_FDT_FILE
++#define CONFIG_DEFAULT_FDT_FILE "imx8mq-evk.dtb"
++#endif
++ 
+ #define CONFIG_SPL_MAX_SIZE		(148 * 1024)
+ #define CONFIG_SYS_MONITOR_LEN		(512 * 1024)
+ #define CONFIG_SYS_MMCSD_RAW_MODE_U_BOOT_USE_SECTOR
+@@ -89,7 +93,7 @@
+ 	"fdt_addr=0x43000000\0"			\
+ 	"fdt_high=0xffffffffffffffff\0"		\
+ 	"boot_fdt=try\0" \
+-	"fdt_file=imx8mq-evk.dtb\0" \
++	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+ 	"initrd_addr=0x43800000\0"		\
+ 	"initrd_high=0xffffffffffffffff\0" \
+ 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
+-- 
+2.25.4
+

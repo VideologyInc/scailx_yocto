@@ -1,0 +1,41 @@
+From 51f48abd49316726ec91eb8423a87b544e007a27 Mon Sep 17 00:00:00 2001
+From: Thomas Koeller <thomas.koeller@baslerweb.com>
+Date: Thu, 5 Nov 2020 11:45:25 +0100
+Subject: [PATCH 17/27] Reformatted Makefile
+
+Reformatted the DTS Makefile for uniform coding style. This change is
+purely cosmetic.
+---
+ arch/arm64/boot/dts/freescale/Makefile | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
+index 5f54c0d34..f109d1d95 100644
+--- a/arch/arm64/boot/dts/freescale/Makefile
++++ b/arch/arm64/boot/dts/freescale/Makefile
+@@ -189,15 +189,11 @@ dtb-$(CONFIG_ARCH_MXC) += imx8qm-mek-sof-cs42888.dtb imx8qm-mek-sof-wm8960.dtb
+ dtb-$(CONFIG_ARCH_MXC) += imx8dxl-evk-root.dtb imx8dxl-evk-inmate.dtb
+ dtb-$(CONFIG_ARCH_S32) += s32v234-evb.dtb \
+ 			  s32v234-sbc.dtb
+-
+-
+-dtb-$(CONFIG_ARCH_MXC) += \
+-	imx8mm-evk-basler-camera.dtb \
+-	imx8mm-ddr4-evk-basler-camera.dtb \
+-	imx8mm-evk-basler-camera-1lane.dtb \
+-	imx8mm-ddr4-evk-basler-camera-1lane.dtb
+-dtb-$(CONFIG_ARCH_MXC) += \
+-	imx8mq-evk-basler-camera.dtb \
+-	imx8mq-evk-basler-camera-csi1.dtb \
+-	imx8mq-evk-basler-camera-csi2.dtb
++dtb-$(CONFIG_ARCH_MXC) += imx8mm-evk-basler-camera.dtb \
++			  imx8mm-ddr4-evk-basler-camera.dtb \
++			  imx8mm-evk-basler-camera-1lane.dtb \
++			  imx8mm-ddr4-evk-basler-camera-1lane.dtb
++dtb-$(CONFIG_ARCH_MXC) += imx8mq-evk-basler-camera.dtb \
++			  imx8mq-evk-basler-camera-csi1.dtb \
++			  imx8mq-evk-basler-camera-csi2.dtb
+ 
+-- 
+2.32.0
+

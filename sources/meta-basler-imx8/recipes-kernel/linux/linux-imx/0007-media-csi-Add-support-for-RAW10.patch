@@ -1,0 +1,88 @@
+From a09c2180c66acd200d2c1515dc91ed26f407d994 Mon Sep 17 00:00:00 2001
+From: Marvin Schmidt <Marvin.Schmidt@baslerweb.com>
+Date: Tue, 17 Dec 2019 17:03:53 +0100
+Subject: [PATCH 07/27] media: csi: Add support for RAW10
+
+---
+ .../media/platform/mxc/capture/mx6s_capture.c | 28 +++++++++++++++++++
+ .../media/platform/mxc/capture/mxc_mipi_csi.c |  4 +++
+ 2 files changed, 32 insertions(+)
+
+diff --git a/drivers/media/platform/mxc/capture/mx6s_capture.c b/drivers/media/platform/mxc/capture/mx6s_capture.c
+index 2a1923641..2cb581226 100644
+--- a/drivers/media/platform/mxc/capture/mx6s_capture.c
++++ b/drivers/media/platform/mxc/capture/mx6s_capture.c
+@@ -272,6 +272,18 @@ static struct mx6s_fmt formats[] = {
+ 		.pixelformat	= V4L2_PIX_FMT_SRGGB8,
+ 		.mbus_code	= MEDIA_BUS_FMT_SRGGB8_1X8,
+ 		.bpp		= 1,
++	}, {
++		.name		= "Grey 10bit",
++		.fourcc		= V4L2_PIX_FMT_Y10,
++		.pixelformat = V4L2_PIX_FMT_Y10,
++		.mbus_code	= MEDIA_BUS_FMT_Y10_1X10,
++		.bpp		= 2,
++	}, {
++		.name		= "RAW10 (SBGGR10)",
++		.fourcc		= V4L2_PIX_FMT_SBGGR10,
++		.pixelformat = V4L2_PIX_FMT_SBGGR10,
++		.mbus_code	= MEDIA_BUS_FMT_Y10_1X10,
++		.bpp		= 2,
+ 	}
+ };
+ 
+@@ -855,6 +867,10 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 			/* For parallel 8-bit sensor input */
+ 			width = pix->width * 2;
+ 		break;
++	case V4L2_PIX_FMT_Y10:
++	case V4L2_PIX_FMT_SBGGR10:
++		width = pix->width;
++		break;
+ 	default:
+ 		pr_debug("   case not supported\n");
+ 		return -EINVAL;
+@@ -864,6 +880,14 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 	if (csi_dev->csi_mipi_mode == true) {
+ 		cr1 = csi_read(csi_dev, CSI_CSICR1);
+ 		cr1 &= ~BIT_GCLK_MODE;
++
++		if ((V4L2_PIX_FMT_SBGGR10 == csi_dev->fmt->pixelformat) ||
++			(V4L2_PIX_FMT_Y10 == csi_dev->fmt->pixelformat)) {
++			cr1 |= BIT_PIXEL_BIT;
++		} else {
++			cr1 &= ~BIT_PIXEL_BIT;
++		}
++
+ 		csi_write(csi_dev, cr1, CSI_CSICR1);
+ 
+ 		cr18 = csi_read(csi_dev, CSI_CSICR18);
+@@ -879,6 +903,10 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 		case V4L2_PIX_FMT_SBGGR8:
+ 			cr18 |= BIT_MIPI_DATA_FORMAT_RAW8;
+ 			break;
++		case V4L2_PIX_FMT_SBGGR10:
++		case V4L2_PIX_FMT_Y10:
++			cr18 |= BIT_MIPI_DATA_FORMAT_RAW10;
++			break;
+ 		default:
+ 			pr_debug("   fmt not supported\n");
+ 			return -EINVAL;
+diff --git a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+index 9ce253007..61b7d39c3 100644
+--- a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
++++ b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+@@ -325,6 +325,10 @@ static const struct csis_pix_format mipi_csis_formats[] = {
+ 		.code = MEDIA_BUS_FMT_SBGGR8_1X8,
+ 		.fmt_reg = MIPI_CSIS_ISPCFG_FMT_RAW8,
+ 		.data_alignment = 8,
++	}, {
++		.code = MEDIA_BUS_FMT_Y10_1X10,
++		.fmt_reg = MIPI_CSIS_ISPCFG_FMT_RAW10,
++		.data_alignment = 10,
+ 	}
+ };
+ 
+-- 
+2.32.0
+

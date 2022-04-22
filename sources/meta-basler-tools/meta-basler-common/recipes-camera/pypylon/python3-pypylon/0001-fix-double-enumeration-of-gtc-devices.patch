@@ -1,0 +1,22 @@
+From 1c3c66d2cb1e074eb79f2670d47e058c25fb9360 Mon Sep 17 00:00:00 2001
+From: Thies Moeller <thies.moeller@baslerweb.com>
+Date: Sun, 30 May 2021 16:37:40 +0000
+Subject: [PATCH] fix double enumeration of gtc devices
+
+---
+ setup.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/setup.py b/setup.py
+index 4f67747..94b9258 100755
+--- a/setup.py
++++ b/setup.py
+@@ -636,7 +636,7 @@ class BuildSupportLinux(BuildSupport):
+             ],
+ 
+         "gentl": [
+-            ("libpylon_TL_gtc*.so", ""),
++            ("libpylon_TL_gtc-*.so", ""),
+             ],
+         "cxp": [
+             ],

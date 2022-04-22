@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides: isp-imx
+# Required-Start: $local_fs $remote_fs
+# Required-Stop: $local_fs $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+### END INIT INFO
+
+export PATH=/sbin:/bin:/usr/bin:/usr/sbin
+
+killproc() {
+        pid=`/bin/pidof $1`
+        [ "$pid" != "" ] && kill $pid
+}
+
+case "$1" in
+  start)
+        /opt/imx8-isp/bin/start_isp.sh > /dev/null &
+  ;;
+
+  stop)
+        echo "Stopping imx8-isp"
+        killall isp-imx
+  ;;
+
+  restart)
+        $0 stop
+        sleep 1
+        $0 start
+  ;;
+
+  *)
+        echo "usage: $0 { start | stop | restart }"
+  ;;
+esac
+
+exit 0

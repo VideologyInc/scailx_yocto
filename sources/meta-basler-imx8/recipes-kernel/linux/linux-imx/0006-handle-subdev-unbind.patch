@@ -1,0 +1,283 @@
+From ac3cc3503f5631c9b69892a53bf9edfe49b4cb1a Mon Sep 17 00:00:00 2001
+From: Thies Moeller <thies.moeller@baslerweb.com>
+Date: Fri, 25 Jun 2021 16:19:25 +0200
+Subject: [PATCH 06/27] handle subdev unbind
+
+---
+ .../media/platform/imx8/mxc-mipi-csi2_yav.c   | 50 +++++++++++-----
+ .../media/platform/mxc/capture/mx6s_capture.c | 24 ++++++--
+ .../media/platform/mxc/capture/mxc_mipi_csi.c | 58 ++++++++++++++-----
+ 3 files changed, 98 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/media/platform/imx8/mxc-mipi-csi2_yav.c b/drivers/media/platform/imx8/mxc-mipi-csi2_yav.c
+index c6d4c27f8..3bd116966 100644
+--- a/drivers/media/platform/imx8/mxc-mipi-csi2_yav.c
++++ b/drivers/media/platform/imx8/mxc-mipi-csi2_yav.c
+@@ -481,13 +481,19 @@ static int subdev_notifier_bound(struct v4l2_async_notifier *notifier,
+ {
+ 	struct mxc_mipi_csi2_dev *csi2dev = notifier_to_mipi_dev(notifier);
+ 
++	BUG_ON(subdev == NULL || csi2dev->sensor_sd != NULL);
++
+ 	/* Find platform data for this sensor subdev */
+ 	if (csi2dev->asd.match.fwnode == of_fwnode_handle(subdev->dev->of_node))
+ 		csi2dev->sensor_sd = subdev;
+ 
+-	if (subdev == NULL)
+-		return -EINVAL;
++	/* Initialize our control handler */
++	v4l2_ctrl_handler_init(&csi2dev->ctrl_handler, 10);
++	if (csi2dev->ctrl_handler.error)
++		return csi2dev->ctrl_handler.error;
++	csi2dev->sd.ctrl_handler = &csi2dev->ctrl_handler;
+ 
++	/* Merge subdev handler into our handler */
+ 	v4l2_ctrl_add_handler(csi2dev->sd.ctrl_handler, subdev->ctrl_handler,
+ 		  NULL, true);
+ 
+@@ -497,8 +503,31 @@ static int subdev_notifier_bound(struct v4l2_async_notifier *notifier,
+ 	return 0;
+ }
+ 
++static void subdev_notifier_unbind(struct v4l2_async_notifier *notifier,
++				   struct v4l2_subdev *subdev,
++				   struct v4l2_async_subdev *asd)
++{
++	struct mxc_mipi_csi2_dev *csi2dev = notifier_to_mipi_dev(notifier);
++
++	BUG_ON(subdev == NULL);
++
++	if (subdev == csi2dev->sensor_sd)
++	{
++		if (csi2dev->sd.ctrl_handler) {
++			csi2dev->sd.ctrl_handler = NULL;
++			v4l2_ctrl_handler_free(&csi2dev->ctrl_handler);
++		}
++
++		csi2dev->sensor_sd = NULL;
++	}
++
++	v4l2_info(&csi2dev->v4l2_dev, "Unregistered sensor subdevice: %s\n",
++		  subdev->name);
++}
++
+ static const struct v4l2_async_notifier_operations subdev_notifier_ops = {
+ 	.bound = subdev_notifier_bound,
++	.unbind = subdev_notifier_unbind,
+ };
+ 
+ static int mipi_csis_subdev_host(struct mxc_mipi_csi2_dev *csi2dev)
+@@ -598,18 +627,11 @@ static int mipi_csi2_probe(struct platform_device *pdev)
+ 	csi2dev->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
+ 	csi2dev->sd.dev = &pdev->dev;
+ 
+-	/* Add the control handler */
+-	v4l2_ctrl_handler_init(&csi2dev->ctrl_handler, 10);
+-	if (csi2dev->ctrl_handler.error)
+-		return csi2dev->ctrl_handler.error;
+-	csi2dev->sd.ctrl_handler = &csi2dev->ctrl_handler;
+-
+ 	/* First register a v4l2 device */
+ 	ret = v4l2_device_register(dev, &csi2dev->v4l2_dev);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Unable to register v4l2 device.\n");
+-		ret = -EINVAL;
+-		goto e_handler;
++		return -EINVAL;;
+ 	}
+ 	ret = v4l2_async_register_subdev(&csi2dev->sd);
+ 	if (ret < 0) {
+@@ -652,8 +674,6 @@ static int mipi_csi2_probe(struct platform_device *pdev)
+ 	v4l2_async_unregister_subdev(&csi2dev->sd);
+ e_v4l_dev:
+ 	v4l2_device_unregister(&csi2dev->v4l2_dev);
+-e_handler:
+-	v4l2_ctrl_handler_free(&csi2dev->ctrl_handler);
+ 	return ret;
+ }
+ 
+@@ -664,8 +684,10 @@ static int mipi_csi2_remove(struct platform_device *pdev)
+ 
+ 	mipi_csi2_clk_disable(csi2dev);
+ 	pm_runtime_disable(&pdev->dev);
+-	v4l2_ctrl_handler_free(sd->ctrl_handler);
+-	sd->ctrl_handler = NULL;
++	if (sd->ctrl_handler) {
++		sd->ctrl_handler = NULL;
++		v4l2_ctrl_handler_free(&csi2dev->ctrl_handler);
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/media/platform/mxc/capture/mx6s_capture.c b/drivers/media/platform/mxc/capture/mx6s_capture.c
+index 5108717f6..2a1923641 100644
+--- a/drivers/media/platform/mxc/capture/mx6s_capture.c
++++ b/drivers/media/platform/mxc/capture/mx6s_capture.c
+@@ -1818,13 +1818,13 @@ static const struct v4l2_ioctl_ops mx6s_csi_ioctl_ops = {
+ };
+ 
+ static int subdev_notifier_bound(struct v4l2_async_notifier *notifier,
+-			    struct v4l2_subdev *subdev,
+-			    struct v4l2_async_subdev *asd)
++				 struct v4l2_subdev *subdev,
++				 struct v4l2_async_subdev *asd)
+ {
+ 	struct mx6s_csi_dev *csi_dev = notifier_to_mx6s_dev(notifier);
+ 
+-	if (subdev == NULL)
+-		return -EINVAL;
++	BUG_ON(subdev == NULL || csi_dev->sd != NULL);
++
+ 
+ 	/* Find platform data for this sensor subdev */
+ 	if (csi_dev->asd.match.fwnode == dev_fwnode(subdev->dev))
+@@ -1836,6 +1836,21 @@ static int subdev_notifier_bound(struct v4l2_async_notifier *notifier,
+ 	return 0;
+ }
+ 
++static void subdev_notifier_unbind(struct v4l2_async_notifier *notifier,
++				   struct v4l2_subdev *subdev,
++				   struct v4l2_async_subdev *asd)
++{
++	struct mx6s_csi_dev *csi_dev = notifier_to_mx6s_dev(notifier);
++
++	BUG_ON(subdev == NULL);
++
++	if (subdev == csi_dev->sd)
++		csi_dev->sd = NULL;
++
++	v4l2_info(&csi_dev->v4l2_dev, "Unregistered sensor subdevice: %s\n",
++		  subdev->name);
++}
++
+ static int mx6s_csi_mode_sel(struct mx6s_csi_dev *csi_dev)
+ {
+ 	struct device_node *np = csi_dev->dev->of_node;
+@@ -1882,6 +1897,7 @@ static int mx6s_csi_mode_sel(struct mx6s_csi_dev *csi_dev)
+ 
+ static const struct v4l2_async_notifier_operations mx6s_capture_async_ops = {
+ 	.bound = subdev_notifier_bound,
++	.unbind = subdev_notifier_unbind,
+ };
+ 
+ static int mx6s_csi_two_8bit_sensor_mode_sel(struct mx6s_csi_dev *csi_dev)
+diff --git a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+index 85dbccda6..9ce253007 100644
+--- a/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
++++ b/drivers/media/platform/mxc/capture/mxc_mipi_csi.c
+@@ -927,18 +927,28 @@ static irqreturn_t mipi_csis_irq_handler(int irq, void *dev_id)
+ }
+ 
+ static int subdev_notifier_bound(struct v4l2_async_notifier *notifier,
+-			    struct v4l2_subdev *subdev,
+-			    struct v4l2_async_subdev *asd)
++				 struct v4l2_subdev *subdev,
++				 struct v4l2_async_subdev *asd)
+ {
+ 	struct csi_state *state = notifier_to_mipi_dev(notifier);
+ 
++	BUG_ON(subdev == NULL || state->sensor_sd != NULL);
++
++	if (subdev == NULL)
++		return -EINVAL;
++
+ 	/* Find platform data for this sensor subdev */
+ 	if (state->asd.match.fwnode == dev_fwnode(subdev->dev))
+ 		state->sensor_sd = subdev;
+ 
+-	if (subdev == NULL)
+-		return -EINVAL;
++	/* Initialize our control handler */
++	v4l2_ctrl_handler_init(&state->ctrl_handler, 10);
++	if (state->ctrl_handler.error) {
++		return state->ctrl_handler.error;
++	}
++	state->mipi_sd.ctrl_handler = &state->ctrl_handler;
+ 
++	/* Merge subdev handler into our handler */
+ 	v4l2_ctrl_add_handler(state->mipi_sd.ctrl_handler, subdev->ctrl_handler,
+ 		  NULL, true);
+ 
+@@ -948,6 +958,28 @@ static int subdev_notifier_bound(struct v4l2_async_notifier *notifier,
+ 	return 0;
+ }
+ 
++static void subdev_notifier_unbind(struct v4l2_async_notifier *notifier,
++				   struct v4l2_subdev *subdev,
++				   struct v4l2_async_subdev *asd)
++{
++	struct csi_state *state = notifier_to_mipi_dev(notifier);
++
++	BUG_ON(subdev == NULL);
++
++	if (subdev == state->sensor_sd)
++	{
++		if (state->mipi_sd.ctrl_handler) {
++			state->mipi_sd.ctrl_handler = NULL;
++			v4l2_ctrl_handler_free(&state->ctrl_handler);
++		}
++
++		state->sensor_sd = NULL;
++	}
++
++	v4l2_info(&state->v4l2_dev, "Unregistered sensor subdevice: %s\n",
++		  subdev->name);
++}
++
+ static int mipi_csis_parse_dt(struct platform_device *pdev,
+ 			    struct csi_state *state)
+ {
+@@ -988,6 +1020,7 @@ static const struct of_device_id mipi_csis_of_match[];
+ 
+ static const struct v4l2_async_notifier_operations mxc_mipi_csi_subdev_ops = {
+ 	.bound = subdev_notifier_bound,
++	.unbind = subdev_notifier_unbind,
+ };
+ 
+ /* register parent dev */
+@@ -1138,20 +1171,12 @@ static int mipi_csis_probe(struct platform_device *pdev)
+ 		goto e_clkdis;
+ 	}
+ 
+-	/* Add the control handler */
+-	v4l2_ctrl_handler_init(&state->ctrl_handler, 10);
+-	if (state->ctrl_handler.error) {
+-		ret = state->ctrl_handler.error;
+-		goto e_clkdis;
+-	}
+-	state->mipi_sd.ctrl_handler = &state->ctrl_handler;
+-
+ 	/* First register a v4l2 device */
+ 	ret = v4l2_device_register(dev, &state->v4l2_dev);
+ 	if (ret) {
+ 		v4l2_err(dev->driver,
+ 			"Unable to register v4l2 device.\n");
+-		goto e_handler;
++		goto e_clkdis;
+ 	}
+ 	v4l2_info(&state->v4l2_dev, "mipi csi v4l2 device registered\n");
+ 
+@@ -1188,8 +1213,6 @@ static int mipi_csis_probe(struct platform_device *pdev)
+ 	v4l2_device_unregister(&state->v4l2_dev);
+ e_sd_mipi:
+ 	v4l2_async_unregister_subdev(&state->mipi_sd);
+-e_handler:
+-	v4l2_ctrl_handler_free(&state->ctrl_handler);
+ e_clkdis:
+ 	mipi_csis_clk_disable(state);
+ 	return ret;
+@@ -1290,7 +1313,10 @@ static int mipi_csis_remove(struct platform_device *pdev)
+ 	v4l2_async_unregister_subdev(&state->mipi_sd);
+ 	v4l2_async_notifier_unregister(&state->subdev_notifier);
+ 	v4l2_device_unregister(&state->v4l2_dev);
+-	v4l2_ctrl_handler_free(&state->ctrl_handler);
++	if (state->mipi_sd.ctrl_handler) {
++		state->mipi_sd.ctrl_handler = NULL;
++		v4l2_ctrl_handler_free(&state->ctrl_handler);
++	}
+ 
+ 	pm_runtime_disable(&pdev->dev);
+ 	mipi_csis_pm_suspend(&pdev->dev, true);
+-- 
+2.32.0
+

@@ -1,0 +1,95 @@
+From a9b8a24e6cf5240101b6646fa08cfd1bf35a2db7 Mon Sep 17 00:00:00 2001
+From: Marvin Schmidt <Marvin.Schmidt@baslerweb.com>
+Date: Wed, 29 Jan 2020 13:51:53 +0100
+Subject: [PATCH 12/27] arm64: dts: imx8mm-ddr4: Add DTS for Basler camera
+
+---
+ arch/arm64/boot/dts/freescale/Makefile        |  3 +-
+ .../imx8mm-ddr4-evk-basler-camera.dts         | 63 +++++++++++++++++++
+ 2 files changed, 65 insertions(+), 1 deletion(-)
+ create mode 100644 arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk-basler-camera.dts
+
+diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
+index 8478109f3..58c6b2a0e 100644
+--- a/arch/arm64/boot/dts/freescale/Makefile
++++ b/arch/arm64/boot/dts/freescale/Makefile
+@@ -192,5 +192,6 @@ dtb-$(CONFIG_ARCH_S32) += s32v234-evb.dtb \
+ 
+ 
+ dtb-$(CONFIG_ARCH_MXC) += \
+-	imx8mm-evk-basler-camera.dtb
++	imx8mm-evk-basler-camera.dtb \
++	imx8mm-ddr4-evk-basler-camera.dtb
+ 
+diff --git a/arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk-basler-camera.dts b/arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk-basler-camera.dts
+new file mode 100644
+index 000000000..c23318317
+--- /dev/null
++++ b/arch/arm64/boot/dts/freescale/imx8mm-ddr4-evk-basler-camera.dts
+@@ -0,0 +1,63 @@
++/*
++ *  i.MX 8M Mini DDR4 EVK with a Basler camera connected via MIPI CSI
++ *
++ *  Copyright (c) 2019 Basler AG. All rights reserved.
++ *
++ */
++
++#include "imx8mm-ddr4-evk.dts"
++
++&mipi_csi_1 {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	status = "okay";
++
++	port {
++		mipi1_sensor_ep: endpoint@1 {
++			remote-endpoint = <&basler_camera_mipi1_ep>;
++
++			/* If the following entries are changed, then
++			 * the entries in the basler_camera_mipi1_ep node
++			 * need to updated too. */
++			/* On the i.mx8mmini NXP uses data-lanes
++			 * other than expected by the kernel.
++			 * On the imx8mmini the entry data-lanes
++			 * must contain the number of data lanes. */
++			data-lanes = <4>;
++			clock-lanes = <0>;
++			link-frequencies = /bits/ 64 <496000000>;
++
++			csis-hs-settle = <13>;
++			csis-clk-settle = <2>;
++			csis-wclk;
++		};
++	};
++};
++
++&csi1_bridge {
++	dma-coherent;
++	bsl,dma-invalidate;
++	status = "okay";
++};
++
++/delete-node/ &ov5640_mipi;
++
++&i2c3 {
++	basler_camera_mipi1: basler_camera_mipi@36 {
++		compatible = "basler,basler-camera";
++		reg = <0x36>;
++		status = "okay";
++
++		port {
++			basler_camera_mipi1_ep: endpoint {
++				remote-endpoint = <&mipi1_sensor_ep>;
++
++				/* IMPORTANT: The following three entries needs to be held
++				 * in sync with the information stored in the mipi1_sensor_ep node. */
++				data-lanes = <1 2 3 4>;
++				clock-lanes = <0>;
++				link-frequencies = /bits/ 64 <496000000>;
++			};
++		};
++	};
++};
+-- 
+2.32.0
+

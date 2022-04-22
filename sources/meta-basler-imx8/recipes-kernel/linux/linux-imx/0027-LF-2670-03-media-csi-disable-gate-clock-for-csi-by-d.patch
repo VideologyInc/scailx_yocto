@@ -1,0 +1,30 @@
+From 87e01d863d03ef3fdcb18d7ead6426c8526eacee Mon Sep 17 00:00:00 2001
+From: "Guoniu.zhou" <guoniu.zhou@nxp.com>
+Date: Tue, 18 May 2021 11:05:36 +0800
+Subject: [PATCH 27/27] LF-2670-03: media: csi: disable gate clock for csi by
+ default
+
+Disable gate clock for csi by default.
+
+Signed-off-by: Guoniu.zhou <guoniu.zhou@nxp.com>
+---
+ drivers/staging/media/imx/imx8-mipi-csi2-sam.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/staging/media/imx/imx8-mipi-csi2-sam.c b/drivers/staging/media/imx/imx8-mipi-csi2-sam.c
+index 6df8d9b7b..928c64d3b 100644
+--- a/drivers/staging/media/imx/imx8-mipi-csi2-sam.c
++++ b/drivers/staging/media/imx/imx8-mipi-csi2-sam.c
+@@ -1905,7 +1905,8 @@ static int mipi_csis_probe(struct platform_device *pdev)
+ 	disp_mix_sft_rstn(state, false);
+ 	mipi_csis_phy_reset(state);
+ 
+-	/*mipi_csis_clk_disable(state);*/
++	disp_mix_clks_enable(state, false);
++	mipi_csis_clk_disable(state);
+ 
+ 	ret = devm_request_irq(dev, state->irq, mipi_csis_irq_handler, 0,
+ 			       dev_name(dev), state);
+-- 
+2.32.0
+

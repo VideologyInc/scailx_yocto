@@ -1,0 +1,45 @@
+From 43f9e32814d8c226ebe4e4d336ad18d027e3c905 Mon Sep 17 00:00:00 2001
+From: ssuesens <sebastian.suesens@baslerweb.com>
+Date: Tue, 16 Apr 2019 12:50:30 +0200
+Subject: [PATCH 02/27] added SRGGB8 format support
+
+---
+ drivers/media/platform/mxc/capture/mx6s_capture.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/drivers/media/platform/mxc/capture/mx6s_capture.c b/drivers/media/platform/mxc/capture/mx6s_capture.c
+index 14d6bf805..0edfed81c 100644
+--- a/drivers/media/platform/mxc/capture/mx6s_capture.c
++++ b/drivers/media/platform/mxc/capture/mx6s_capture.c
+@@ -266,6 +266,12 @@ static struct mx6s_fmt formats[] = {
+ 		.pixelformat	= V4L2_PIX_FMT_SBGGR8,
+ 		.mbus_code	= MEDIA_BUS_FMT_SBGGR8_1X8,
+ 		.bpp		= 1,
++	}, {
++		.name		= "RAWRGB8 (SRGGB8)",
++		.fourcc		= V4L2_PIX_FMT_SRGGB8,
++		.pixelformat	= V4L2_PIX_FMT_SRGGB8,
++		.mbus_code	= MEDIA_BUS_FMT_SRGGB8_1X8,
++		.bpp		= 1,
+ 	}
+ };
+ 
+@@ -837,6 +843,7 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 
+ 	switch (csi_dev->fmt->pixelformat) {
+ 	case V4L2_PIX_FMT_YUV32:
++	case V4L2_PIX_FMT_SRGGB8:
+ 	case V4L2_PIX_FMT_SBGGR8:
+ 		width = pix->width;
+ 		break;
+@@ -868,6 +875,7 @@ static int mx6s_configure_csi(struct mx6s_csi_dev *csi_dev)
+ 		case V4L2_PIX_FMT_YUYV:
+ 			cr18 |= BIT_MIPI_DATA_FORMAT_YUV422_8B;
+ 			break;
++		case V4L2_PIX_FMT_SRGGB8:
+ 		case V4L2_PIX_FMT_SBGGR8:
+ 			cr18 |= BIT_MIPI_DATA_FORMAT_RAW8;
+ 			break;
+-- 
+2.32.0
+

@@ -1,0 +1,44 @@
+From d262f6d4d47b874b634efdf61884635b4b2f64f0 Mon Sep 17 00:00:00 2001
+From: "Guoniu.zhou" <guoniu.zhou@nxp.com>
+Date: Tue, 18 May 2021 10:56:21 +0800
+Subject: [PATCH 25/27] LF-2670-01: arm64: dts: add sensor clock for isp
+
+From ISP doc, it need four type clock. They are core, ahb, axi and
+sensor clock. But driver miss sensor clock, so add it.
+
+Signed-off-by: Guoniu.zhou <guoniu.zhou@nxp.com>
+---
+ arch/arm64/boot/dts/freescale/imx8mp.dtsi | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8mp.dtsi b/arch/arm64/boot/dts/freescale/imx8mp.dtsi
+index 3853084f1..f31294a1f 100755
+--- a/arch/arm64/boot/dts/freescale/imx8mp.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mp.dtsi
+@@ -1505,8 +1505,9 @@ isp_0: isp@32e10000 {
+ 					interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
+ 					clocks = <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_COR>,
+ 						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_AXI>,
+-						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_AHB>;
+-					clock-names = "core", "axi", "ahb";
++						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_AHB>,
++						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_MIPI_CSI_ACLK>;
++					clock-names = "core", "axi", "ahb", "sensor";
+ 					assigned-clocks = <&clk IMX8MP_CLK_MEDIA_ISP>;
+ 					assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>;
+ 					assigned-clock-rates = <500000000>;
+@@ -1523,8 +1524,9 @@ isp_1: isp@32e20000 {
+ 					interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
+ 					clocks = <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_COR>,
+ 						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_AXI>,
+-						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_AHB>;
+-					clock-names = "core", "axi", "ahb";
++						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_ISP_AHB>,
++						 <&media_blk_ctrl IMX8MP_CLK_MEDIA_BLK_CTRL_MIPI_CSI2_ACLK>;
++					clock-names = "core", "axi", "ahb", "sensor";
+ 					assigned-clocks = <&clk IMX8MP_CLK_MEDIA_ISP>;
+ 					assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>;
+ 					assigned-clock-rates = <500000000>;
+-- 
+2.32.0
+
