@@ -36,4 +36,7 @@
 	url = https://github.com/TimesysGit/meta-timesys
 [submodule "sources/poky"]
 	path = sources/poky
-	url = https://github.com/karo-electronics/poky
+	url = git://git.yoctoproject.org/poky
+[submodule "sources/meta-freescale"]
+	path = sources/meta-freescale
+	url = https://github.com/Freescale/meta-freescale
