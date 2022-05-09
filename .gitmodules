@@ -40,3 +40,6 @@
 [submodule "sources/meta-freescale"]
 	path = sources/meta-freescale
 	url = https://github.com/Freescale/meta-freescale
+[submodule "sources/meta-karo-nxp"]
+	path = sources/meta-karo-nxp
+	url = https://github.com/karo-electronics/meta-karo-nxp.git
