@@ -2,7 +2,7 @@
 
 let
   fhs = pkgs.buildFHSUserEnvBubblewrap {
-    name = "yocto-fhs";
+    name = "yocto";
     targetPkgs = pkgs: (with pkgs; [
         bc
         binutils
@@ -21,10 +21,11 @@ let
         kconfig-frontends
         lzma
         zlib
+        lz4
         ncurses
         patch
         perl
-        python3
+        python38
         rpcsvc-proto
         unzip
         util-linux
