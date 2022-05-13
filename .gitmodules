@@ -7,9 +7,6 @@
 [submodule "sources/meta-clang"]
 	path = sources/meta-clang
 	url = https://github.com/kraj/meta-clang
-[submodule "sources/meta-freescale-3rdparty"]
-	path = sources/meta-freescale-3rdparty
-	url = https://github.com/Freescale/meta-freescale-3rdparty
 [submodule "sources/meta-freescale-distro"]
 	path = sources/meta-freescale-distro
 	url = https://github.com/Freescale/meta-freescale-distro
@@ -31,9 +28,6 @@
 [submodule "sources/meta-qt5"]
 	path = sources/meta-qt5
 	url = https://github.com/meta-qt5/meta-qt5
-[submodule "sources/meta-timesys"]
-	path = sources/meta-timesys
-	url = https://github.com/TimesysGit/meta-timesys
 [submodule "sources/poky"]
 	path = sources/poky
 	url = git://git.yoctoproject.org/poky
@@ -43,3 +37,6 @@
 [submodule "sources/meta-karo-nxp"]
 	path = sources/meta-karo-nxp
 	url = https://github.com/karo-electronics/meta-karo-nxp.git
+[submodule "sources/meta-karo-distro"]
+	path = sources/meta-karo-distro
+	url = https://github.com/karo-electronics/meta-karo-distro

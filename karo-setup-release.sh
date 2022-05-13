@@ -75,17 +75,7 @@ layer_exists() {
 add_layer() {
     layer_exists && return
     layers="$layers $1 "
-}
-
-remove_layer() {
-    layer_exists "$1" || return 0
-    layers="${layers/ $1 / }"
-}
-
-setup_layers() {
-    for l in $layers;do
-	echo "BBLAYERS += \"\${BSPDIR}/sources/$l\"" >> $BUILD_DIR/conf/bblayers.conf
-    done
+    echo "BBLAYERS += \"\${BSPDIR}/sources/$1\"" >> "$BUILD_DIR/conf/bblayers.conf"
 }
 
 # get command line options
@@ -196,22 +186,26 @@ fi
 
 echo "" >> "$BUILD_DIR/conf/bblayers.conf"
 echo "# i.MX Yocto Project Release layers" >> "$BUILD_DIR/conf/bblayers.conf"
+#echo 'BBLAYERS += "${BSPDIR}/sources/meta-imx/meta-bsp"' >> "$BUILD_DIR/conf/bblayers.conf"
+#echo 'BBLAYERS += "${BSPDIR}/sources/meta-imx/meta-sdk"' >> "$BUILD_DIR/conf/bblayers.conf"
+
 add_layer meta-imx/meta-bsp
 add_layer meta-imx/meta-sdk
 add_layer meta-imx/meta-ml
-add_layer meta-nxp-demo-experience
+
+if [ "$KARO_DISTRO" != "karo-minimal" ];then
+    add_layer meta-nxp-demo-experience
+
+    add_layer meta-openembedded/meta-gnome
+
+    add_layer meta-qt5
+    add_layer meta-python2
+fi
 
 echo "" >> "$BUILD_DIR/conf/bblayers.conf"
-
-add_layer meta-clang
-add_layer meta-openembedded/meta-gnome
-add_layer meta-openembedded/meta-networking
-add_layer meta-openembedded/meta-filesystems
-
-add_layer meta-qt5
-add_layer meta-python2
+echo "# Ka-Ro specific layers" >> "$BUILD_DIR/conf/bblayers.conf"
 add_layer meta-karo-nxp
-add_layer meta-karo-nxp-distro
+add_layer meta-karo-distro
 
 case $KARO_DISTRO in
     karo-custom-*)
@@ -221,14 +215,7 @@ case $KARO_DISTRO in
 	    echo "No custom layer found for distro: '$KARO_DISTRO'" >&2
 	fi
 	;;
-    karo-base|karo-minimal)
-	remove_layer meta-openembedded/meta-gnome
-	remove_layer meta-browser
-	remove_layer meta-nxp-demo-experience
-	;;
-    *)
 esac
-setup_layers
 
 echo "BSPDIR='$(cd "$BSPDIR";pwd)'"
 echo "BUILD_DIR='$(cd "$BUILD_DIR";pwd)'"
