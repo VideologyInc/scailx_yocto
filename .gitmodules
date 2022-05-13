@@ -13,9 +13,6 @@
 [submodule "sources/meta-imx"]
 	path = sources/meta-imx
 	url = https://source.codeaurora.org/external/imx/meta-imx
-[submodule "sources/meta-karo-nxp-distro"]
-	path = sources/meta-karo-nxp-distro
-	url = https://github.com/karo-electronics/meta-karo-nxp-distro
 [submodule "sources/meta-nxp-demo-experience"]
 	path = sources/meta-nxp-demo-experience
 	url = https://source.codeaurora.org/external/imxsupport/meta-nxp-demo-experience
