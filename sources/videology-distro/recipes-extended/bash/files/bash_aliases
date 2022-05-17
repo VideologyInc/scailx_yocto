@@ -1,0 +1,5 @@
+alias ll='ls -alg'
+alias md=mkdir
+alias rd=rmdir
+alias ro='mount / -o remount,ro'
+alias rw='mount / -o remount,rw'
