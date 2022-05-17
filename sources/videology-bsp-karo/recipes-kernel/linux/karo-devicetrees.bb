@@ -16,6 +16,7 @@ SRC_URI_append_mx8 = " \
 	file://dts/freescale/imx8mp-qsxp-ml81-qsbase3.dts \
 	file://dts/freescale/imx8mp-qsxp-ml81-qsbase3.dtsi \
 	file://dts/freescale/imx8mp-qsxp-ml81.dts \
+	file://dts/freescale/imx8mp-qsxp-ml81-qsbase3-basler.dts \
 "
 
 inherit devicetree
