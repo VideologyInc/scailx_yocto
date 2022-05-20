@@ -2,3 +2,5 @@ build*
 downloads*
 sstate-cache*
 .repo*
+bitbake.lock
+bitbake-cookerdaemon.log
