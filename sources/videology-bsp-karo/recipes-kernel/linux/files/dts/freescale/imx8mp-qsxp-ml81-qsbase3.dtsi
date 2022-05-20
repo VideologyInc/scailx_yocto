@@ -28,40 +28,24 @@
 };
 
 &eqos {
-	pinctrl-names = "default", "sleep";
+	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_eqos>;
-	pinctrl-1 = <&pinctrl_eqos_sleep>;
-	phy-mode = "rgmii";
+	phy-mode = "rgmii-id";
 	phy-handle = <&ethphy0>;
-	phy-supply = <&ldo5_reg>;
 	status = "okay";
 
 	mdio {
 		compatible = "snps,dwmac-mdio";
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_etnphy_rst_b>;
-		reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
-		reset-delay-us = <25000>;
-		reset-post-delay-us = <100>;
 		#address-cells = <1>;
 		#size-cells = <0>;
+		reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
 
 		ethphy0: ethernet-phy@3 {
+			compatible = "ethernet-phy-ieee802.3-c22";
 			reg = <3>;
 			eee-broken-1000t;
-			micrel,force-master;
-			rxd0-skew-ps = <(420 + 99)>;
-			rxd1-skew-ps = <(420 + 119)>;
-			rxd2-skew-ps = <(420 + 111)>;
-			rxd3-skew-ps = <(420 + 129)>;
-			txd0-skew-ps = <(420 + 204)>;
-			txd1-skew-ps = <(420 + 178)>;
-			txd2-skew-ps = <(420 + 192)>;
-			txd3-skew-ps = <(420 + 151)>;
-			rxdv-skew-ps = <(420 + 129)>;
-			txen-skew-ps = <(420 + 150)>;
-			rxc-skew-ps = <(900 + 139)>;
-			txc-skew-ps = <(900 + 150)>;
+			rtl821x,aldps-disable;
+			rtl821x,clkout-disable;
 		};
 	};
 };
