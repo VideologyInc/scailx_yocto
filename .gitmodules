@@ -27,7 +27,7 @@
 	url = https://github.com/meta-qt5/meta-qt5
 [submodule "sources/poky"]
 	path = sources/poky
-	url = git://git.yoctoproject.org/poky
+	url = https://github.com/YoeDistro/poky.git
 [submodule "sources/meta-freescale"]
 	path = sources/meta-freescale
 	url = https://github.com/Freescale/meta-freescale
