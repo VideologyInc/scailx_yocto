@@ -31,6 +31,7 @@ do_install_append () {
     if ${@ bb.utils.contains('IMAGE_FEATURES','read-only-rootfs','true','false',d)};then
         install -v -m 0744 ${WORKDIR}/adjtime ${D}${localstatedir}/lib/hwclock/adjtime
         ln -snvf ${localstatedir}/lib/hwclock/adjtime ${D}${sysconfdir}/adjtime
+        sed -i '/root/s/rw/ro/' ${D}${sysconfdir}/fstab
     else
         install -v -m 0744 ${WORKDIR}/adjtime ${D}${sysconfdir}/adjtime
     fi

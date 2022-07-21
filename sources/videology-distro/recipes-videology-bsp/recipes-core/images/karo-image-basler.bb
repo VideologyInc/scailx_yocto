@@ -9,6 +9,9 @@ IMAGE_INSTALL_append = " \
         python3-pypylon \
         gentl-producer \
         v4l-utils \
+        iperf3 \
+        ethtool \
+        i2c-tools \
         xauth \
         imx-vpu-hantro-daemon \
         packagegroup-fsl-gstreamer1.0 \
@@ -22,3 +25,5 @@ IMAGE_INSTALL_append_mx8mp = " \
         isp-imx \
         packagegroup-imx-isp \
 "
+
+IMAGE_FEATURES_remove = "read-only-rootfs"

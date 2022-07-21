@@ -1,6 +1,6 @@
 # device	dir		type		options			dump	fsck
 
-PARTLABEL=rootfs /		auto		ro			0	1
+PARTLABEL=rootfs /		auto		rw			0	1
 PARTLABEL=bootfs /boot		auto		noauto			0	1
 
 proc		/proc		proc		defaults		0	0
