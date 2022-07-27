@@ -1,0 +1,72 @@
+From da42c8ffed35ae8d38723744699a7791bbbf07ca Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Wed, 27 Jul 2022 15:29:35 +0200
+Subject: [PATCH] add clk delay for rtl8211
+
+---
+ board/karo/tx8m/tx8mp.c | 52 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
+
+diff --git a/board/karo/tx8m/tx8mp.c b/board/karo/tx8m/tx8mp.c
+index 267787c828..54a535cefd 100644
+--- a/board/karo/tx8m/tx8mp.c
++++ b/board/karo/tx8m/tx8mp.c
+@@ -48,6 +48,58 @@ DECLARE_GLOBAL_DATA_PTR;
+ #define ENET_QOS_INTF_SEL_RMII		(4 * BIT(16))
+ #define ENET_QOS_INTF_SEL_RGMII		(1 * BIT(16))
+ 
++static int mx8_rgmii_rework_realtek(struct phy_device *phydev)
++{
++#define TXDLY_MASK ((1 << 13) | (1 << 12))
++#define RXDLY_MASK ((1 << 13) | (1 << 11))
++
++	unsigned short val;
++
++	printf("Adjusting Ethernet CLK Delay for RTL8211\n");
++
++	/* introduce tx clock delay */
++	phy_write(phydev, MDIO_DEVAD_NONE, 0x1f, 0x7);
++	phy_write(phydev, MDIO_DEVAD_NONE, 0x1e, 0xa4);
++
++	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1c);
++	val |= TXDLY_MASK;
++	phy_write(phydev, MDIO_DEVAD_NONE, 0x1c, val);
++
++	/* introduce rx clock delay */
++	val = phy_read(phydev, MDIO_DEVAD_NONE, 0x1c);
++	val |= RXDLY_MASK;
++	phy_write(phydev, MDIO_DEVAD_NONE, 0x1c, val);
++
++	phy_write(phydev, MDIO_DEVAD_NONE, 0x1f, 0x0);
++
++	return 0;
++}
++
++int board_phy_config(struct phy_device *phydev)
++{
++	#define PHY_VENDOR_ID_MASK (( 1<<5 ) - 1 )
++	#define PHY_ATEROS_ID  0x7
++	#define PHY_REALTEK_ID 0x11
++
++	unsigned short val = phy_read(phydev, MDIO_DEVAD_NONE, 0x3);
++
++	val = (( val >> 4 ) & PHY_VENDOR_ID_MASK);
++
++	switch (val) {
++	case PHY_ATEROS_ID:
++		break;
++	case PHY_REALTEK_ID:
++		mx8_rgmii_rework_realtek(phydev);
++		break;
++	default:
++		break;
++	}
++
++	if (phydev->drv->config)
++		phydev->drv->config(phydev);
++	return 0;
++}
++
+ static int setup_eqos(void)
+ {
+ 	int ret;
