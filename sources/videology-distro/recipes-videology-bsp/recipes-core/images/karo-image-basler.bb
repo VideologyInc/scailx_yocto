@@ -19,6 +19,8 @@ IMAGE_INSTALL_append = " \
         packagegroup-fsl-gstreamer1.0-full \
 "
 
+# IMAGE_INSTALL_remove = "busybox"
+
 IMAGE_INSTALL_append_mx8mp = " \
         kernel-module-isp-vvcam \
         imx8mp-modprobe-config \
