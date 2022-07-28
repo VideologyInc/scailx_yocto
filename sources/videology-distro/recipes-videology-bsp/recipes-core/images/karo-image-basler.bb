@@ -12,6 +12,7 @@ IMAGE_INSTALL_append = " \
         ethtool \
         i2c-tools \
         sclbl \
+        nano \
         xauth \
         imx-vpu-hantro-daemon \
         packagegroup-fsl-gstreamer1.0 \
