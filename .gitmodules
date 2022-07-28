@@ -1,6 +1,6 @@
 [submodule "sources/base"]
 	path = sources/base
-	url = https://github.com/karo-electronics/karo-nxp-base
+	url = https://github.com/Freescale/fsl-community-bsp-base
 [submodule "sources/meta-browser"]
 	path = sources/meta-browser
 	url = https://github.com/OSSystems/meta-browser
