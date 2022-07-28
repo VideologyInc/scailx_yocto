@@ -12,7 +12,6 @@ LICENSE = "MIT"
 REQUIRED_DISTRO_FEATURES = "wayland"
 
 CORE_IMAGE_BASE_INSTALL_append = " \
-        glmark2 \
         weston \
         weston-init \
         weston-examples \

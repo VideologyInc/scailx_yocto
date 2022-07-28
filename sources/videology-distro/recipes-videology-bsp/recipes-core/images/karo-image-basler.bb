@@ -6,7 +6,6 @@ REQUIRED_DISTRO_FEATURES = "x11 wayland"
 
 IMAGE_INSTALL_append = " \
         kernel-module-basler-camera \
-        python3-pypylon \
         gentl-producer \
         v4l-utils \
         iperf3 \

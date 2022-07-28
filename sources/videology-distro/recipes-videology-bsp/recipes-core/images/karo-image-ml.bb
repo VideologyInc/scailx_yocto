@@ -14,7 +14,6 @@ OPENCV_PKGS_imxgpu = " \
 "
 
 IMAGE_INSTALL_append = " \
-        ${GOOGLE_CORAL_PKGS} \
         ${OPENCV_PKGS} \
         packagegroup-fsl-tools-gpu \
         packagegroup-fsl-tools-gpu-external \
