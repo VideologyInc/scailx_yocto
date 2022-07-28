@@ -1,0 +1,32 @@
+#!/bin/bash -e
+
+export MACHINE=${MACHINE:-'mx8-camera'}
+export DISTRO=${DISTRO:-'karo-xwayland'}
+export EULA=1
+T="../sources/videology-bsp-karo/templates"
+
+# build folder name from input if entered else use 'build'
+if [ -z "$1" ]; then
+  BD="build"
+else
+  BD="$1"
+fi
+
+echo "building in $BD with machine $MACHINE and distro $DISTRO"
+
+if [[ -d ${BD} ]];then
+
+echo "Back to the build environment ${BD}"
+. setup-environment ${BD}
+
+else
+
+. imx-setup-release.sh -b $@
+
+for _d in ${T}/*;do
+	_file=$(basename ${_d})
+	for _f in ${_d}/*;do
+		cat ${_f} >> conf/${_file}
+	done;
+done
+fi

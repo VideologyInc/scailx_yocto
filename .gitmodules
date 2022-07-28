@@ -37,3 +37,11 @@
 [submodule "sources/meta-karo-distro"]
 	path = sources/meta-karo-distro
 	url = https://github.com/karo-electronics/meta-karo-distro
+[submodule "sources/meta-freescale-3rdparty"]
+	path = sources/meta-freescale-3rdparty
+	url = https://github.com/Freescale/meta-freescale-3rdparty
+	branch = hardknott
+[submodule "sources/meta-virtualization"]
+	path = sources/meta-virtualization
+	url = https://git.yoctoproject.org/git/meta-virtualization
+	branch = hardknott

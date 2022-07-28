@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 export DOCKER=docker
-export DOCKER_REPO=yoedistro/yoe-build:bullseye
+# export DOCKER_REPO=yoedistro/yoe-build:bullseye
 
 DOCKER_IMAGE=yocto_builder
 

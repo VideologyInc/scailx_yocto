@@ -1,2 +1,36 @@
 Videology Yocto builder
 =======================
+
+# Build
+
+- Clone:
+
+```
+git clone --recurse-submodules git@github.com:VideologyInc/karo_yocto.git
+cd karo_yocto
+```
+- Enter the build environment:
+```
+./scripts/docker_env.sh
+source videology-setup-env
+```
+- build the image with:
+
+```
+bitbake karo-image-basler
+```
+
+## Install built image:
+- imstall NXP uuu utility from [github.com/NXPmicro/mfgtools](https://github.com/NXPmicro/mfgtools)
+- pull the boot mode pin to 3.3V and reset the board to enter firmware loader mode.
+- use UUU to load the image:
+```
+sudo uuu /path/to/build/tmp/deploy/images/mx8-camera/karo-image-basler
+```
+
+
+## Update to the latest version
+```
+git pull --recurse-submodules
+./scripts/submod_reset.sh all
+```

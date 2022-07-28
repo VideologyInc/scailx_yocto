@@ -1,0 +1,10 @@
+# Ka-Ro specific layers
+BBLAYERS += "${BSPDIR}/sources/meta-karo-nxp"
+
+# Basler layers
+BBLAYERS += "${BSPDIR}/sources/meta-basler-imx8"
+BBLAYERS += "${BSPDIR}/sources/meta-basler-tools/meta-basler-common"
+
+# Videology layers
+BBLAYERS += "${BSPDIR}/sources/videology-bsp-karo"
+BBLAYERS += "${BSPDIR}/sources/videology-distro"
