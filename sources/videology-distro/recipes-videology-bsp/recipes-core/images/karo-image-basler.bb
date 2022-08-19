@@ -13,6 +13,8 @@ IMAGE_INSTALL_append = " \
         i2c-tools \
         sclbl \
         nano \
+        openssh-sftp \
+        openssh-sftp-server \
         gstreamer1.0-rtsp-server gst-variable-rtsp-server \
         xauth \
         imx-vpu-hantro-daemon \
