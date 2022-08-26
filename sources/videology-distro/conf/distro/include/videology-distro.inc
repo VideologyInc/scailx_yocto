@@ -59,3 +59,5 @@ BBMASK_use-nxp-bsp += ".*/meta-imx/.*/sysvinit/.*"
 
 # mask out recipe breaking the weston desktop without systemd
 BBMASK += ".*/meta-imx/meta-bsp/recipes-graphics/wayland/weston-init.bbappend"
+
+INHERIT += "rm_work"
