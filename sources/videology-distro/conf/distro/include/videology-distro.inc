@@ -34,7 +34,7 @@ DISTRO_FEATURES_DEFAULT_append_mx8  = " dsi83"
 DISTRO_FEATURES_DEFAULT_append_tx8m = " pcie"
 DISTRO_FEATURES_DEFAULT_append_qs8m = " csi-camera imx219 raspi-display tc358867"
 DISTRO_FEATURES_DEFAULT_append_qsxm = " basler csi-camera pcie raspi-display tc358867"
-DISTRO_FEATURES_DEFAULT_append_qsxp = " basler csi-camera imx219 pcie raspi-display tc358867"
+DISTRO_FEATURES_DEFAULT_append_qsxp = " basler csi-camera pcie raspi-display tc358867"
 DISTRO_FEATURES_DEFAULT_append_tx8p = " lvds"
 
 VIRTUAL-RUNTIME_base-utils-hwclock = "util-linux-hwclock"
