@@ -1,3 +1,5 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
 inherit relative_symlinks useradd
 
 PACKAGECONFIG_remove_karo-minimal = "openssl"
