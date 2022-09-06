@@ -8,4 +8,4 @@ IMAGE_INSTALL_append = "${@ "packagegroup-qt5-imx" if "use-nxp-bsp" in d.getVar(
 
 IMAGE_FEATURES += "qtcreator-debug"
 
-ROOTFS_PARTITION_SIZE = "2097152"
+ROOTFS_PARTITION_SIZE = "3145728"
