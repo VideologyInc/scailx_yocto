@@ -1,0 +1,5 @@
+tasks:
+  - init: |
+      source setup-environment build
+    command: |
+      echo command
