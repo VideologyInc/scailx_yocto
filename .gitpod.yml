@@ -1,4 +1,5 @@
 tasks:
-  - before: source setup-environment build 
-  - init: bitbake linux-imx
-  - command: bitbake linux-imx
+  - name: bitbake
+    before: source setup-environment build 
+    init: bitbake linux-imx
+    command: bitbake karo-image-ml
