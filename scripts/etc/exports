@@ -1,0 +1,1 @@
+/data *(rw,fsid=0,async,no_subtree_check,no_auth_nlm,insecure,anonuid=0,anongid=0)

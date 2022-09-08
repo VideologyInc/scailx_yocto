@@ -4,12 +4,14 @@ autoload=no
 baseboard=qsbase3
 boot_mode=mmc
 bootargs_mmc=run default_bootargs; setenv bootargs ${bootargs} root=PARTUUID=${uuid_rootfs} rootwait ${append_bootargs}
-bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${nfs_server}:${nfsroot},nolock,v3 ip=dhcp ${append_bootargs}
+bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${nfsroot},nolock,v4 ip=dhcp ${append_bootargs}
 bootcmd=run bootcmd_${boot_mode} bootm_cmd
 bootcmd_mmc=run loadfdt loadkernel bootargs_mmc
-bootcmd_nfs=run loadkernel bootargs_nfs
+bootcmd_nfs=dhcp; run tftpfdt tftpkernel bootargs_nfs
 bootdelay=1
 bootm_cmd=booti ${loadaddr} ${initrd_addr} ${fdt_addr}
+bootserverdetect=dhcp; if ping ${serverip}; then setenv boot_mode nfs; else setenv boot_mode mmc; fi; run bootswitch
+bootswitch=run bootcmd_${boot_mode} bootm_cmd
 console=ttymxc0,115200 earlycon=ec_imx6q,0x30890000,115200
 default_bootargs=setenv bootargs console=${console} panic=-1
 emmc_boot_ack=1
@@ -26,7 +28,12 @@ initrd_high=63800000
 linux_image=boot/Image
 loadaddr=40480000
 loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}
+tftpfdt=tftpboot ${fdt_addr} ${fdt_file}
 loadkernel=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${linux_image}
+tftpkernel=tftpboot ${loadaddr} ${linux_image}
 mmcdev=0
 mmcpart=2
+nfsroot='/'
+nfsvers=4
+serverip=192.168.0.132
 otg_mode=peripheral

@@ -1,0 +1,24 @@
+version: "2.1"
+services:
+  # https://hub.docker.com/r/itsthenetwork/nfs-server-alpine
+  nfs:
+    image: itsthenetwork/nfs-server-alpine:12
+    container_name: nfs
+    restart: unless-stopped
+    privileged: true
+    environment:
+      - SHARED_DIRECTORY=/data
+    volumes:
+      - ${PWD}/../build/tmp/deploy/images/nfs-rootfs:/data
+      - ${PWD}/etc/exports:/etc/exports
+    ports:
+      - 2049:2049
+
+  tftp:
+    image: pghalliday/tftp
+    container_name: tftp
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/../build/tmp/deploy/images/nfs-rootfs:/var/tftpboot
+    ports:
+      - 69:69/udp
