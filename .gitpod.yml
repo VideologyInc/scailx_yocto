@@ -2,4 +2,4 @@ tasks:
   - init: |
       source setup-environment build
     command: |
-      echo command
+      bitbake linux-imx
