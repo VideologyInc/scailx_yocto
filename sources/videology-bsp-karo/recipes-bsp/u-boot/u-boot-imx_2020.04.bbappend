@@ -6,3 +6,5 @@ SRC_URI_append_mx8-camera += "file://mx8-camera_env.txt;subdir=${S}/board/karo/t
 SRC_URI_append_mx8-camera += "file://0001-add-clk-delay-for-rtl8211.patch"
 
 DEPENDS += "xxd-native"
+
+RM_WORK_EXCLUDE += "${PN}"

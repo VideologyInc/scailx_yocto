@@ -2,6 +2,8 @@ SUMMARY = "An image with full multimedia and Machine Learning support"
 
 require recipes-core/images/karo-image-weston.bb
 
+DEFAULT_DTB = 'imx8mp-qsxp-ml81-qsbase3-raspi-display.dtb'
+
 GOOGLE_CORAL_PKGS = " \
         libedgetpu \
 "

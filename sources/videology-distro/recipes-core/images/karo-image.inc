@@ -3,10 +3,13 @@ LICENSE = "MIT"
 IMAGE_PREPROCESS_COMMAND_append = " image_rootfs_image_clean_task;"
 
 inherit core-image features_check rootfs-postprocess
+inherit link_default_dtb
 inherit ${@ "flashlayout-stm32mp" if 'stm32mp1' in d.getVar('MACHINEOVERRIDES').split(":") else ""}
 
 require ${@ "st-machine-common-stm32mp.inc" if 'stm32mp1' in d.getVar('MACHINEOVERRIDES').split(":") else ""}
 require ${@ "videology-bsp.inc" if 'use-nxp-bsp' in d.getVar('MACHINEOVERRIDES').split(':') else ""}
+
+RM_WORK_EXCLUDE += "${PN}"
 
 REQUIRED_DISTRO_FEATURES ??= ""
 
