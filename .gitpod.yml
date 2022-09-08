@@ -1,5 +1,4 @@
 tasks:
-  - init: |
-      source setup-environment build
-    command: |
-      bitbake linux-imx
+  - before: source setup-environment build 
+  - init: bitbake linux-imx
+  - command: bitbake linux-imx
