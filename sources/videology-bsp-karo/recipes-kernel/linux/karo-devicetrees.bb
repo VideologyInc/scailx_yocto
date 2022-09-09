@@ -24,3 +24,5 @@ inherit devicetree
 S = "${WORKDIR}/dts/freescale"
 
 COMPATIBLE_MACHINE = ".*(mx8).*"
+
+RM_WORK_EXCLUDE += "${PN}"

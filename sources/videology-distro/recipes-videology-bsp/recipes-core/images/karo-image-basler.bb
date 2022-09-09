@@ -1,6 +1,7 @@
 SUMMARY = "An image with full multimedia, Machine Learning and Basler camera support"
 
 require karo-image-ml.bb
+DEFAULT_DTB = "imx8mp-qsxp-ml81-qsbase3-basler.dtb"
 
 REQUIRED_DISTRO_FEATURES = "x11 wayland"
 
