@@ -2,6 +2,6 @@ image:
   file: .gitpod.dockerfile
 tasks:
   - name: bitbake
-    before: source setup-environment build 
-    init: bitbake linux-imx
+    before: source setup-environment build
+    init: bitbake linux-imx glibc
     command: bitbake karo-image-ml
