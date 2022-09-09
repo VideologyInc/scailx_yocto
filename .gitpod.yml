@@ -1,5 +1,5 @@
 image:
-  file: .gitpod.Dockerfile
+  file: .gitpod.dockerfile
 tasks:
   - name: bitbake
     before: source setup-environment build 
