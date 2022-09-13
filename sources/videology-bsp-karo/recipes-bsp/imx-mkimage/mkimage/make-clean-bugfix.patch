@@ -1,0 +1,30 @@
+diff --git a/Makefile b/Makefile
+index 1c0b039..db760a3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ 
+ MKIMG = $(PWD)/mkimage_imx8
+ CC = gcc
+-CFLAGS ?= -g -O2 -Wall -std=c99 -static
++CFLAGS ?= -g -O2 -Wall -Werror -Wextra -Wno-unused-parameter -std=c99 -static
+ INCLUDE += $(CURR_DIR)/src
+ 
+ SRCS = src/imx8qxb0.c src/mkimage_imx8.c
+@@ -28,11 +28,11 @@ all: $(MKIMG) help
+ clean:
+ 	@rm -f $(MKIMG)
+ 	@rm -f src/build_info.h
+-	@$(MAKE) --no-print-directory -C iMX8QM -f soc.mak clean
+-	@$(MAKE) --no-print-directory -C iMX8QX -f soc.mak  clean
+-	@$(MAKE) --no-print-directory -C iMX8DXL -f soc.mak clean
+-	@$(MAKE) --no-print-directory -C iMX8ULP -f soc.mak  clean
+-	@$(MAKE) --no-print-directory -C iMX8M -f soc.mak  clean
++	@[ ! -d iMX8QM ] || $(MAKE) --no-print-directory -C iMX8QM -f soc.mak clean
++	@[ ! -d iMX8QX ] || $(MAKE) --no-print-directory -C iMX8QX -f soc.mak  clean
++	@[ ! -d iMX8ULP ] || $(MAKE) --no-print-directory -C iMX8ULP -f soc.mak  clean
++	@[ ! -d iMX8M ] || $(MAKE) --no-print-directory -C iMX8M -f soc.mak  clean
++	@[ ! -d iMX8dv ] || $(MAKE) --no-print-directory -C iMX8dv -f soc.mak  clean
+ 
+ $(MKIMG): src/build_info.h $(SRCS)
+ 	@echo "Compiling mkimage_imx8"

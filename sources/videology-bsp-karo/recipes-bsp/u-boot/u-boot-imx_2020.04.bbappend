@@ -1,3 +1,8 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:${THISDIR}/${PN}-${PV}/patches:"
+SRC_URI_append = " \
+	file://karo.bmp;subdir=git/tools/logos \
+"
+
 FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-${PV}:${THISDIR}/files:"
 
 SRC_URI_append_mx8-camera += "file://mx8-camera_defconfig;subdir=${S}/configs"

@@ -1,0 +1,24 @@
+Index: imx8mm-mkimage/src/imx8qxb0.c
+===================================================================
+--- imx8mm-mkimage.orig/src/imx8qxb0.c
++++ imx8mm-mkimage/src/imx8qxb0.c
+@@ -149,7 +149,7 @@ typedef struct {
+ 
+ uint32_t custom_partition = 0;
+ 
+-static void copy_file_aligned (int ifd, const char *datafile, int offset, int align)
++static void copy_file_aligned(int ifd, const char *datafile, int offset, int align)
+ {
+ 	int dfd;
+ 	struct stat sbuf;
+@@ -279,8 +279,8 @@ void set_image_hash(boot_img_t *img, cha
+ #define append(p, s, l) do {memcpy(p, (uint8_t *)s, l); p += l; } while (0)
+ 
+ uint8_t *flatten_container_header(imx_header_v3_t *imx_header,
+-					uint8_t containers_count,
+-					uint32_t *size_out, uint32_t file_offset)
++				  uint8_t containers_count,
++				  uint32_t *size_out, uint32_t file_offset)
+ {
+ 	uint8_t *flat = NULL;
+ 	uint8_t *ptr = NULL;

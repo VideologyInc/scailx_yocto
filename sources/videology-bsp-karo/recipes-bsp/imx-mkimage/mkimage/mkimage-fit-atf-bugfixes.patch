@@ -1,0 +1,106 @@
+Index: imx8mm-mkimage/iMX8M/mkimage_fit_atf.sh
+===================================================================
+--- imx8mm-mkimage.orig/iMX8M/mkimage_fit_atf.sh
++++ imx8mm-mkimage/iMX8M/mkimage_fit_atf.sh
+@@ -66,7 +66,11 @@ cat << __HEADER_EOF
+ 	description = "Configuration to load ATF before U-Boot";
+ 
+ 	images {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
+ 		uboot@1 {
++			reg = <1>;
+ 			description = "U-Boot (64-bit)";
+ 			data = /incbin/("$BL33");
+ 			type = "standalone";
+@@ -79,8 +83,11 @@ __HEADER_EOF
+ cnt=1
+ for dtname in $*
+ do
++	nodeaddr=$(printf "%x" $cnt)
+ 	cat << __FDT_IMAGE_EOF
+-		fdt@$cnt {
++
++		fdt@${nodeaddr} {
++			reg = <0x${nodeaddr}>;
+ 			description = "$(basename $dtname .dtb)";
+ 			data = /incbin/("$dtname");
+ 			type = "flat_dt";
+@@ -92,6 +99,7 @@ done
+ 
+ cat << __HEADER_EOF
+ 		atf@1 {
++			reg = <1>;
+ 			description = "ARM Trusted Firmware";
+ 			data = /incbin/("$BL31");
+ 			type = "firmware";
+@@ -104,7 +112,9 @@ __HEADER_EOF
+ 
+ if [ -f $BL32 ]; then
+ cat << __HEADER_EOF
++
+ 		tee@1 {
++			reg = <1>;
+ 			description = "TEE firmware";
+ 			data = /incbin/("$BL32");
+ 			type = "firmware";
+@@ -130,42 +140,51 @@ fi
+ 
+ cat << __CONF_HEADER_EOF
+ 	};
++
+ 	configurations {
++		#address-cells = <1>;
++		#size-cells = <0>;
+ 		default = "config@1";
+-
+ __CONF_HEADER_EOF
+ 
+ cnt=1
+ for dtname in $*
+ do
++	nodeaddr=$(printf "%x" $cnt)
+ if [ -f $BL32 ]; then
+ if [ $ROLLBACK_INDEX_IN_FIT ]; then
+ cat << __CONF_SECTION_EOF
+-		config@$cnt {
++
++		config@${nodeaddr} {
++			reg = <0x${nodeaddr}>;
+ 			description = "$(basename $dtname .dtb)";
+ 			firmware = "uboot@1";
+ 			loadables = $LOADABLES;
+-			fdt = "fdt@$cnt";
++			fdt = "fdt@${nodeaddr}";
+ 			rbindex = "$ROLLBACK_INDEX_IN_FIT";
+ 		};
+ __CONF_SECTION_EOF
+ else
+ cat << __CONF_SECTION_EOF
+-		config@$cnt {
++
++		config@${nodeaddr} {
++			reg = <0x${nodeaddr}>;
+ 			description = "$(basename $dtname .dtb)";
+ 			firmware = "uboot@1";
+ 			loadables = $LOADABLES;
+-			fdt = "fdt@$cnt";
++			fdt = "fdt@${nodeaddr}";
+ 		};
+ __CONF_SECTION_EOF
+ fi
+ else
+ cat << __CONF_SECTION1_EOF
+-		config@$cnt {
++
++		config@${nodeaddr} {
++			reg = <0x${nodeaddr}>;
+ 			description = "$(basename $dtname .dtb)";
+ 			firmware = "uboot@1";
+ 			loadables = $LOADABLES;
+-			fdt = "fdt@$cnt";
++			fdt = "fdt@${nodeaddr}";
+ 		};
+ __CONF_SECTION1_EOF
+ fi

@@ -1,0 +1,149 @@
+diff --git a/src/imx8qxb0.c b/src/imx8qxb0.c
+index ac35d00..a47ab1b 100644
+--- a/src/imx8qxb0.c
++++ b/src/imx8qxb0.c
+@@ -264,13 +264,13 @@ void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
+ 		exit(EXIT_FAILURE);
+ 	}
+ 
+-	if(fgets(hash, hash_type / 4 + 1, fp) == NULL) {
++	if (fgets(hash, hash_type / 4 + 1, fp) == NULL) {
+ 		fprintf(stderr, "Failed to hash file: %s\n", filename);
+ 		exit(EXIT_FAILURE);
+ 	}
+ 
+-	for(int i = 0; i < strlen(hash)/2; i++){
+-		sscanf(hash + 2*i, "%02hhx", &img->hash[i]);
++	for (size_t i = 0; i < strlen(hash) / 2; i++){
++		sscanf(hash + 2 * i, "%02hhx", &img->hash[i]);
+ 	}
+ 
+ 	pclose(fp);
+@@ -492,10 +492,6 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
+ 		img->hab_flags |= IMG_TYPE_EXEC;
+ 		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
+ 		tmp_name = "M4";
+-		if ((entry & 0x7) != 0)
+-		{
+-			fprintf(stderr, "\n\nWarning: M4 Destination address is not 8 byte aligned\n\n");
+-		}
+ 		img->dst = entry;
+ 		img->entry = entry;
+ 		img->meta = meta;
+@@ -578,16 +574,16 @@ void set_container(flash_header_v3_t *container,  uint16_t sw_version,
+ int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type_t soc, uint32_t *scu_cont_hdr_off)
+ {
+ 	image_t *img_sp = image_stack;
+-    /*8K total container header*/
++	/* 8K total container header */
+ 	int file_off = CONTAINER_IMAGE_ARRAY_START_OFFSET,  ofd = -1;
+ 	flash_header_v3_t header;
+ 
+-
+ 	while (img_sp->option != NO_IMG) {
+ 		if (img_sp->option == APPEND) {
+ 			ofd = open(img_sp->filename, O_RDONLY);
+ 			if (ofd < 0) {
+-				printf("Failure open first container file %s\n", img_sp->filename);
++				printf("Failed to open first container file %s\n",
++				       img_sp->filename);
+ 				break;
+ 			}
+ 
+@@ -599,17 +595,17 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type
+ 				}
+ 			}
+ 
+-			if(read(ofd, &header, sizeof(header)) != sizeof(header)) {
+-				printf("Failure Read header \n");
++			if (read(ofd, &header, sizeof(header)) != sizeof(header)) {
++				printf("Failed to read header\n");
+ 				exit(EXIT_FAILURE);
+ 			}
+ 
+ 			close(ofd);
+ 
+ 			if (header.tag != IVT_HEADER_TAG_B0) {
+-				printf("header tag missmatched %x\n", header.tag);
++				printf("header tag mismatch: %08x\n", header.tag);
+ 			} else if (header.num_images == 0) {
+-				printf("image num is 0 \n");
++				printf("No images in file '%s'\n", img_sp->filename);
+ 			} else {
+ 				file_off = header.img[header.num_images - 1].offset + header.img[header.num_images - 1].size;
+ 				if (soc == DXL) {
+@@ -630,11 +626,14 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type
+ }
+ 
+ 
+-int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_offset, char *out_file,
+-				bool emmc_fastboot, image_t *image_stack, bool dcd_skip, uint8_t fuse_version,
+-				uint16_t sw_version, char *images_hash)
++int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size,
++			     uint32_t ivt_offset, char *out_file,
++			     bool emmc_fastboot, image_t *image_stack,
++			     bool dcd_skip, uint8_t fuse_version,
++			     uint16_t sw_version, char *images_hash)
+ {
+-	int file_off, ofd = -1;
++	uint64_t file_off;
++	int ofd;
+ 	unsigned int dcd_len = 0;
+ 
+ 	static imx_header_v3_t imx_header;
+@@ -670,7 +669,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
+ 	printf("ivt_offset:\t%d\n", ivt_offset);
+ 
+ 	file_off = get_container_image_start_pos(image_stack, sector_size, soc, &file_padding);
+-	printf("container image offset (aligned):%x\n", file_off);
++	printf("container image offset (aligned):%zx\n", file_off);
+ 
+ 	/* step through image stack and generate the header */
+ 	img_sp = image_stack;
+@@ -762,13 +761,11 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
+ 			scfw_flags = img_sp->entry & 0xFFFF0000;/* mask off bottom 16 bits */
+ 			break;
+ 		case FILEOFF:
+-			if (file_off > img_sp->dst)
+-			{
++			if (file_off > img_sp->dst) {
+ 				fprintf(stderr, "FILEOFF address less than current file offset!!!\n");
+ 				exit(EXIT_FAILURE);
+ 			}
+-			if (img_sp->dst != ALIGN(img_sp->dst, sector_size))
+-			{
++			if (img_sp->dst != ALIGN(img_sp->dst, sector_size)) {
+ 				fprintf(stderr, "FILEOFF address is not aligned to sector size!!!\n");
+ 				exit(EXIT_FAILURE);
+ 			}
+@@ -1183,17 +1180,17 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
+ 				ofd = open("extracted_imgs/ahab-container.img", O_CREAT|O_WRONLY, S_IRWXU|S_IRWXG|S_IRWXO);
+ 
+ 				/* first copy container header to output image */
+-				ret = write(ofd, (void *)mem_ptr, 1024);
++				ret = write(ofd, mem_ptr, 1024);
+ 				if (ret < 0)
+ 					fprintf(stderr, "Error writing to output file\n");
+ 
+ 
+ 				/* next, pad the output with zeros until the start of the image */
+-				for (int i = 0; i < (img_offset-CONTAINER_ALIGNMENT)/4; i++)
+-					ret = write(ofd, (void *)&pad, 4);
++				for (size_t i = 0; i < (img_offset - CONTAINER_ALIGNMENT) / 4; i++)
++					ret = write(ofd, &pad, 4);
+ 
+ 				/* now write the fw image to the output file */
+-				ret = write(ofd, (void *)(mem_ptr+img_offset), img_size);
++				ret = write(ofd, mem_ptr + img_offset, img_size);
+ 				if (ret < 0)
+ 					fprintf(stderr, "Error writing to output file\n");
+ 
+@@ -1228,7 +1225,7 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
+ 
+ 
+ 					/* next, pad the output with zeros until the start of SECO image */
+-					for (int i = 0; i < (seco_off - (file_off + container_hdr->length))/4; i++)
++					for (uint32_t i = 0; i < (seco_off - (file_off + container_hdr->length))/4; i++)
+ 						ret = write(ofd, (void *)&pad, 4);
+ 
+ 					/* now write the SECO fw image to the output file */
