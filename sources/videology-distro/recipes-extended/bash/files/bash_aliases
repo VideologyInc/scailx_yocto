@@ -1,4 +1,4 @@
-alias ll='ls -alg'
+alias ll='ls -algh'
 alias md=mkdir
 alias rd=rmdir
 alias ro='mount / -o remount,ro'
