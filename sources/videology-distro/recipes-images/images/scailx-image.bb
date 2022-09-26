@@ -2,8 +2,8 @@
 require recipes-fsl/images/imx-image-multimedia.bb
 
 inherit link_default_dtb
-DEFAULT_DTB = "imx8mp-qsxp-ml81-camera-crosslink.dtb"
-# DEFAULT_DTB = "imx8mp-qsxp-ml81-camera-OV5640.dtb"
+
+DEFAULT_DTB = "imx8mp-qsxp-ml81-camera-OV5640.dtb"
 
 CONFLICT_DISTRO_FEATURES = "directfb"
 
@@ -24,6 +24,7 @@ IMAGE_INSTALL += " \
     i2c-tools \
     python3-pyserial \
     gst-variable-rtsp-server \
+    kernel-module-crosslink-lvds2mipi \
 "
 
 IMAGE_FEATURES_remove = "splash ssh-server-dropbear"
