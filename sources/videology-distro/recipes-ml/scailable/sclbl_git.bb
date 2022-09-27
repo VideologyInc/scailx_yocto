@@ -9,10 +9,10 @@ ARCHURL_arm64   = "arm64"
 ARCHURL_armv7   = "arm32"
 ARCHURL_x86_64  = "x86_64"
 
-PV = "2.2.10"
-SRCREV = "f6b69ef3939018a72eb7090a6d42c95cbe4e8a8a"
+PV = "2.2.30"
+SRCREV = "d9fd55c28556f7973dc7b176b7e65288facd885b"
 SRC_URI = "https://github.com/scailable/sclbl-tutorials/raw/${SRCREV}/downloads/files/lonelinux-sclbl-${ARCHURL}.tgz;name=${ARCHURL};downloadfilename=${PN}-${PV}.tar.gz"
-SRC_URI[arm64.sha256sum] = "9d95743fb3c68ed624cd71bd314160afef2eb756ca4372bcbff6f28d8930735e"
+SRC_URI[arm64.sha256sum] = "ca03ada3b41d5f57bfe3821600f20f31af6596d422a366a3dcd3402cf384c069"
 
 SRC_URI += "https://github.com/scailable/sclbl-tutorials/raw/${SRCREV}/terms/license-agreement-03112021.pdf;name=lic"
 SRC_URI[lic.sha256sum] = "470016616c4cee9ee922efa6ad58e46f7fe3c244b93bce1ac789bbfc08343da8"

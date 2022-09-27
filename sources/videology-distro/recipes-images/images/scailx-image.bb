@@ -17,6 +17,7 @@ OPENCV_PKGS_imxgpu = " \
 
 IMAGE_INSTALL += " \
     packagegroup-imx-ml \
+    sclbl \
     tzdata \
     ${OPENCV_PKGS} \
     openssh-sftp-server \
