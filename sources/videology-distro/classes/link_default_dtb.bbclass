@@ -8,3 +8,5 @@ link_default_dtb () {
   		bbwarn "default DTB file ${IMAGE_ROOTFS}/boot/devicetree/${DEFAULT_DTB} does not exist"
     fi
 }
+
+RM_WORK_EXCLUDE += "${PN}"

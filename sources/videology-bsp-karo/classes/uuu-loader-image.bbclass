@@ -51,7 +51,7 @@ FB: ucmd saveenv
 FB: ucmd mmc partconf \${emmc_dev} \${emmc_boot_ack} 1 0
 FB: done
 " > "${ZIP_FOLDER}/uuu.auto"
-    zip -r -j "${IMAGE_NAME}-uuu.zip" "${ZIP_FOLDER}"
+    zip -r -1 -j "${IMAGE_NAME}-uuu.zip" "${ZIP_FOLDER}"
 }
 
 do_image_uuuimg[cleandirs] += "${ZIP_FOLDER}"
