@@ -21,6 +21,7 @@ IMAGE_INSTALL += " \
     tzdata \
     ${OPENCV_PKGS} \
     openssh-sftp-server \
+    xauth \
     gnupg \
     i2c-tools \
     python3-pyserial \
