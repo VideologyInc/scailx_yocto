@@ -19,12 +19,6 @@
 [submodule "sources/meta-openembedded"]
 	path = sources/meta-openembedded
 	url = https://github.com/openembedded/meta-openembedded
-[submodule "sources/meta-python2"]
-	path = sources/meta-python2
-	url = https://git.openembedded.org/meta-python2
-[submodule "sources/meta-qt5"]
-	path = sources/meta-qt5
-	url = https://github.com/meta-qt5/meta-qt5
 [submodule "sources/poky"]
 	path = sources/poky
 	url = https://github.com/YoeDistro/poky.git
@@ -45,3 +39,7 @@
 	path = sources/meta-virtualization
 	url = https://git.yoctoproject.org/git/meta-virtualization
 	branch = hardknott
+[submodule "sources/meta-qt6"]
+	path = sources/meta-qt6
+	url = https://code.qt.io/yocto/meta-qt6.git
+	branch = 6.3
