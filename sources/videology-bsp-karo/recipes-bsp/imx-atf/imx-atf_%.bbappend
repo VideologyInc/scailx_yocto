@@ -1,4 +1,4 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}-2.2:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}-2.2:"
 
 ATF_SRC = "git://github.com/karo-electronics/imx-atf.git;protocol=https"
 SRCBRANCH = "lf_v2.4-karo"

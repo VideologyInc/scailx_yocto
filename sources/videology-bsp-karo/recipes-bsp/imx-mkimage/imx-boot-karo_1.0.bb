@@ -3,15 +3,15 @@
 require imx-mkimage_git.inc
 
 DESCRIPTION = "Generate Boot Loader for i.MX 8 device"
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/GPL-2.0-only;md5=801f80980d171dd6425610833a22dbe6"
 SECTION = "BSP"
 
 inherit use-imx-security-controller-firmware
 
 IMX_EXTRA_FIRMWARE      = "firmware-imx-8 imx-sc-firmware imx-seco"
-IMX_EXTRA_FIRMWARE_mx8m = "firmware-imx-8m"
-IMX_EXTRA_FIRMWARE_mx8x = "imx-sc-firmware imx-seco"
+IMX_EXTRA_FIRMWARE:mx8m-nxp-bsp = "firmware-imx-8m"
+IMX_EXTRA_FIRMWARE:mx8x = "imx-sc-firmware imx-seco"
 DEPENDS += " \
     u-boot \
     ${IMX_EXTRA_FIRMWARE} \
@@ -20,9 +20,10 @@ DEPENDS += " \
 "
 # xxd is a dependency of fspi_packer.sh
 DEPENDS += "xxd-native"
-DEPENDS_append_mx8m = " u-boot-mkimage-native dtc-native"
+DEPENDS:append:mx8m-nxp-bsp = " u-boot-mkimage-native dtc-native"
 BOOT_NAME = "imx-boot-karo"
 PROVIDES = "${BOOT_NAME}"
+PROVIDES += "imx-boot"
 
 inherit deploy
 
@@ -41,7 +42,7 @@ do_compile[depends] += " \
 SC_FIRMWARE_NAME ?= "scfw_tcm.bin"
 
 ATF_MACHINE_NAME ?= "bl31-${ATF_PLATFORM}.bin"
-ATF_MACHINE_NAME_append = "${@bb.utils.contains('MACHINE_FEATURES', 'optee', '-optee', '', d)}"
+ATF_MACHINE_NAME:append = "${@bb.utils.contains('MACHINE_FEATURES', 'optee', '-optee', '', d)}"
 
 TOOLS_NAME ?= "mkimage_imx8"
 
@@ -55,18 +56,13 @@ IMXBOOT_TARGETS ?= \
                                                   'flash_multi_cores flash_dcd', d), d)}"
 
 BOOT_STAGING       = "${S}/${IMX_BOOT_SOC_TARGET}"
-BOOT_STAGING_mx8m  = "${S}/iMX8M"
-BOOT_STAGING_mx8dx = "${S}/iMX8QX"
+BOOT_STAGING:mx8m-nxp-bsp  = "${S}/iMX8M"
 
 SOC_FAMILY      = "INVALID"
-SOC_FAMILY_mx8  = "mx8"
-SOC_FAMILY_mx8m = "mx8m"
-SOC_FAMILY_mx8x = "mx8x"
+SOC_FAMILY:mx8-nxp-bsp  = "mx8"
+SOC_FAMILY:mx8m-nxp-bsp = "mx8m"
 
 REV_OPTION ?= ""
-REV_OPTION_mx8qxp = \
-    "${@bb.utils.contains('MACHINE_FEATURES', 'soc-revb0', '', \
-                                                           'REV=C0', d)}"
 
 compile_mx8m() {
     local t="$1"
@@ -108,25 +104,6 @@ compile_mx8() {
     if [ -e "${DEPLOY_DIR_IMAGE}/u-boot-spl.${UBOOT_SUFFIX}-${MACHINE}-${t}" ];then
         install -v "${DEPLOY_DIR_IMAGE}/u-boot-spl.${UBOOT_SUFFIX}-${MACHINE}-${t}" \
                                                             "${BOOT_STAGING}/u-boot-spl.${UBOOT_SUFFIX}"
-    fi
-}
-
-compile_mx8x() {
-    local t="$1"
-    bbnote 8QX boot binary build
-
-    install -v ${DEPLOY_DIR_IMAGE}/${M4_DEFAULT_IMAGE}               ${BOOT_STAGING}/m4_image.bin
-    install -v ${DEPLOY_DIR_IMAGE}/${SECO_FIRMWARE_NAME}             ${BOOT_STAGING}
-    install -v ${DEPLOY_DIR_IMAGE}/${BOOT_TOOLS}/${SC_FIRMWARE_NAME} ${BOOT_STAGING}/scfw_tcm.bin
-    install -v ${DEPLOY_DIR_IMAGE}/${BOOT_TOOLS}/${ATF_MACHINE_NAME} ${BOOT_STAGING}/bl31.bin
-
-    UBOOT_NAME="u-boot-${MACHINE}.${UBOOT_SUFFIX}-${t}"
-    BOOT_CONFIG_MACHINE="${BOOT_NAME}-${MACHINE}.${UBOOT_SUFFIX}-${t}"
-
-    install -v ${DEPLOY_DIR_IMAGE}/${UBOOT_NAME}                 ${BOOT_STAGING}/u-boot.${UBOOT_SUFFIX}
-    if [ -e ${DEPLOY_DIR_IMAGE}/u-boot-spl.${UBOOT_SUFFIX}-${MACHINE}-${t} ];then
-        install -v ${DEPLOY_DIR_IMAGE}/u-boot-spl.${UBOOT_SUFFIX}-${MACHINE}-${t} \
-                                                            ${BOOT_STAGING}/u-boot-spl.${UBOOT_SUFFIX}
     fi
 }
 
@@ -198,19 +175,6 @@ deploy_mx8() {
     done
 }
 
-deploy_mx8x() {
-    install -v -m 0644 ${BOOT_STAGING}/${SECO_FIRMWARE_NAME}    ${DEPLOYDIR}/${BOOT_TOOLS}
-    install -v -m 0644 ${BOOT_STAGING}/m4_image.bin             ${DEPLOYDIR}/${BOOT_TOOLS}
-    install -v -m 0755 ${S}/${TOOLS_NAME}                       ${DEPLOYDIR}/${BOOT_TOOLS}
-
-    for t in ${UBOOT_CONFIG};do
-        if [ -e "${DEPLOY_DIR_IMAGE}/u-boot-spl.${UBOOT_SUFFIX}-${MACHINE}-${t}" ];then
-            install -v -m 0644 "${DEPLOY_DIR_IMAGE}/u-boot-spl.${UBOOT_SUFFIX}-${MACHINE}-${t}" \
-                                                                 "${DEPLOYDIR}/${BOOT_TOOLS}"
-        fi
-    done
-}
-
 do_deploy() {
     install -v -d ${DEPLOYDIR}/${BOOT_TOOLS}
 
@@ -245,8 +209,6 @@ do_deploy() {
 addtask deploy before do_build after do_compile
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-FILES_${PN} = "/boot"
-
-
+FILES:${PN} = "/boot"
 
 COMPATIBLE_MACHINE = "(mx8)"

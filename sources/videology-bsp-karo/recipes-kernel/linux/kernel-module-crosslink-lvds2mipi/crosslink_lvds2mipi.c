@@ -326,7 +326,7 @@ find_mode:
 	return mode ? rate : -EINVAL;
 }
 
-static int crosslink_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg, struct v4l2_subdev_format *format)
+static int crosslink_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_format *format)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	struct v4l2_mbus_framefmt *fmt;
@@ -339,7 +339,7 @@ static int crosslink_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_conf
 	mutex_lock(&sensor->lock);
 
 	if (format->which == V4L2_SUBDEV_FORMAT_TRY)
-		fmt = v4l2_subdev_get_try_format(&sensor->sd, cfg, format->pad);
+		fmt = v4l2_subdev_get_try_format(&sensor->sd, sd_state, format->pad);
 	else
 		fmt = &sensor->fmt;
 
@@ -385,7 +385,7 @@ static int crosslink_try_fmt_internal(struct v4l2_subdev *sd, struct v4l2_mbus_f
 	return 0;
 }
 
-static int crosslink_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg, struct v4l2_subdev_format *format)
+static int crosslink_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_format *format)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	const struct crosslink_mode_info *new_mode;
@@ -407,7 +407,7 @@ static int crosslink_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_conf
 		}
 
 	if (format->which == V4L2_SUBDEV_FORMAT_TRY)
-		fmt = v4l2_subdev_get_try_format(sd, cfg, 0);
+		fmt = v4l2_subdev_get_try_format(sd, sd_state, 0);
 	else
 		fmt = &sensor->fmt;
 
@@ -554,7 +554,7 @@ free_ctrls:
 	return ret;
 }
 
-static int crosslink_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg, struct v4l2_subdev_frame_size_enum *fse)
+static int crosslink_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_frame_size_enum *fse)
 {
 	if (fse->pad != 0)
 		return -EINVAL;
@@ -571,7 +571,7 @@ static int crosslink_enum_frame_size(struct v4l2_subdev *sd, struct v4l2_subdev_
 	return 0;
 }
 
-static int crosslink_enum_frame_interval(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg, struct v4l2_subdev_frame_interval_enum *fie)
+static int crosslink_enum_frame_interval(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_frame_interval_enum *fie)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	int i, j, count;
@@ -659,7 +659,7 @@ out:
 	return ret;
 }
 
-static int crosslink_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config *cfg, struct v4l2_subdev_mbus_code_enum *code)
+static int crosslink_enum_mbus_code(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_mbus_code_enum *code)
 {
 	if (code->pad != 0)
 		return -EINVAL;
@@ -888,7 +888,7 @@ static int crosslink_probe(struct i2c_client *client)
 	if (ret)
 		goto entity_cleanup;
 
-	ret = v4l2_async_register_subdev_sensor_common(&sensor->sd);
+	ret = v4l2_async_register_subdev_sensor(&sensor->sd);
 	if (ret)
 		goto free_ctrls;
 
