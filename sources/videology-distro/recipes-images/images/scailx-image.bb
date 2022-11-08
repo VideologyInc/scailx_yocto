@@ -29,10 +29,10 @@ IMAGE_INSTALL += " \
     kernel-module-crosslink-lvds2mipi \
 "
 
-IMAGE_FEATURES_remove = "splash ssh-server-dropbear"
+IMAGE_FEATURES:remove = "splash ssh-server-dropbear"
 IMAGE_FEATURES += "ssh-server-openssh"
 
-CORE_IMAGE_EXTRA_INSTALL_remove = " \
+CORE_IMAGE_EXTRA_INSTALL:remove = " \
     packagegroup-tools-bluetooth \
     packagegroup-fsl-tools-audio \
     packagegroup-fsl-tools-gpu-external \
