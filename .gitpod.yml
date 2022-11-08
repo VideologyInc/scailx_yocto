@@ -3,5 +3,5 @@ image:
 tasks:
   - name: bitbake
     before: source setup-environment build
-    init: bitbake linux-imx glibc
-    command: bitbake karo-image-ml
+    init: bitbake -e linux-imx > linux_env
+    command: bitbake -e scailx-image > scailx_env
