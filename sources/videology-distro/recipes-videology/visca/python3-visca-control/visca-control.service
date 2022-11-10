@@ -1,0 +1,12 @@
+[Unit]
+Description=HTTP server with GUI to send VISCA commands to serial port
+After=network.target
+
+[Service]
+ExecStart=visca-control.py
+KillMode=process
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
