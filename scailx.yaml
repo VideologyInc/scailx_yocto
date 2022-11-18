@@ -1,0 +1,43 @@
+# scailx yocto for Videology
+#
+# Authors:
+#   Kobus Goosen
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 12
+  includes:
+    - nxp-imx.yaml
+    - kas/kirkstone.yml
+    - nxp-imx-5.15.52-2.1.0.yaml
+
+repos:
+  scailx:
+    layers:
+      sources/videology-bsp-karo:
+      sources/videology-distro:
+
+
+bblayers_conf_header:
+  standard: |
+    # BBPATH = "${TOPDIR}"
+    # BBFILES ?= ""
+
+distro: fsl-imx-xwayland
+machine: mx8-camera
+target: scailx-image
+
+local_conf_header:
+  folders: |
+    DL_DIR ??= "${TOPDIR}/../downloads"
+    SSTATE_DIR ??= "${TOPDIR}/../sstate-cache"
+  machine_preferred_providers: |
+    INHERIT += "rm_work"
+  other: |
+    EXTRA_IMAGE_FEATURES ?= "debug-tweaks"
+    USER_CLASSES ?= "buildstats"
+    PATCHRESOLVE = "noop"
+  buildinfo: |
+    # INHERIT += " image-buildinfo"
+    # IMAGE_BUILDINFO_VARS:append = " BUILD_SYS COMMON_FEATURES DEFAULTTUNE DISTRO DISTRO_FEATURES DISTRO_NAME DISTRO_VERSION IMAGE_BASENAME IMAGE_FEATURES KERNEL_DEVICETREE MACHINE MACHINEOVERRIDES MACHINE_FEATURES NATIVELSBSTRING PREFERRED_PROVIDER_virtual/bootloader PREFERRED_PROVIDER_virtual/kernel PREFERRED_PROVIDER_virtual/mesa SERIAL_CONSOLE SOC_FAMILY UBOOT_MACHINE"

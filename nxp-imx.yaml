@@ -1,0 +1,52 @@
+header:
+  version: 12
+  includes:
+    - kas/layers/meta-oe.yml
+    - kas/layers/meta-multimedia.yml
+    - kas/layers/meta-filesystems.yml
+    - kas/layers/meta-python.yml
+    # - kas/layers/meta-gnome.yml
+    # - kas/layers/meta-xfce.yml
+    # - kas/layers/meta-initramfs.yml
+    - kas/layers/meta-networking.yml
+    - kas/layers/poky.yml
+    - kas/layers/meta-freescale.yml
+    - kas/layers/meta-qt6.yml
+    - kas/layers/meta-browser.yml
+
+build_system: oe
+
+distro: fsl-imx-xwayland
+target: imx-image-core
+
+local_conf_header:
+  custom-local-conf: |
+    ACCEPT_FSL_EULA = "1"
+    # Switch to Debian packaging and include package-management in the image
+    PACKAGE_CLASSES = "package_deb"
+    EXTRA_IMAGE_FEATURES += "package-management"
+    LICENSE_FLAGS_ACCEPTED = "commercial"
+    # DISTRO_FEATURES:append = " virtualization"
+
+repos:
+  meta-freescale-distro:
+    url: https://github.com/Freescale/meta-freescale-distro
+
+  meta-imx:
+    url: https://source.codeaurora.org/external/imx/meta-imx
+    refspec: "kirkstone-5.15.32-2.0.0"
+    layers:
+      meta-bsp:
+      meta-ml:
+      meta-sdk:
+
+  meta-nxp-demo-experience:
+    url: https://source.codeaurora.org/external/imxsupport/meta-nxp-demo-experience
+
+  meta-virtualization:
+    url: git://git.yoctoproject.org/meta-virtualization
+
+  poky:
+    layers:
+      meta:
+      meta-poky:

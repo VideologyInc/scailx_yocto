@@ -1,0 +1,10 @@
+header:
+  version: 12
+
+repos:
+  poky:
+    url: https://git.yoctoproject.org/git/poky
+    layers:
+      meta:
+      meta-poky: 0
+      meta-yocto-bsp: 0
