@@ -1,5 +1,5 @@
 header:
-  version: 12
+  version: 11
   includes:
     - kas/layers/meta-oe.yml
     - kas/layers/meta-multimedia.yml

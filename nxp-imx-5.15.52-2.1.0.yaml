@@ -3,7 +3,7 @@
 #     $ repo manifest -r -o ../pinned-manifest.xml
 #     $ ./scripts/repoManifest2kasYml.py ./source/pinned-manifest.xml
 header:
-  version: 12
+  version: 11
 
 repos:
   # fsl-community-bsp-base:

@@ -2,7 +2,7 @@
 # Copyright (c) 2021-2022 Tano Systems LLC. All rights reserved.
 
 header:
-  version: 12
+  version: 11
   includes:
     - kas/layers/meta-python.yml
 
