@@ -30,8 +30,21 @@ target: scailx-image
 
 local_conf_header:
   folders: |
-    DL_DIR ??= "${TOPDIR}/../downloads"
-    SSTATE_DIR ??= "${TOPDIR}/../sstate-cache"
+    DL_DIR ?= "/work/share/downloads"
+    # Machine wide shared state cache
+    SSTATE_DIR ?= "/work/share/sstate-cache"
+    # Generate tarballs from fetches from revision control
+    BB_GENERATE_MIRROR_TARBALLS = "1"
+  use a persistent cache directory: |
+    PERSISTENT_DIR="/work/share/yocto_persistent"
+  Attempt to get source from this mirror after looking in DL_DIR, but before SRC_URI: |
+    # SOURCE_MIRROR_URL ?= "http://example.com/source-mirror"
+    # INHERIT += "own-mirrors"
+  Yocto upstream sstate mirrors: |
+    BB_SIGNATURE_HANDLER = "OEEquivHash"
+    BB_HASHSERVE = "auto"
+    # BB_HASHSERVE_UPSTREAM = "hashserv.yocto.io:8687"
+    # SSTATE_MIRRORS ?= "file://.* https://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
   machine_preferred_providers: |
     INHERIT += "rm_work"
   other: |
