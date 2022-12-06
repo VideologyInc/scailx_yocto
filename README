@@ -5,45 +5,50 @@ Videology Yocto builder
 
 ## Prerequisites
 
-* Linux PC (tested on `Ubuntu 22.04 LTS`)
-~or~
+- Linux PC (tested on `Ubuntu 22.04 LTS`) with [default host requirements](https://docs.yoctoproject.org/4.0.5/brief-yoctoprojectqs/index.html#build-host-packages)
+- or use [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/)
+- [kas](https://kas.readthedocs.io/): `sudo pip3 install kas`
 
-* [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) installed
-
-
-
-- Clone:
+## Native Linux Build
 
 ```
+# Clone
 git clone git@github.com:VideologyInc/scailx_yocto.git
 cd scailx_yocto
-```
--
 
-Enter the build environment:
+# build using kas
+kas build scail.yaml
 ```
-./scripts/docker_env.sh
-source videology-setup-env
+To enter the bitbake environment to perform other bitbake tasks, use `kas shell`:
 ```
-- build the image with:
-
-```
-bitbake karo-image-basler
+kas shell scailx.yaml
+bitbake linux-imx scailx-image <or some other recipe>
 ```
 
-## Install built image:
-- imstall NXP uuu utility from [github.com/NXPmicro/mfgtools](https://github.com/NXPmicro/mfgtools)
-- pull the boot mode pin to 3.3V and reset the board to enter firmware loader mode.
-- use UUU to load the image:
+## Docker Build
+Kas comes with its own docker image to perform predictable containerised builds.
+Make sure Docker is installed and properly configured for your host system. You may have to switch the storage driver away from legacy aufs, see Docker documentation, if kas warns about this.
+
 ```
-sudo uuu /path/to/build/tmp/deploy/images/mx8-camera/karo-image-basler
+# Clone
+git clone git@github.com:VideologyInc/scailx_yocto.git
+cd scailx_yocto
+
+# build using kas-container
+kas-container build scail.yaml
+```
+To enter the bitbake environment to perform other bitbake tasks, use `kas shell`:
+```
+kas-container shell scailx.yaml
+bitbake linux-imx scailx-image <or some other recipe>
 ```
 
 
 ## Update to the latest version
 ```
-git pull --recurse-submodules
-./scripts/submod_reset.sh all
+git stash
+git switch -C master origin/master
+kas build --force-checkout scailx.yaml
 ```
 
 ## Run from NFT/TFTP
@@ -69,4 +74,13 @@ setenv boot_mode nfs
 setenv serverip <development computer IP address on the network>
 saveenv
 reset
+```
+
+## Experimental: CI build using [TuxSuite](https://docs.tuxsuite.com/)
+Note that this requires a tuxsuite account secret to run.
+```
+# install tuxsuite
+sudo pip3 install -U tuxsuite
+# submit build to TuxSuite:
+tuxsuite bake submit tuxsuite_config_scailx.json
 ```
