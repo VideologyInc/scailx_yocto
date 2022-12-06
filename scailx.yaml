@@ -30,13 +30,13 @@ target: scailx-image
 
 local_conf_header:
   folders: |
-    DL_DIR ?= "/work/share/downloads"
+    # DL_DIR ?= "/work/share/downloads"
     # Machine wide shared state cache
-    SSTATE_DIR ?= "/work/share/sstate-cache"
+    # SSTATE_DIR ?= "/work/share/sstate-cache"
     # Generate tarballs from fetches from revision control
     BB_GENERATE_MIRROR_TARBALLS = "1"
   use a persistent cache directory: |
-    PERSISTENT_DIR="/work/share/yocto_persistent"
+    # PERSISTENT_DIR="/work/share/yocto_persistent"
   Attempt to get source from this mirror after looking in DL_DIR, but before SRC_URI: |
     # SOURCE_MIRROR_URL ?= "http://example.com/source-mirror"
     # INHERIT += "own-mirrors"

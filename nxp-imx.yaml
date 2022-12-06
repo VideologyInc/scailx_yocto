@@ -46,6 +46,9 @@ repos:
   meta-virtualization:
     url: git://git.yoctoproject.org/meta-virtualization
 
+  meta-qt6:
+    path: sources/meta-qt6
+
   poky:
     layers:
       meta:
