@@ -9,15 +9,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.x"
-    - name: Install tuxsuite
-      run: |
-        python -m pip install --upgrade tuxsuite
-    - name: Run build
-      run: |
-        tuxsuite bake submit tuxsuite_config_scailx.json
-      env:
-        TUXSUITE_TOKEN: ${{ secrets.TUXSUITE_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.x"
+
+      - name: Install tuxsuite
+        run: |
+          python -m pip install --upgrade tuxsuite
+
+      - name: Make tux plan
+        run: |
+          cat << EOF > plan.json
+          {
+            "container": "ubuntu-22.04",
+            "sources": {
+              "kas": {
+                "url": "https://github.com/VideologyInc/scailx_yocto.git",
+                "yaml": "scailx.yaml",
+                "branch": "kas"
+              }
+            }
+          }
+          EOF
+
+      - name: Run build
+        run: |
+          tuxsuite bake submit plan.json
+        env:
+          TUXSUITE_TOKEN: ${{ secrets.TUXSUITE_TOKEN }}
