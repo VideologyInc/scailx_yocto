@@ -1,7 +1,7 @@
 image:
   file: .gitpod.dockerfile
 tasks:
-  - name: bitbake
-    before: source setup-environment build
-    init: bitbake linux-imx glibc
-    command: bitbake karo-image-ml
+  - name: kas
+    # before: source setup-environment build
+    # init: bitbake -e linux-imx > linux_env
+    command: kas checkout scailx.yaml

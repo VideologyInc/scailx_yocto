@@ -1,5 +1,5 @@
 DEFAULT_DTB ??= "imx8mp-qsxp-ml81-qsbase3-basler.dtb"
-ROOTFS_POSTPROCESS_COMMAND_append = " link_default_dtb; "
+ROOTFS_POSTPROCESS_COMMAND:append = " link_default_dtb; "
 
 link_default_dtb () {
     if [ -e ${IMAGE_ROOTFS}/boot/devicetree/${DEFAULT_DTB} ]; then

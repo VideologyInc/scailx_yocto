@@ -1,0 +1,56 @@
+# scailx yocto for Videology
+#
+# Authors:
+#   Kobus Goosen
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 11
+  includes:
+    - nxp-imx.yaml
+    - kas/kirkstone.yml
+    - nxp-imx-5.15.52-2.1.0.yaml
+
+repos:
+  scailx:
+    layers:
+      sources/videology-bsp-karo:
+      sources/videology-distro:
+
+
+bblayers_conf_header:
+  standard: |
+    # BBPATH = "${TOPDIR}"
+    # BBFILES ?= ""
+
+distro: fsl-imx-xwayland
+machine: mx8-camera
+target: scailx-image
+
+local_conf_header:
+  folders: |
+    # DL_DIR ?= "/work/share/downloads"
+    # Machine wide shared state cache
+    # SSTATE_DIR ?= "/work/share/sstate-cache"
+    # Generate tarballs from fetches from revision control
+    BB_GENERATE_MIRROR_TARBALLS = "1"
+  use a persistent cache directory: |
+    # PERSISTENT_DIR="/work/share/yocto_persistent"
+  Attempt to get source from this mirror after looking in DL_DIR, but before SRC_URI: |
+    # SOURCE_MIRROR_URL ?= "http://example.com/source-mirror"
+    # INHERIT += "own-mirrors"
+  Yocto upstream sstate mirrors: |
+    BB_SIGNATURE_HANDLER = "OEEquivHash"
+    BB_HASHSERVE = "auto"
+    # BB_HASHSERVE_UPSTREAM = "hashserv.yocto.io:8687"
+    # SSTATE_MIRRORS ?= "file://.* https://sstate.yoctoproject.org/all/PATH;downloadfilename=PATH"
+  machine_preferred_providers: |
+    INHERIT += "rm_work"
+  other: |
+    EXTRA_IMAGE_FEATURES ?= "debug-tweaks"
+    USER_CLASSES ?= "buildstats"
+    PATCHRESOLVE = "noop"
+  buildinfo: |
+    # INHERIT += " image-buildinfo"
+    # IMAGE_BUILDINFO_VARS:append = " BUILD_SYS COMMON_FEATURES DEFAULTTUNE DISTRO DISTRO_FEATURES DISTRO_NAME DISTRO_VERSION IMAGE_BASENAME IMAGE_FEATURES KERNEL_DEVICETREE MACHINE MACHINEOVERRIDES MACHINE_FEATURES NATIVELSBSTRING PREFERRED_PROVIDER_virtual/bootloader PREFERRED_PROVIDER_virtual/kernel PREFERRED_PROVIDER_virtual/mesa SERIAL_CONSOLE SOC_FAMILY UBOOT_MACHINE"

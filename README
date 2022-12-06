@@ -3,13 +3,24 @@ Videology Yocto builder
 
 # Build
 
+## Prerequisites
+
+* Linux PC (tested on `Ubuntu 22.04 LTS`)
+~or~
+
+* [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) installed
+
+
+
 - Clone:
 
 ```
-git clone --recurse-submodules git@github.com:VideologyInc/karo_yocto.git
-cd karo_yocto
+git clone git@github.com:VideologyInc/scailx_yocto.git
+cd scailx_yocto
 ```
-- Enter the build environment:
+-
+
+Enter the build environment:
 ```
 ./scripts/docker_env.sh
 source videology-setup-env

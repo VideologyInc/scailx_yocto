@@ -20,14 +20,14 @@ do_image_uuuimg[depends] += "parted-native:do_populate_sysroot zip-native:do_pop
 
 UUU_VERSION = "1.2.91"
 
-IMAGE_TYPEDEP_uuuimg = "wic"
+IMAGE_TYPEDEP:uuuimg = "wic"
 CARD_IMAGE ?= "${IMAGE_LINK_NAME}.wic"
 
 UBOOT_UUU ?= "${DEPLOY_DIR_IMAGE}/imx-boot-karo-mfg"
 UBOOT     ?= "${DEPLOY_DIR_IMAGE}/imx-boot"
 
 
-IMAGE_CMD_uuuimg () {
+IMAGE_CMD:uuuimg () {
 
     cd ${IMGDEPLOYDIR}
 

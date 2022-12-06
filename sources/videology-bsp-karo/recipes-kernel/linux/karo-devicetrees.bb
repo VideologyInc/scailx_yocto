@@ -5,7 +5,7 @@
 
 SUMMARY = "Videology BSP device-tree overlays"
 
-SRC_URI_append_mx8 = " \
+SRC_URI = " \
 	file://dts/freescale/imx8mp-karo.dtsi \
 	file://dts/freescale/imx8mp-qsxp-ml81-qsbase3-dsi83.dts \
 	file://dts/freescale/imx8mp-qsxp-ml81-qsbase3-laird.dts \

@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 export MACHINE=${MACHINE:-'mx8-camera'}
-export DISTRO=${DISTRO:-'karo-xwayland'}
+export DISTRO=${DISTRO:-'fsl-imx-xwayland'}
 export EULA=1
 T="../sources/videology-bsp-karo/templates"
 

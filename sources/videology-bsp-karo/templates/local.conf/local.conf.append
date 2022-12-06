@@ -1,1 +1,2 @@
 LICENSE_FLAGS_ACCEPTED = "commercial"
+INHERIT += "rm_work"

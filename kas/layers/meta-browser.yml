@@ -1,0 +1,10 @@
+header:
+  version: 11
+  includes:
+    - kas/layers/meta-clang.yml
+
+repos:
+  meta-browser:
+    url: https://github.com/OSSystems/meta-browser.git
+    layers:
+      meta-chromium:

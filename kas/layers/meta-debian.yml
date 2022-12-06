@@ -1,0 +1,13 @@
+header:
+  version: 11
+  includes:
+    - kas/layers/meta-oe.yml
+
+repos:
+  meta-debian:
+    url: https://github.com/meta-debian/meta-debian.git
+    refspec: warrior
+
+local_conf_header:
+  debian: |
+    PACKAGE_CLASSES = "package_deb"
