@@ -1,0 +1,27 @@
+From 51f9944e72b75cf0efbfac118a7c0d678278ae35 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Thu, 26 Jan 2023 15:17:04 +0100
+Subject: [PATCH] increase eqos ethernet phy reset delay
+
+---
+ drivers/net/dwc_eth_qos.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/dwc_eth_qos.c b/drivers/net/dwc_eth_qos.c
+index aba275c33f..3f0849723a 100644
+--- a/drivers/net/dwc_eth_qos.c
++++ b/drivers/net/dwc_eth_qos.c
+@@ -2236,8 +2236,8 @@ static struct eqos_ops eqos_imx_ops = {
+ 
+ struct eqos_config eqos_imx_config = {
+ 	.reg_access_always_ok = false,
+-	.mdio_wait = 10,
+-	.swr_wait = 50,
++	.mdio_wait = 15,
++	.swr_wait = 150,
+ 	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
+ 	.config_mac_mdio = EQOS_MAC_MDIO_ADDRESS_CR_250_300,
+ 	.interface = eqos_get_interface_generic,
+-- 
+2.34.1
+

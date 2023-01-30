@@ -1,9 +1,10 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BP}:${THISDIR}/${BP}/patches:${THISDIR}/${BP}/env:"
 
-SRC_URI:append:mx8-camera = " file://mx8-camera_defconfig;subdir=${S}/configs "
-SRC_URI:append:mx8-camera = " file://mx8-camera_mfg_defconfig;subdir=${S}/configs "
+SRC_URI:append:mx8-camera = " file://mx8-camera_defconfig;subdir=git/configs "
+SRC_URI:append:mx8-camera = " file://mx8-camera_mfg_defconfig;subdir=git/configs "
 SRC_URI:append:mx8-camera = " file://0001-add-clk-delay-for-rtl8211.patch "
+SRC_URI:append:mx8-camera = " file://0001-increase-eqos-ethernet-phy-reset-delay.patch "
 
 UBOOT_ENV_FILE ?= "${MACHINE}_env.txt"
 

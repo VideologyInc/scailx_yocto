@@ -1,10 +1,11 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 FILESEXTRAPATHS:prepend := "${THISDIR}/u-boot-karo-2020.04:"
 
-SRC_URI:append:mx8-camera = " file://mx8-camera_defconfig;subdir=${S}/configs "
-SRC_URI:append:mx8-camera = "file://mx8-camera_mfg_defconfig;subdir=${S}/configs"
+SRC_URI:append:mx8-camera = " file://mx8-camera_defconfig;subdir=git/configs "
+SRC_URI:append:mx8-camera = " file://mx8-camera_mfg_defconfig;subdir=git/configs "
 SRC_URI:append:mx8-camera = " file://mx8-camera_env.txt "
 # SRC_URI:append:mx8-camera = "file://0001-add-clk-delay-for-rtl8211.patch"
+SRC_URI:append:mx8-camera = " file://0001-increase-eqos-ethernet-phy-reset-delay.patch "
 
 SRC_URI:append = " \
 	file://dts/imx8mp-karo.dtsi;subdir=git/arch/arm \

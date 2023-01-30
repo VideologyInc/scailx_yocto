@@ -36,9 +36,6 @@ SRC_URI:append:mx8m-nxp-bsp = " file://${MACHINE}_env.txt;subdir=git/board/karo/
 SRC_URI:append = "${@ " file://dts/${UBOOT_DTB_NAME}".replace(".dtb", ".dts") + ";subdir=git/arch/arm"}"
 SRC_URI:append = "${@ " file://dts/${UBOOT_DTB_NAME}".replace(".dtb", "-u-boot.dtsi") + ";subdir=git/arch/arm"}"
 
-SRC_URI:append = " file://${MACHINE}_defconfig.template"
-SRC_URI:append = "${@ "".join(map(lambda f: " file://u-boot-cfg.%s" % f, d.getVar('UBOOT_CONFIG').split()))}"
-
 EXTRA_OEMAKE:append = " V=0"
 
 do_patch:append() {
@@ -57,15 +54,8 @@ do_patch:append() {
             for type in d.getVar('UBOOT_CONFIG').split():
                 if i == j:
                     c = config.replace("_config", "_defconfig")
-                    bb.note("Installing '%s' to '%s'" % (d.getVar('MACHINE') + "_defconfig.template", os.path.join(d.getVar('S'), "configs", c)))
-                    shutil.copyfile(d.getVar('MACHINE') + "_defconfig.template", os.path.join(d.getVar('S'), "configs", c))
-                    if os.path.exists("u-boot-cfg.%s" % type):
-                        bb.note("Appending '%s' specific config to '%s/configs/%s'" % (type, d.getVar('S'), c))
-                        concat_file("u-boot-cfg.%s" % type, os.path.join(d.getVar('S'), "configs", c))
                 j += 1
             i += 1
-    else:
-        shutil.copyfile(d.getVar('MACHINE') + "_defconfig.template", os.path.join(d.getVar('S'), "configs", d.getVar('MACHINE') + "_defconfig"))
 }
 
 do_configure:prepend() {
