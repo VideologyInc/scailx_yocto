@@ -1,32 +1,27 @@
 #!/bin/bash -e
 
-export MACHINE=${MACHINE:-'mx8-camera'}
-export DISTRO=${DISTRO:-'fsl-imx-xwayland'}
-export EULA=1
-T="../sources/videology-bsp-karo/templates"
-
-# build folder name from input if entered else use 'build'
-if [ -z "$1" ]; then
-  BD="build"
-else
-  BD="$1"
+# Kobus: use local cache if available
+if [ -d "/work/share" ]; then
+	export DL_DIR="/work/share/downloads"
+    export SSTATE_DIR="/work/share/sstate-cache"
+    export PERSISTENT_DIR="/work/share/yocto_persistent"
+    export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR PERSISTENT_DIR"
 fi
 
-echo "building in $BD with machine $MACHINE and distro $DISTRO"
+KAS_WORK_DIR=`pwd`
+# workdir from input if entered else use current
+if [ "$1" ]; then 
+    KAS_WORK_DIR="$1"
+    KASFILE="$1.yaml"
+fi 
 
-if [[ -d ${BD} ]];then
+ubuntu=$(grep -q '22.04' /etc/os-release && echo yes)
+export KAS_WORK_DIR
 
-echo "Back to the build environment ${BD}"
-. setup-environment ${BD}
+kas checkout "$KASFILE"
 
+if [ "$ubuntu" ];  then
+    source "$KAS_WORK_DIR/poky/oe-init-build-env" "$KAS_WORK_DIR/build"
 else
-
-. imx-setup-release.sh -b $@
-
-for _d in ${T}/*;do
-	_file=$(basename ${_d})
-	for _f in ${_d}/*;do
-		cat ${_f} >> conf/${_file}
-	done;
-done
+    kas shell
 fi

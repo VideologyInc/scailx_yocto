@@ -7,54 +7,41 @@ header:
 
 repos:
   # fsl-community-bsp-base:
-  #   path: sources/base
   #   refspec: 60f79f7af60537146298560079ae603260f0bd14
   #   url: https://github.com/Freescale/fsl-community-bsp-base
   meta-browser:
-    path: sources/meta-browser
     refspec: e232c2e21b96dc092d9af8bea4b3a528e7a46dd6
     url: https://github.com/OSSystems/meta-browser
   meta-clang:
-    path: sources/meta-clang
     refspec: d669d873edf68dc7440bb07096737203bb7ec505
     url: https://github.com/kraj/meta-clang
   meta-freescale:
-    path: sources/meta-freescale
     refspec: 06e1cf4099caa53da33c10e1884064f73dc184dd
     url: https://github.com/Freescale/meta-freescale
   meta-freescale-3rdparty:
-    path: sources/meta-freescale-3rdparty
     refspec: 6d8213fc5ec192c33f963b8095d1f01af1574eea
     url: https://github.com/Freescale/meta-freescale-3rdparty
   meta-freescale-distro:
-    path: sources/meta-freescale-distro
     refspec: fc15f5003043da23212596be7366ae2547c308ad
     url: https://github.com/Freescale/meta-freescale-distro
   meta-nxp-demo-experience:
-    path: sources/meta-nxp-demo-experience
     refspec: c3bd9b4789d87fc259d1fb2c2ffa27b39f1310b5
     url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
   meta-imx:
-    path: sources/meta-imx
     refspec: rel_imx_5.15.52_2.1.0
     url: https://github.com/nxp-imx/meta-imx
   meta-openembedded:
-    path: sources/meta-openembedded
     refspec: 8f2dc1023482863e2630d1b94052c41ce748b38f
     url: https://github.com/openembedded/meta-openembedded
   # meta-qt6:
-  #   path: sources/meta-qt6
   #   refspec: 41ddf0b33167ea28df0ce5b56583976c20e7f187
   #   url: https://code.qt.io/yocto/meta-qt6
   # meta-timesys:
-  #   path: sources/meta-timesys
   #   refspec: d1ad27bfacc937048e7f9084b17f4d7c917d2004
   #   url: https://github.com/TimesysGit/meta-timesys
   meta-virtualization:
-    path: sources/meta-virtualization
     refspec: cca772a457a75b2661371932ff79c392da3118db
     url: https://git.yoctoproject.org/git/meta-virtualization
   poky:
-    path: sources/poky
     refspec: 602922d492351ee747d2ff00f8ed5aab284a706b
     url: https://git.yoctoproject.org/git/poky
