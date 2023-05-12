@@ -34,5 +34,6 @@
         "**/downloads/**": true,
         "**/target": true,
         "**/sstate-cache/**": true
-    }
+    },
+    "search.useIgnoreFiles": false
 }
