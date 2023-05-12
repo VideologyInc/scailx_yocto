@@ -1,11 +1,13 @@
 #!/bin/bash -e
 
+source ~/.bashrc
+
 # Kobus: use local cache if available
 if [ -d "/work/share" ]; then
 	export DL_DIR="/work/share/downloads"
     export SSTATE_DIR="/work/share/sstate-cache"
-    export PERSISTENT_DIR="/work/share/yocto_persistent"
-    export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR PERSISTENT_DIR"
+    # export PERSISTENT_DIR="/work/share/yocto_persistent"
+    export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR"
 fi
 
 KAS_WORK_DIR=`pwd`
@@ -23,5 +25,6 @@ kas checkout "$KASFILE"
 if [ "$ubuntu" ];  then
     source "$KAS_WORK_DIR/poky/oe-init-build-env" "$KAS_WORK_DIR/build"
 else
+    kas checkout "$KASFILE"
     kas shell
 fi
