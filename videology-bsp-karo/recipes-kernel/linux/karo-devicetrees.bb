@@ -21,6 +21,9 @@ SRC_URI = " \
 	file://dts/freescale/imx8mp-qsxp-ml81-camera.dts \
 	file://dts/freescale/imx8mp-qsxp-ml81-camera.dtsi \
 	file://dts/freescale/imx8mp-qsxp-ml81-camera-crosslink.dts \
+	file://dts/freescale/scailx_karo_crosslink.dts \
+	file://dts/freescale/scailx_karo.dtsi \
+	file://dts/freescale/scailx_karo_ov5640.dts \
 "
 
 inherit devicetree

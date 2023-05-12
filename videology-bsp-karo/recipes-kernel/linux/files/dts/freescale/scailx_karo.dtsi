@@ -1,0 +1,315 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2020 Markus Bauer <mb@karo-electronics.de>
+ *
+ */
+
+#include "imx8mp-qsxp-ml81.dts"
+
+/ {
+	model = "imx8mp SCAiLX with Karo based SOM.";
+	
+	aliases {
+		pcie = &pcie;
+		pcie_phy = &pcie_phy;
+		serial3 = &uart3;
+
+		csi1_i2c = &i2c3;
+		csi2_i2c = &i2c2;
+		dsi1_i2c = &i2c2;
+
+		gpio-a-i2c = &i2c3;
+		gpio-a-uart = &uart1;
+		gpio-a-debug = &uart4;
+		gpio-a-can = &flexcan2;
+		gpio-a-spi = &ecspi2;
+		gpio-a-usb = &usb3_1;
+		gpio-a-usb_dwc = &usb_dwc3_1; 
+		gpio-a-usb_phy = &usb3_phy1;
+
+		gpio-b-i2c = &i2c2;
+		gpio-b-uart = &uart3;
+		gpio-b-debug = &uart2;
+		gpio-b-can = &flexcan1;
+		gpio-b-spi = &ecspi1;
+		gpio-b-usb = &usb3_0;
+		gpio-b-usb_dwc = &usb_dwc3_0;
+		gpio-b-usb_phy = &usb3_phy0;
+	};
+
+	reg_usbh_vbus: regulator-usbh-vbus {
+		compatible = "regulator-fixed";
+		regulator-name = "USBH-VBUS";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+	};
+
+	// scailx_gpio_a: scailxGpioA {
+		// dummy node to give labels for the applicable GPIO devices. 
+
+	// };
+
+};
+
+// create second label for devices to group them to the ascociated port on the SCAILX device. 
+csi1_i2c: &i2c3{};
+csi2_i2c: &i2c2{};
+dsi1_i2c: &i2c2{};
+
+gpio_a_i2c: &i2c3 {};
+gpio_a_uart: &uart1 {};
+gpio_a_debug: &uart4{};
+gpio_a_can: &flexcan2{};
+gpio_a_spi: &ecspi2{};
+gpio_a_usb: &usb3_1{};
+gpio_a_usb_dwc: &usb_dwc3_1{};
+gpio_a_usb_phy: &usb3_phy1{};
+
+gpio_b_i2c: &i2c2{};
+gpio_b_uart: &uart3{};
+gpio_b_debug: &uart2{};
+gpio_b_can: &flexcan1{};
+gpio_b_spi: &ecspi1{};
+gpio_b_usb: &usb3_0{};
+gpio_b_usb_dwc: &usb_dwc3_0{};
+gpio_b_usb_phy: &usb3_phy0{};
+
+/* reconfigure UARTS */
+&uart1 { 
+	/* remove RTS-CTS */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart1>;
+	/delete-property/ uart-has-rtscts;
+	status = "okay";
+};
+&uart3{
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart3>;
+	status = "okay";
+};
+
+
+&dsp {
+	status = "okay";
+};
+
+&eqos {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&pinctrl_eqos>;
+	pinctrl-1 = <&pinctrl_eqos_sleep>;
+	phy-mode = "rgmii-id";
+	phy-handle = <&ethphy0>;
+	phy-supply = <&ldo5_reg>;
+	status = "okay";
+
+	mdio {
+		compatible = "snps,dwmac-mdio";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_etnphy_rst_b>;
+		reset-gpios = <&gpio4 22 GPIO_ACTIVE_LOW>;
+		reset-delay-us = <10000>;
+		reset-post-delay-us = <60000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		ethphy0: ethernet-phy@3 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			reg = <3>;
+			eee-broken-1000t;
+			realtek,clkout-disable;
+			micrel,force-master;
+			rxd0-skew-ps = <(420 + 99)>;
+			rxd1-skew-ps = <(420 + 119)>;
+			rxd2-skew-ps = <(420 + 111)>;
+			rxd3-skew-ps = <(420 + 129)>;
+			txd0-skew-ps = <(420 + 204)>;
+			txd1-skew-ps = <(420 + 178)>;
+			txd2-skew-ps = <(420 + 192)>;
+			txd3-skew-ps = <(420 + 151)>;
+			rxdv-skew-ps = <(420 + 129)>;
+			txen-skew-ps = <(420 + 150)>;
+			rxc-skew-ps = <(900 + 139)>;
+			txc-skew-ps = <(900 + 150)>;
+		};
+	};
+};
+
+&gpu_3d {
+	status = "okay";
+};
+
+&gpu_2d {
+	status = "okay";
+};
+
+&i2c3 {
+	gpio_expander: gpio@27 {
+		compatible = "nxp,pcal9535";
+		reg = <0x27>;
+		#gpio-cells = <2>;
+		gpio-controller;
+		
+		// pinctrl-names = "default";
+		// pinctrl-0 = <&pinctrl_expander_int>;
+		// interrupt-parent = <&gpio4>;
+		// interrupts = <24 IRQ_TYPE_LEVEL_LOW>;
+
+		gpio-line-names =
+			"PWR-EN_GPIOA",
+			"RST_CAM-B",
+			"PCIe_PERST",
+			"GPIOA-GP3",
+			"PCIe_WAKE",
+			"DISP-EN_DSI",
+			"GPIOB-GP2",
+			"PWR-EN_GPIOB",
+			"ALERT_CAM-A",
+			"RST_CAM-A",
+			"PWR-EN_CAM-A",
+			"Reserved_CAM-B",
+			"ALERT_CAM-B",
+			"PWR-EN_CAM-B",
+			"Reserved_CAM-A",
+			"";
+	};
+};
+
+&i2c4 {
+	status = "disabled";
+};
+
+&pcie {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pcie>;
+	bus-range = <0x00 0xff>;
+	reset-gpio = <&gpio_expander 2 GPIO_ACTIVE_LOW>;
+	ext_osc = <1>;
+	clocks = <&clk IMX8MP_CLK_HSIO_ROOT>,
+		 <&clk IMX8MP_CLK_PCIE_AUX>,
+		 <&clk IMX8MP_CLK_HSIO_AXI>,
+		 <&clk IMX8MP_CLK_PCIE_ROOT>;
+	clock-names = "pcie", "pcie_aux", "pcie_phy", "pcie_bus";
+	assigned-clocks = <&clk IMX8MP_CLK_HSIO_AXI>,
+			  <&clk IMX8MP_CLK_PCIE_AUX>;
+	assigned-clock-rates = <500000000>, <10000000>;
+	assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>,
+				 <&clk IMX8MP_SYS_PLL2_50M>;
+	l1ss-disabled;
+	status = "disabled";
+
+	wifi_wake_host {
+		compatible = "nxp,wifi-wake-host";
+		interrupt-parent = <&gpio_expander>;
+		interrupts = <4 IRQ_TYPE_LEVEL_LOW>;
+		interrupt-names = "host-wake";
+	};
+};
+
+&pcie_phy {
+	ext_osc = <1>;
+	status = "disabled";
+};
+
+&reg_vdd_soc {
+	/* PCIe requires a minimum vdd soc voltage of 0.805V */
+	regulator-min-microvolt = <805000>;
+};
+
+&usdhc2 {
+	status = "okay";
+};
+
+// imx8m PIN MUX REGISTERS:
+//   |---|---|---|---| # |---|---|---|---| # |---|---|---|SION| # |---|MUX|MUX|MUX|
+//     IOMUXC_MUX_SION_ENABLED     0x40000000  // enable software read of pin state irrespective of mux function.    
+
+// imx8m PIN PAD CTRL REGISTERS: 
+//   |---|---|---|---| # |---|---|---|PE | # |HYS|PUE|ODE|SLR| # |slr?|DSE|DSE|dse?|
+// hysteresis - Schmitt-trigger enable or regular CMOS
+//     IOMUXC_PAD_HYS_ENABLED      0x00000080
+// Pull-up/down     (when enabled, approx 27k PU, or 100k PD)
+//     IOMUXC_PAD_PULL_ENABLED     0x00000100
+//     IOMUXC_PAD_PULL_PUE         0x00000040  // 0x40 -s PU, 0 is PD if PE is on
+//     IOMUXC_PAD_ODE_ENABLED      0x00000020
+// Slew-rate control
+//     IOMUXC_PAD_SRE_FAST         0x00000010
+// Drive Strength 
+//     IOMUXC_PAD_DSE_X1           0x00000000  (Weakest)
+//     IOMUXC_PAD_DSE_X2           0x00000002
+//     IOMUXC_PAD_DSE_X4           0x00000004  
+//     IOMUXC_PAD_DSE_X6           0x00000006  (Strongest)
+
+&iomuxc {
+	pinctrl_etnphy_int_b: etnphy-int-bgrp {
+		fsl,pins = <
+			    MX8MP_IOMUXC_SAI2_RXFS__GPIO4_IO21		0x90
+		>;
+	};
+
+	pinctrl_etnphy_rst_b: etnphy-rst-bgrp {
+		fsl,pins = <
+			    MX8MP_IOMUXC_SAI2_RXC__GPIO4_IO22		0x140
+		>;
+	};
+
+	pinctrl_eqos: eqosgrp {
+		fsl,pins = <
+			    MX8MP_IOMUXC_GPIO1_IO00__CCM_ENET_PHY_REF_CLK_ROOT 0x150
+			    MX8MP_IOMUXC_ENET_MDC__ENET_QOS_MDC		0x142
+			    MX8MP_IOMUXC_ENET_MDIO__ENET_QOS_MDIO	0x142
+			    MX8MP_IOMUXC_ENET_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK 0x000
+			    MX8MP_IOMUXC_ENET_TD0__ENET_QOS_RGMII_TD0	0x016
+			    MX8MP_IOMUXC_ENET_TD1__ENET_QOS_RGMII_TD1	0x016
+			    MX8MP_IOMUXC_ENET_TD2__ENET_QOS_RGMII_TD2	0x016
+			    MX8MP_IOMUXC_ENET_TD3__ENET_QOS_RGMII_TD3	0x016
+			    MX8MP_IOMUXC_ENET_RD0__ENET_QOS_RGMII_RD0	0x150
+			    MX8MP_IOMUXC_ENET_RD1__ENET_QOS_RGMII_RD1	0x150
+			    MX8MP_IOMUXC_ENET_RD2__ENET_QOS_RGMII_RD2	0x150
+			    MX8MP_IOMUXC_ENET_RD3__ENET_QOS_RGMII_RD3	0x150
+			    MX8MP_IOMUXC_ENET_RXC__CCM_ENET_QOS_CLOCK_GENERATE_RX_CLK 0x116
+			    MX8MP_IOMUXC_ENET_RX_CTL__ENET_QOS_RGMII_RX_CTL 0x156
+			    MX8MP_IOMUXC_ENET_TX_CTL__ENET_QOS_RGMII_TX_CTL 0x016
+		>;
+	};
+
+	pinctrl_eqos_sleep: eqos-sleep-grp {
+		fsl,pins = <
+			    MX8MP_IOMUXC_GPIO1_IO00__GPIO1_IO00		0x120
+			    MX8MP_IOMUXC_ENET_MDC__GPIO1_IO16		0x120
+			    MX8MP_IOMUXC_ENET_MDIO__GPIO1_IO17		0x120
+			    MX8MP_IOMUXC_ENET_TXC__GPIO1_IO23		0x120
+			    MX8MP_IOMUXC_ENET_TD0__GPIO1_IO21		0x120
+			    MX8MP_IOMUXC_ENET_TD1__GPIO1_IO20		0x120
+			    MX8MP_IOMUXC_ENET_TD2__GPIO1_IO19		0x120
+			    MX8MP_IOMUXC_ENET_TD3__GPIO1_IO18		0x120
+			    MX8MP_IOMUXC_ENET_RD0__GPIO1_IO26		0x120
+			    MX8MP_IOMUXC_ENET_RD1__GPIO1_IO27		0x120
+			    MX8MP_IOMUXC_ENET_RD2__GPIO1_IO28		0x120
+			    MX8MP_IOMUXC_ENET_RD3__GPIO1_IO29		0x120
+			    MX8MP_IOMUXC_ENET_RXC__GPIO1_IO25		0x120
+			    MX8MP_IOMUXC_ENET_RX_CTL__GPIO1_IO24	0x120
+			    MX8MP_IOMUXC_ENET_TX_CTL__GPIO1_IO22	0x120
+		>;
+	};
+
+	pinctrl_expander_int: expander_int_gpiogrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI2_TXFS__GPIO4_IO24		0x150 /* pull up, fast-slew */
+		>;
+	};
+
+	pinctrl_pcie: pciegrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_I2C4_SCL__PCIE_CLKREQ_B	0x61 /* open drain, external pull up */
+		>;
+	};
+
+	pinctrl_uart3: uart3grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_UART3_TXD__UART3_DCE_TX		0x140
+			MX8MP_IOMUXC_UART3_TXD__UART3_DTE_RX		0x140
+		>;
+	};
+
+};

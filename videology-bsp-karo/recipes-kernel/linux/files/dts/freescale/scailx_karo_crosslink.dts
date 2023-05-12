@@ -1,0 +1,160 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2021 Markus Bauer <mb@karo-electronics.de>
+ *
+ */
+
+/dts-v1/;
+
+#include "scailx_karo.dtsi"
+
+&csi1_i2c {
+	crosslink_0: crosslink_mipi_0@1c {
+		compatible = "scailx,crosslink";
+		reg = <0x1c>;
+		csi_id = <0>;
+		reset-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
+		status = "okay";
+		mipi_csi;
+
+		port {
+			crosslink_mipi_0_ep: endpoint {
+				remote-endpoint = <&mipi_csi0_ep>;
+				data-lanes = <1 2 3 4>;
+				clock-lanes = <0>;
+			};
+		};
+	};
+};
+
+&csi2_i2c {
+	crosslink_1: crosslink_mipi_1@1c {
+		compatible = "scailx,crosslink";
+		reg = <0x1c>;
+		csi_id = <1>;
+		reset-gpios = <&gpio_expander 1 GPIO_ACTIVE_LOW>;
+		status = "okay";
+		mipi_csi;
+		visca-port = <&gpio_b_uart>;
+
+		port {
+			crosslink_mipi_1_ep: endpoint {
+				remote-endpoint = <&mipi_csi1_ep>;
+				data-lanes = <1 2 3 4>;
+				clock-lanes = <0>;
+			};
+		};
+	};
+};
+
+&vpu_g1 {
+	status = "okay";
+};
+
+&vpu_g2 {
+	status = "okay";
+};
+
+&vpu_vc8000e {
+	status = "okay";
+};
+
+&vpu_v4l2 {
+	status = "okay";
+};
+
+&gpu_3d {
+	status = "okay";
+};
+
+&gpu_2d {
+	status = "okay";
+};
+
+&ml_vipsi {
+	status = "okay";
+};
+
+&mix_gpu_ml {
+	status = "okay";
+};
+
+&mipi_csi_0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <297000000>;
+	status = "okay";
+
+	port@0 {
+		reg = <0>;
+		mipi_csi0_ep: endpoint {
+			remote-endpoint = <&crosslink_mipi_0_ep>;
+			data-lanes = <4>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&mipi_csi_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <297000000>;
+	status = "okay";
+
+	port@1 {
+		reg = <1>;
+		mipi_csi1_ep: endpoint {
+			remote-endpoint = <&crosslink_mipi_1_ep>;
+			data-lanes = <4>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&cameradev {
+	status = "okay";
+};
+
+&isi_0 {
+	status = "okay";
+
+	cap_device {
+		status = "okay";
+	};
+
+	m2m_device {
+		status = "okay";
+	};
+};
+
+&isi_1 {
+	status = "okay";
+
+	cap_device {
+		status = "okay";
+	};
+};
+
+&isp_0 {
+    status = "disabled";
+};
+
+&isp_1 {
+	status = "disabled";
+};
+
+&dewarp {
+    status = "disabled";
+};
+
+&iomuxc {
+	// pinctrl_csi0_rst: csi0_rst_grp {
+	// 	fsl,pins = <
+	// 		MX8MP_IOMUXC_SAI2_TXFS__GPIO4_IO24		0x19
+	// 	>;
+	// };
+};
