@@ -1,17 +1,38 @@
 {
+    "terminal.integrated.profiles.linux": {
+        "kas": {
+            "path": "bash",
+            "args": ["--init-file", "scripts/videology-setup-env"],
+            "icon": "terminal-debian"
+        },
+        "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+        }
+    },
+    "terminal.integrated.defaultProfile.linux": "kas",
     "search.exclude": {
         "**/.repo": true,
-        "**/build*": true,
+        "build/**": true,
         "**/downloads": true,
         "**/sstate-cache": true
     },
+    "files.exclude": {
+        "build/cache/**": true,
+        "build/sstate-cache/**": true,
+        "downloads/**": true,
+        "sstate-cache*/**": true,
+    },
+    "search.followSymlinks": false,
+    "git-blame.gitWebUrl": "",
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
-        "**/.repo/**": true,
-        "**/build/**": true,
+        ".repo/**": true,
+        "build/**": true,
         "**/build_wsl/**": true,
         "**/downloads/**": true,
+        "**/target": true,
         "**/sstate-cache/**": true
     }
 }
