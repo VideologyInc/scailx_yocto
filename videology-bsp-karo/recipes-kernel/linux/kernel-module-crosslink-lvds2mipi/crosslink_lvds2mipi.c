@@ -267,7 +267,7 @@ static void crosslink_power(struct crosslink_dev *sensor, bool enable)
 
 	pr_debug("%s: setting reset pin: %s\n", __func__, enable ? "ON" : "OFF");
 
-	gpio_set_value(sensor->reset_gpio, enable ? 1 : 0);
+	gpio_set_value_cansleep(sensor->reset_gpio, enable ? 1 : 0);
 }
 
 /* --------------- Subdev Operations --------------- */
@@ -848,22 +848,14 @@ static int crosslink_probe(struct i2c_client *client)
 		dev_warn(dev, "No crosslink reset pin available");
 	else {
 		dev_dbg(dev, "got GPIO, requesting...");
-		ret = devm_gpio_request_one(dev, sensor->reset_gpio, GPIOF_OUT_INIT_LOW, "ov5640_mipi_reset");
+		ret = devm_gpio_request_one(dev, sensor->reset_gpio, GPIOF_OUT_INIT_LOW, "crosslink_nreset");
 		if (ret < 0) {
 			dev_warn(dev, "Failed to set reset pin\n");
 			// return retval;
 		} else
 			dev_dbg(dev, "successfully set RESET-GPIO");
 	}
-
-// 	sensor->reset_gpio = devm_gpiod_get(dev, "reset-gpios", GPIOD_OUT_HIGH);
-// 	if (IS_ERR(sensor->reset_gpio)){
-// 		pr_debug("%s: sensor->reset_gpio not found\n", __func__);
-// //		return PTR_ERR(sensor->reset_gpio);
-// 	} else {
-// 		pr_debug("%s: found reset_gpio.\n", __func__);
-// 	}
-
+	
 	sensor->regmap = devm_regmap_init_i2c(client, &sensor_regmap_config);
 	if (IS_ERR(sensor->regmap)) {
 		dev_err(dev, "regmap init failed\n");
@@ -871,10 +863,8 @@ static int crosslink_probe(struct i2c_client *client)
 	}
 
 	v4l2_i2c_subdev_init(&sensor->sd, client, &crosslink_subdev_ops);
-
-
-
-	sensor->sd.flags |= V4L2_SUBDEV_FL_HAS_EVENTS;
+	sensor->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
+	sensor->sd.dev = &client->dev;
 	sensor->pad.flags = MEDIA_PAD_FL_SOURCE;
 	sensor->sd.entity.ops = &crosslink_sd_media_ops;
 	sensor->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
