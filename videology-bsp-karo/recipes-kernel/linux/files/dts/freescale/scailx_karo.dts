@@ -14,9 +14,9 @@
 		pcie_phy = &pcie_phy;
 		serial3 = &uart3;
 
-		csi1_i2c = &i2c3;
-		csi2_i2c = &i2c2;
-		dsi1_i2c = &i2c2;
+		csi0_i2c = &i2c3;
+		csi1_i2c = &i2c2;
+		dsi0_i2c = &i2c2;
 
 		gpio-a-i2c = &i2c3;
 		gpio-a-uart = &uart1;
@@ -53,9 +53,9 @@
 };
 
 // create second label for devices to group them to the ascociated port on the SCAILX device. 
-csi1_i2c: &i2c3{};
-csi2_i2c: &i2c2{};
-dsi1_i2c: &i2c2{};
+csi0_i2c: &i2c3{};
+csi1_i2c: &i2c2{};
+dsi0_i2c: &i2c2{};
 
 gpio_a_i2c: &i2c3 {};
 gpio_a_uart: &uart1 {};
@@ -88,7 +88,6 @@ gpio_b_usb_phy: &usb3_phy0{};
 	pinctrl-0 = <&pinctrl_uart3>;
 	status = "okay";
 };
-
 
 &dsp {
 	status = "okay";
@@ -140,6 +139,30 @@ gpio_b_usb_phy: &usb3_phy0{};
 };
 
 &gpu_2d {
+	status = "okay";
+};
+
+&vpu_g1 {
+	status = "okay";
+};
+
+&vpu_g2 {
+	status = "okay";
+};
+
+&vpu_vc8000e {
+	status = "okay";
+};
+
+// &vpu_v4l2 {
+// 	status = "okay";
+// };
+
+&ml_vipsi {
+	status = "okay";
+};
+
+&mix_gpu_ml {
 	status = "okay";
 };
 
@@ -219,6 +242,23 @@ gpio_b_usb_phy: &usb3_phy0{};
 &usdhc2 {
 	status = "okay";
 };
+
+&ecspi1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi1>;
+	spi-max-frequency = <20000000>;
+	cs-gpios = <&gpio5 9 GPIO_ACTIVE_LOW>;
+	status = "disabled";
+};
+
+&ecspi2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi2>;
+	spi-max-frequency = <20000000>;
+	cs-gpios = <&gpio5 13 GPIO_ACTIVE_LOW>;
+	status = "disabled";
+};
+
 
 // imx8m PIN MUX REGISTERS:
 //   |---|---|---|---| # |---|---|---|---| # |---|---|---|SION| # |---|MUX|MUX|MUX|
@@ -312,4 +352,23 @@ gpio_b_usb_phy: &usb3_phy0{};
 		>;
 	};
 
+    pinctrl_ecspi2: ecspi2grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_ECSPI2_SS0__GPIO5_IO13			0x40156
+			/* MX8MP_IOMUXC_ECSPI2_SS0__ECSPI2_SS0			0x82*/
+			MX8MP_IOMUXC_ECSPI2_SCLK__ECSPI2_SCLK		0x82
+			MX8MP_IOMUXC_ECSPI2_MOSI__ECSPI2_MOSI		0x82
+			MX8MP_IOMUXC_ECSPI2_MISO__ECSPI2_MISO		0x82
+		>;
+	};
+
+	pinctrl_ecspi1: ecspi1grp {
+		fsl,pins = <
+			MX8MP_IOMUXC_ECSPI1_SS0__GPIO5_IO09			0x156
+			/* MX8MP_IOMUXC_ECSPI1_SS0__ECSPI1_SS0			0x82*/
+			MX8MP_IOMUXC_ECSPI1_SCLK__ECSPI1_SCLK		0x82
+			MX8MP_IOMUXC_ECSPI1_MOSI__ECSPI1_MOSI		0x82
+			MX8MP_IOMUXC_ECSPI1_MISO__ECSPI1_MISO		0x82
+		>;
+	};
 };

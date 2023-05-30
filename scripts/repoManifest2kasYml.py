@@ -101,7 +101,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     infile = sys.argv[1]
-    outfile = infile.replace("xml", "yml")
+    outfile = infile.replace("xml", "yaml")
     if (infile == outfile):
         print("Input file " + infile + " is not a manifest xml file")
         sys.exit(0)

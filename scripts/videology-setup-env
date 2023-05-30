@@ -15,6 +15,9 @@ KAS_WORK_DIR=`pwd`
 if [ "$1" ]; then 
     KAS_WORK_DIR="$1"
     KASFILE="$1.yaml"
+    if [ ! -d "$KAS_WORK_DIR" ]; then
+        mkdir -p "$KAS_WORK_DIR"
+    fi
 fi 
 
 ubuntu=$(grep -q '22.04' /etc/os-release && echo yes)
