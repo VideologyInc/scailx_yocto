@@ -6,9 +6,9 @@
 
 /dts-v1/;
 
-#include "scailx_karo.dtsi"
+#include "scailx_karo.dts"
 
-&csi1_i2c {
+&csi0_i2c {
 	ov5640_0: ov5640_mipi@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
@@ -34,7 +34,7 @@
 	};
 };
 
-&csi2_i2c {
+&csi1_i2c {
 	ov5640_1: ov5640_mipi@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
@@ -58,38 +58,6 @@
 			};
 		};
 	};
-};
-
-&vpu_g1 {
-	status = "okay";
-};
-
-&vpu_g2 {
-	status = "okay";
-};
-
-&vpu_vc8000e {
-	status = "okay";
-};
-
-// &vpu_v4l2 {
-// 	status = "okay";
-// };
-
-&gpu_3d {
-	status = "okay";
-};
-
-&gpu_2d {
-	status = "okay";
-};
-
-&ml_vipsi {
-	status = "okay";
-};
-
-&mix_gpu_ml {
-	status = "okay";
 };
 
 &mipi_csi_0 {

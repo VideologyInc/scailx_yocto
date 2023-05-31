@@ -1,0 +1,17 @@
+// SPI1 overlay to use SPI bus, which is on GPIO-B interface
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+		target = <&gpio_a_spi>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;			
+			spi-max-frequency = <10000000>;
+			status = "okay";
+		};
+	};
+};
+

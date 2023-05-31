@@ -1,0 +1,10 @@
+// SPI1 overlay to use SPI bus, which is on GPIO-B interface
+
+/dts-v1/;
+/plugin/;
+
+&gpio_b_spi {
+	spi-max-frequency = <10000000>;
+	status = "okay";
+};
+
