@@ -41,10 +41,10 @@ repos:
     # path: sources/meta-nxp-demo-experience
     refspec: 52eaf8bf42f8eda2917a1c8c046003c8c2c8f629
     url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
-  meta-nxp-desktop:
-    # path: sources/meta-nxp-desktop
-    refspec: refs/tags/rel_lf_5.15.71_2.2.0_ldp
-    url: https://github.com/nxp-imx/meta-nxp-desktop
+  # meta-nxp-desktop:
+  #   # path: sources/meta-nxp-desktop
+  #   refspec: refs/tags/rel_lf_5.15.71_2.2.0_ldp
+  #   url: https://github.com/nxp-imx/meta-nxp-desktop
   meta-openembedded:
     layers:
       meta-filesystems: ''
@@ -53,7 +53,7 @@ repos:
     # path: sources/meta-openembedded
     refspec: 744a4b6eda88b9a9ca1cf0df6e18be384d9054e3
     url: https://github.com/openembedded/meta-openembedded
-  meta-qt6:
+  # meta-qt6:
   #   path: sources/meta-qt6
   #   refspec: ed785a25d12e365d1054700d4fc94a053176eb14
   #   url: https://code.qt.io/yocto/meta-qt6
