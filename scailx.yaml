@@ -10,7 +10,7 @@ header:
   includes:
     - nxp-imx.yaml
     - kas/kirkstone.yml
-    - nxp-imx-5.15.52-2.1.0.yaml
+    - lf-5.15.71-2.2.0-kirkstone.yaml
 
 repos:
   scailx:

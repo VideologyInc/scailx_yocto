@@ -7,42 +7,42 @@
 header:
   version: 11
 
-target: core-image-minimal
+# target: core-image-minimal
 repos:
-  fsl-community-bsp-base:
-    path: sources/base
-    refspec: 60f79f7af60537146298560079ae603260f0bd14
-    url: https://github.com/Freescale/fsl-community-bsp-base
+  # fsl-community-bsp-base:
+  #   path: sources/base
+  #   refspec: 60f79f7af60537146298560079ae603260f0bd14
+  #   url: https://github.com/Freescale/fsl-community-bsp-base
   meta-browser:
-    path: sources/meta-browser
+    # path: sources/meta-browser
     refspec: e232c2e21b96dc092d9af8bea4b3a528e7a46dd6
     url: https://github.com/OSSystems/meta-browser
   meta-clang:
-    path: sources/meta-clang
+    # path: sources/meta-clang
     refspec: c728c3f9168c8a4ed05163a51dd48ca1ad8ac21d
     url: https://github.com/kraj/meta-clang
   meta-freescale:
-    path: sources/meta-freescale
+    # path: sources/meta-freescale
     refspec: c82d4634e7aba8bc0de73ce1dfc997b630051571
     url: https://github.com/Freescale/meta-freescale
   meta-freescale-3rdparty:
-    path: sources/meta-freescale-3rdparty
+    # path: sources/meta-freescale-3rdparty
     refspec: 5977197340c7a7db17fe3e02a4e014ad997565ae
     url: https://github.com/Freescale/meta-freescale-3rdparty
   meta-freescale-distro:
-    path: sources/meta-freescale-distro
+    # path: sources/meta-freescale-distro
     refspec: d5bbb487b2816dfc74984a78b67f7361ce404253
     url: https://github.com/Freescale/meta-freescale-distro
   meta-imx:
-    path: sources/meta-imx
+    # path: sources/meta-imx
     refspec: refs/tags/rel_imx_5.15.71_2.2.0
     url: https://github.com/nxp-imx/meta-imx
   meta-nxp-demo-experience:
-    path: sources/meta-nxp-demo-experience
+    # path: sources/meta-nxp-demo-experience
     refspec: 52eaf8bf42f8eda2917a1c8c046003c8c2c8f629
     url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
   meta-nxp-desktop:
-    path: sources/meta-nxp-desktop
+    # path: sources/meta-nxp-desktop
     refspec: refs/tags/rel_lf_5.15.71_2.2.0_ldp
     url: https://github.com/nxp-imx/meta-nxp-desktop
   meta-openembedded:
@@ -50,22 +50,22 @@ repos:
       meta-filesystems: ''
       meta-multimedia: ''
       meta-networking: ''
-    path: sources/meta-openembedded
+    # path: sources/meta-openembedded
     refspec: 744a4b6eda88b9a9ca1cf0df6e18be384d9054e3
     url: https://github.com/openembedded/meta-openembedded
   meta-qt6:
-    path: sources/meta-qt6
-    refspec: ed785a25d12e365d1054700d4fc94a053176eb14
-    url: https://code.qt.io/yocto/meta-qt6
-  meta-timesys:
-    path: sources/meta-timesys
-    refspec: d1ad27bfacc937048e7f9084b17f4d7c917d2004
-    url: https://github.com/TimesysGit/meta-timesys
+  #   path: sources/meta-qt6
+  #   refspec: ed785a25d12e365d1054700d4fc94a053176eb14
+  #   url: https://code.qt.io/yocto/meta-qt6
+  # meta-timesys:
+  #   path: sources/meta-timesys
+  #   refspec: d1ad27bfacc937048e7f9084b17f4d7c917d2004
+  #   url: https://github.com/TimesysGit/meta-timesys
   meta-virtualization:
-    path: sources/meta-virtualization
+    # path: sources/meta-virtualization
     refspec: 9482648daf0bb42ff3475e7892542cf99f3b8d48
     url: https://git.yoctoproject.org/git/meta-virtualization
   poky:
-    path: sources/poky
+    # path: sources/poky
     refspec: 24a3f7b3648185e33133f5d96b184a6cb6524f3d
     url: https://git.yoctoproject.org/git/poky
