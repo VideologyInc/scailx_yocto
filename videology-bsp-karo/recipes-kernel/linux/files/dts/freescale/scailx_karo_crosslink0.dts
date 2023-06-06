@@ -18,7 +18,7 @@
 		mipi_csi;
 
 		port {
-			crosslink_mipi_0_ep: endpoint {
+			mipi_0_ep: endpoint {
 				remote-endpoint = <&mipi_csi0_ep>;
 				data-lanes = <1 2 3 4>;
 				clock-lanes = <0>;
@@ -38,7 +38,7 @@
 		visca-port = <&gpio_b_uart>;
 
 		port {
-			crosslink_mipi_1_ep: endpoint {
+			mipi_1_ep: endpoint {
 				remote-endpoint = <&mipi_csi1_ep>;
 				data-lanes = <1 2 3 4>;
 				clock-lanes = <0>;
@@ -82,13 +82,13 @@
 &mipi_csi_0 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	clock-frequency = <297000000>;
+	clock-frequency = <500000000>;
 	status = "okay";
 
 	port@0 {
 		reg = <0>;
 		mipi_csi0_ep: endpoint {
-			remote-endpoint = <&crosslink_mipi_0_ep>;
+			remote-endpoint = <&mipi_0_ep>;
 			data-lanes = <4>;
 			csis-hs-settle = <13>;
 			csis-clk-settle = <2>;
@@ -100,13 +100,13 @@
 &mipi_csi_1 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	clock-frequency = <297000000>;
+	clock-frequency = <500000000>;
 	status = "disabled";
 
 	port@1 {
 		reg = <1>;
 		mipi_csi1_ep: endpoint {
-			remote-endpoint = <&crosslink_mipi_1_ep>;
+			remote-endpoint = <&mipi_1_ep>;
 			data-lanes = <4>;
 			csis-hs-settle = <13>;
 			csis-clk-settle = <2>;

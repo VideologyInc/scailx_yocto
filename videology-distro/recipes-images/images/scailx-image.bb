@@ -2,8 +2,9 @@
 require recipes-fsl/images/imx-image-multimedia.bb
 
 inherit link_default_dtb
+inherit kernel_devel
 
-DEFAULT_DTB = "imx8mp-qsxp-ml81-camera-OV5640.dtb"
+DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
 
 CONFLICT_DISTRO_FEATURES = "directfb"
 
@@ -23,6 +24,7 @@ IMAGE_INSTALL += " \
     openssh-sftp-server \
     xauth \
     gnupg \
+    dtc \
     i2c-tools \
     python3-pyserial \
     gst-variable-rtsp-server \
