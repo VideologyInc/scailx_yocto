@@ -5,8 +5,8 @@ baseboard=qsbase3
 boot_mode=mmc
 kernel_debug_prod=quiet
 kernel_debug=debug
-bootargs_mmc=run default_bootargs; setenv bootargs ${bootargs} root=${rootfs} rootwait ${append_bootargs} ${kernel_debug}
-bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${nfsroot},nolock,v4 ip=dhcp ${append_bootargs} ${kernel_debug}
+bootargs_mmc=run default_bootargs; setenv bootargs ${bootargs} root=${rootfs} rootwait ${append_bootargs} ${kernel_debug_prod}
+bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${nfsroot},nolock,v4 ip=dhcp ${append_bootargs} ${kernel_debug_prod}
 bootcmd=run bootcmd_${boot_mode} bootm_cmd
 bootcmd_mmc=run loadfdt loadkernel bootargs_mmc
 bootcmd_nfs=dhcp; run tftpfdt tftpkernel bootargs_nfs
