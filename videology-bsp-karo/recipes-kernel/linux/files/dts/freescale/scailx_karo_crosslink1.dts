@@ -35,7 +35,6 @@
 		reset-gpios = <&gpio_expander 1 GPIO_ACTIVE_LOW>;
 		status = "okay";
 		mipi_csi;
-		visca-port = <&gpio_b_uart>;
 
 		port {
 			mipi_1_ep: endpoint {
@@ -44,6 +43,15 @@
 				clock-lanes = <0>;
 			};
 		};
+	};
+};
+
+// create hog-group to enable camera at startup.
+&gpio_expander {
+	cam-rst {
+		gpio-hog;
+		gpios = <1 GPIO_ACTIVE_LOW>, <9 GPIO_ACTIVE_LOW>;
+		output-high;
 	};
 };
 
