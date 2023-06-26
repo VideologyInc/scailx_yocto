@@ -103,7 +103,8 @@ static int crosslink_resolution_upcall(struct crosslink_dev *sensor, int resolut
 	envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
 	envp[2] = NULL;
 
-	return call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
+	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
+	return 0;
 }
 
 static void crosslink_power(struct crosslink_dev *sensor, int enable)
@@ -116,7 +117,7 @@ static void crosslink_power(struct crosslink_dev *sensor, int enable)
 
 	gpio_set_value_cansleep(sensor->reset_gpio, enable ? 1 : 0);
 	if (enable)
-		msleep(250);
+		msleep(200);
 }
 
 /* --------------- Subdev Operations --------------- */
@@ -423,6 +424,23 @@ static int crosslink_probe(struct i2c_client *client)
 	if (sensor->ep.bus_type != V4L2_MBUS_CSI2_DPHY) {
 		dev_err(dev, "Unsupported bus type %d\n", sensor->ep.bus_type);
 		return -EINVAL;
+	}
+
+	/* request reset pin */
+	sensor->reset_gpio = of_get_named_gpio(dev->of_node, "reset-gpios", 0);
+	if (!gpio_is_valid(sensor->reset_gpio))
+		dev_warn(dev, "No crosslink reset pin available");
+	else {
+		ret = devm_gpio_request_one(dev, sensor->reset_gpio, GPIOF_OUT_INIT_HIGH, "crosslink_nreset");
+		if (ret < 0) {
+			dev_warn(dev, "Failed to set reset pin\n");
+			// return retval;
+		} else {
+			dev_dbg(dev, "successfully set RESET-GPIO");
+			// wait for the FPGA to load after reset before probing i2c.
+			// DO NOT SLEEP TOO LONG HERE. if call v4l2_i2c_subdev_init too late, the imx8 drivers wont catch the subdev.
+			// msleep(100);
+		}
 	}
 
 	sensor->regmap = devm_regmap_init_i2c(client, &sensor_regmap_config);
