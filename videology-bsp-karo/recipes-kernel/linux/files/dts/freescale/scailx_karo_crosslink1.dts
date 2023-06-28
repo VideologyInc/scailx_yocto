@@ -46,15 +46,6 @@
 	};
 };
 
-// create hog-group to enable camera at startup.
-&gpio_expander {
-	cam-rst {
-		gpio-hog;
-		gpios = <1 GPIO_ACTIVE_LOW>, <9 GPIO_ACTIVE_LOW>;
-		output-high;
-	};
-};
-
 &vpu_g1 {
 	status = "okay";
 };

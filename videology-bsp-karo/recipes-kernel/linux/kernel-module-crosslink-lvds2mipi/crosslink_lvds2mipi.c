@@ -48,22 +48,8 @@ static struct resolution sensor_res_list[] = {
 	{.width = 1920, .height = 1080, .framerate = 25, .reg_val = 0x13 },    // 1080p25
 	{.width = 1920, .height = 1080, .framerate = 30, .reg_val = 0x12 },    // 1080p30
 	// 3G-SDI Double LVDS channels
-	// {.width = 1920, .height = 1080, .framerate = 50, .reg_val = 0x93 },    // 1080p50
-	// {.width = 1920, .height = 1080, .framerate = 60, .reg_val = 0x92 },    // 1080p60
-};
-
-struct sensor {
-	struct v4l2_subdev v4l2_subdev;
-	struct media_pad pad;
-	struct v4l2_mbus_framefmt fmt;
-	struct i2c_client *i2c_client;
-	struct device *dev;
-	struct mutex lock;
-	struct regmap *regmap;
-	struct gpio_desc *reset_gpio;
-	struct gpio_desc *power_gpio;
-	u8 selected_mode;
-	char *sensor_name;
+	{.width = 1920, .height = 1080, .framerate = 50, .reg_val = 0x93 },    // 1080p50
+	{.width = 1920, .height = 1080, .framerate = 60, .reg_val = 0x92 },    // 1080p60
 };
 
 struct crosslink_dev {
@@ -72,7 +58,7 @@ struct crosslink_dev {
 	struct v4l2_subdev sd;
 	struct media_pad pad;
 	struct v4l2_fwnode_endpoint ep; /* the parsed DT endpoint info */
-	int reset_gpio;
+	struct gpio_desc *reset_gpio;
 	struct mutex lock;
 	struct v4l2_mbus_framefmt fmt;
 	const struct resolution *mode;
@@ -103,21 +89,17 @@ static int crosslink_resolution_upcall(struct crosslink_dev *sensor, int resolut
 	envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
 	envp[2] = NULL;
 
-	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
+	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
 	return 0;
 }
 
 static void crosslink_power(struct crosslink_dev *sensor, int enable)
 {
-	pr_debug("enter %s\n", __func__);
-	if (sensor->reset_gpio < 0)
-		return;
+	dev_dbg(sensor->dev, "setting reset pin: %s\n", enable ? "ON" : "OFF");
 
-	pr_debug("%s: setting reset pin: %s\n", __func__, enable ? "ON" : "OFF");
-
-	gpio_set_value_cansleep(sensor->reset_gpio, enable ? 1 : 0);
+	gpiod_set_value_cansleep(sensor->reset_gpio, enable ? 0 : 1);
 	if (enable)
-		msleep(200);
+		msleep(150);
 }
 
 /* --------------- Subdev Operations --------------- */
@@ -125,15 +107,10 @@ static void crosslink_power(struct crosslink_dev *sensor, int enable)
 static int crosslink_s_power(struct v4l2_subdev *sd, int on)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
-	int ret = 0;
-
 	mutex_lock(&sensor->lock);
-
-	pr_debug("%s: set power callback %d\n", __func__, on);
 	crosslink_power(sensor, on);
-
 	mutex_unlock(&sensor->lock);
-	return ret;
+	return 0;
 }
 
 static int ops_get_fmt(struct v4l2_subdev *sub_dev, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_format *format)
@@ -187,13 +164,9 @@ static int crosslink_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *s
 
 	*fmt = format->format;
 
-	if ((new_mode != sensor->mode) && (format->which != V4L2_SUBDEV_FORMAT_TRY)) {
-		sensor->mode = new_mode;
-		mutex_lock(&sensor->lock);
-		ret |= crosslink_resolution_upcall(sensor, new_mode->reg_val);
-		ret |= regmap_write(sensor->regmap, 0x3, new_mode->reg_val);
-		mutex_unlock(&sensor->lock);
-	}
+	// if ((new_mode != sensor->mode) && (format->which != V4L2_SUBDEV_FORMAT_TRY)) {
+	sensor->mode = new_mode;
+	ret |= crosslink_resolution_upcall(sensor, new_mode->reg_val);
 
 	pr_debug("%s: sensor->ep.bus_type =%d\n", __func__, sensor->ep.bus_type);
 	pr_debug("%s: sensor->ep.bus      =%p\n", __func__, &sensor->ep.bus);
@@ -324,7 +297,8 @@ static int crosslink_s_stream(struct v4l2_subdev *sd, int enable)
 	}
 
 	mutex_lock(&sensor->lock);
-	ret = crosslink_soft_reset(sensor, enable);
+	ret = regmap_write(sensor->regmap, 0x3, sensor->mode->reg_val);
+	ret |= crosslink_soft_reset(sensor, enable);
 	mutex_unlock(&sensor->lock);
 	if (enable)
 		pr_debug("%s: Starting stream at WxH@fps=%dx%d@%d\n", __func__, sensor->mode->width, sensor->mode->height, sensor->mode->framerate);
@@ -400,11 +374,20 @@ static int crosslink_probe(struct i2c_client *client)
 	fmt->ycbcr_enc = V4L2_MAP_YCBCR_ENC_DEFAULT(fmt->colorspace);
 	fmt->quantization = V4L2_QUANTIZATION_FULL_RANGE;
 	fmt->xfer_func = V4L2_MAP_XFER_FUNC_DEFAULT(fmt->colorspace);
-	fmt->width = 1920;
-	fmt->height = 1080;
+	fmt->width = 1280;
+	fmt->height = 720;
 	fmt->field = V4L2_FIELD_NONE;
 	sensor->framerate = 30;
 	sensor->mode = &sensor_res_list[0];
+
+	/* request reset pin */
+	sensor->reset_gpio = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
+	if (IS_ERR(sensor->reset_gpio)) {
+		ret = PTR_ERR(sensor->reset_gpio);
+		if (ret != -EPROBE_DEFER)
+			dev_err(dev, "Cannot get reset GPIO (%d)", ret);
+		return ret;
+	}
 
 	endpoint = fwnode_graph_get_next_endpoint(dev_fwnode(&client->dev), NULL);
 	if (!endpoint) {
@@ -426,39 +409,23 @@ static int crosslink_probe(struct i2c_client *client)
 		return -EINVAL;
 	}
 
-	/* request reset pin */
-	sensor->reset_gpio = of_get_named_gpio(dev->of_node, "reset-gpios", 0);
-	if (!gpio_is_valid(sensor->reset_gpio))
-		dev_warn(dev, "No crosslink reset pin available");
-	else {
-		ret = devm_gpio_request_one(dev, sensor->reset_gpio, GPIOF_OUT_INIT_HIGH, "crosslink_nreset");
-		if (ret < 0) {
-			dev_warn(dev, "Failed to set reset pin\n");
-			// return retval;
-		} else {
-			dev_dbg(dev, "successfully set RESET-GPIO");
-			// wait for the FPGA to load after reset before probing i2c.
-			// DO NOT SLEEP TOO LONG HERE. if call v4l2_i2c_subdev_init too late, the imx8 drivers wont catch the subdev.
-			// msleep(100);
-		}
-	}
-
 	sensor->regmap = devm_regmap_init_i2c(client, &sensor_regmap_config);
 	if (IS_ERR(sensor->regmap)) {
 		dev_err(dev, "regmap init failed\n");
-		// return PTR_ERR(crosslink->regmap);
+		return PTR_ERR(sensor->regmap);
 	}
-
-	v4l2_i2c_subdev_init(&sensor->sd, client, &crosslink_subdev_ops);
 
 	ret = regmap_read(sensor->regmap, 0x1, &id_code);
 	if (ret) {
-		dev_err(dev, "Could not read device-id\n");
-		return ret;
+		/* If we can't read the ID, it may be that the FPGA hasn't loaded yet after releasing reset. */
+		dev_dbg(dev, "Could not read device-id. trying again\n");
+		return -EPROBE_DEFER;
 	}
 	else {
 		dev_info(dev, "Got device-id %02x\n", id_code);
 	}
+
+	v4l2_i2c_subdev_init(&sensor->sd, client, &crosslink_subdev_ops);
 
 	sensor->sd.flags |= V4L2_SUBDEV_FL_HAS_EVENTS;
 	sensor->sd.dev = &client->dev;
@@ -470,6 +437,9 @@ static int crosslink_probe(struct i2c_client *client)
 		return ret;
 
 	mutex_init(&sensor->lock);
+
+	//turn off
+	crosslink_power(sensor, 0);
 
 	ret = v4l2_async_register_subdev_sensor(&sensor->sd);
 	if (ret)
