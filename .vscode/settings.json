@@ -21,6 +21,7 @@
         "build/cache/**": true,
         "build/sstate-cache/**": true,
         "downloads/**": true,
+        "*ctags*":  true,
         "sstate-cache*/**": true,
     },
     "search.followSymlinks": false,

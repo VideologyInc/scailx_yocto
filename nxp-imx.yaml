@@ -26,7 +26,7 @@ local_conf_header:
     PACKAGE_CLASSES = "package_deb"
     EXTRA_IMAGE_FEATURES += "package-management"
     LICENSE_FLAGS_ACCEPTED = "commercial"
-    # DISTRO_FEATURES:append = " virtualization"
+    DISTRO_FEATURES:append = " virtualization"
 
 repos:
   meta-freescale-distro:
