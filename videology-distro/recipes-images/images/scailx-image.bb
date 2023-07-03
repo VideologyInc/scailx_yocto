@@ -7,8 +7,6 @@ DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
 DESCRIPTION = "Scailx Image. includes most AI/gstreamer related packages and demos"
 LICENSE = "MIT"
 
-TARGET_HOSTNAME ?= "scailx-zb"
-
 ## Select Image Features
 IMAGE_FEATURES += " \
     debug-tweaks \
@@ -78,8 +76,3 @@ CORE_IMAGE_EXTRA_INSTALL:remove = " \
     packagegroup-fsl-tools-audio \
     packagegroup-fsl-tools-gpu-external \
 "
-
-ROOTFS_POSTPROCESS_COMMAND += "hostname_change"
-hostname_change () {
-    echo "${TARGET_HOSTNAME}" > ${IMAGE_ROOTFS}${sysconfdir}/hostname
-}
