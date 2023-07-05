@@ -18,7 +18,7 @@ index aba275c33f..3f0849723a 100644
 -	.mdio_wait = 10,
 -	.swr_wait = 50,
 +	.mdio_wait = 15,
-+	.swr_wait = 150,
++	.swr_wait = 250,
  	.config_mac = EQOS_MAC_RXQ_CTRL0_RXQ0EN_ENABLED_DCB,
  	.config_mac_mdio = EQOS_MAC_MDIO_ADDRESS_CR_250_300,
  	.interface = eqos_get_interface_generic,
