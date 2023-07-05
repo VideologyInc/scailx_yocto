@@ -5,9 +5,9 @@ SRC_URI:append = " \
 		file://make-dependencies.patch \
 		file://tx8m-support.patch \
 		file://cleanup.patch \
-		file://no-tee.patch \
 "
 
+SRC_URI:append = "${@bb.utils.contains('MACHINE_FEATURES', 'optee', '', ' file://no-tee.patch ', d)}"
 
 do_compile:prepend() {
     export dtbs=${UBOOT_DTB_NAME}
