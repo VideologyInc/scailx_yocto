@@ -1,14 +1,12 @@
 # default environment for QSXP-ML81
-append_bootargs=clk_ignore_unused
+append_bootargs=quiet
 autoload=no
-baseboard=qsbase3
+baseboard=
 boot_mode=mmc
-kernel_debug_prod=quiet
-kernel_debug=debug
-bootargs_mmc=run default_bootargs; setenv bootargs ${bootargs} root=${rootfs} rootwait ${append_bootargs} ${kernel_debug_prod}
-bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${nfsroot},nolock,v4 ip=dhcp ${append_bootargs} ${kernel_debug_prod}
+bootargs_mmc=run default_bootargs; setenv bootargs ${bootargs} root=${rootfs} rootwait ${append_bootargs}
+bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${nfsroot},nolock,v4 ip=dhcp ${append_bootargs}
 bootcmd=run bootcmd_${boot_mode} bootm_cmd
-bootcmd_mmc=run loadfdt loadkernel bootargs_mmc
+bootcmd_mmc=run loadkernel bootargs_mmc
 bootcmd_nfs=dhcp; run tftpfdt tftpkernel bootargs_nfs
 bootdelay=1
 bootm_cmd=booti ${loadaddr} ${initrd_addr} ${fdt_addr}
@@ -21,14 +19,14 @@ emmc_boot_part=1
 emmc_dev=0
 fastboot_dev=mmc
 fdtaddr=43000000
-fdtsave=save mmc ${mmcdev} ${fdt_addr} ${fdt_file} ${fdt_size}
+fdtsave=save mmc ${mmcdev} ${fdt_addr} /${fdt_file} ${fdt_size}
 fdt_addr=43000000
 fdt_file=boot/devicetree/default.dtb
 fdt_high=63000000
 initrd_addr=-
 initrd_high=63800000
 linux_image=boot/Image
-loadaddr=40480000
+loadaddr=40400000
 loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}
 rootfs=/dev/mmcblk0p1
 tftpfdt=tftpboot ${fdt_addr} ${fdt_file}
