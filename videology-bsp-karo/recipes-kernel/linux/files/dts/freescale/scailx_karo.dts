@@ -8,7 +8,7 @@
 
 / {
 	model = "imx8mp SCAiLX with Karo based SOM.";
-	
+
 	aliases {
 		pcie = &pcie;
 		pcie_phy = &pcie_phy;
@@ -24,7 +24,7 @@
 		gpio-a-can = &flexcan2;
 		gpio-a-spi = &ecspi2;
 		gpio-a-usb = &usb3_1;
-		gpio-a-usb_dwc = &usb_dwc3_1; 
+		gpio-a-usb_dwc = &usb_dwc3_1;
 		gpio-a-usb_phy = &usb3_phy1;
 
 		gpio-b-i2c = &i2c2;
@@ -46,13 +46,13 @@
 	};
 
 	// scailx_gpio_a: scailxGpioA {
-		// dummy node to give labels for the applicable GPIO devices. 
+		// dummy node to give labels for the applicable GPIO devices.
 
 	// };
 
 };
 
-// create second label for devices to group them to the ascociated port on the SCAILX device. 
+// create second label for devices to group them to the ascociated port on the SCAILX device.
 csi0_i2c: &i2c3{};
 csi1_i2c: &i2c2{};
 dsi0_i2c: &i2c2{};
@@ -76,7 +76,7 @@ gpio_b_usb_dwc: &usb_dwc3_0{};
 gpio_b_usb_phy: &usb3_phy0{};
 
 /* reconfigure UARTS */
-&uart1 { 
+&uart1 {
 	/* remove RTS-CTS */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
@@ -172,7 +172,7 @@ gpio_b_usb_phy: &usb3_phy0{};
 		reg = <0x27>;
 		#gpio-cells = <2>;
 		gpio-controller;
-		
+
 		// pinctrl-names = "default";
 		// pinctrl-0 = <&pinctrl_expander_int>;
 		// interrupt-parent = <&gpio4>;
@@ -262,9 +262,9 @@ gpio_b_usb_phy: &usb3_phy0{};
 
 // imx8m PIN MUX REGISTERS:
 //   |---|---|---|---| # |---|---|---|---| # |---|---|---|SION| # |---|MUX|MUX|MUX|
-//     IOMUXC_MUX_SION_ENABLED     0x40000000  // enable software read of pin state irrespective of mux function.    
+//     IOMUXC_MUX_SION_ENABLED     0x40000000  // enable software read of pin state irrespective of mux function.
 
-// imx8m PIN PAD CTRL REGISTERS: 
+// imx8m PIN PAD CTRL REGISTERS:
 //   |---|---|---|---| # |---|---|---|PE | # |HYS|PUE|ODE|SLR| # |slr?|DSE|DSE|dse?|
 // hysteresis - Schmitt-trigger enable or regular CMOS
 //     IOMUXC_PAD_HYS_ENABLED      0x00000080
@@ -274,10 +274,10 @@ gpio_b_usb_phy: &usb3_phy0{};
 //     IOMUXC_PAD_ODE_ENABLED      0x00000020
 // Slew-rate control
 //     IOMUXC_PAD_SRE_FAST         0x00000010
-// Drive Strength 
+// Drive Strength
 //     IOMUXC_PAD_DSE_X1           0x00000000  (Weakest)
 //     IOMUXC_PAD_DSE_X2           0x00000002
-//     IOMUXC_PAD_DSE_X4           0x00000004  
+//     IOMUXC_PAD_DSE_X4           0x00000004
 //     IOMUXC_PAD_DSE_X6           0x00000006  (Strongest)
 
 &iomuxc {
@@ -348,7 +348,7 @@ gpio_b_usb_phy: &usb3_phy0{};
 	pinctrl_uart3: uart3grp {
 		fsl,pins = <
 			MX8MP_IOMUXC_UART3_TXD__UART3_DCE_TX		0x140
-			MX8MP_IOMUXC_UART3_TXD__UART3_DTE_RX		0x140
+			MX8MP_IOMUXC_UART3_RXD__UART3_DCE_RX		0x140
 		>;
 	};
 

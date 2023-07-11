@@ -35,7 +35,6 @@
 		reset-gpios = <&gpio_expander 1 GPIO_ACTIVE_LOW>;
 		status = "disabled";
 		mipi_csi;
-		visca-port = <&gpio_b_uart>;
 
 		port {
 			mipi_1_ep: endpoint {
@@ -101,7 +100,7 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	clock-frequency = <500000000>;
-	status = "disabled";
+	status = "okay";
 
 	port@1 {
 		reg = <1>;
