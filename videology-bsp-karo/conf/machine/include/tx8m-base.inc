@@ -1,10 +1,21 @@
+KBUILD_BUILD_USER := "support"
+KBUILD_BUILD_HOST := "karo-electronics.de"
 
 MACHINEOVERRIDES =. "mx8:mx8m:"
 
-# IMAGE_CLASSES += "st-partitions-image"
+BUILD_REPRODUCIBLE_BINARIES ?= "0"
+INHERIT:remove = "${@'reproducible_build' if d.getVar('BUILD_REPRODUCIBLE_BINARIES') == '0' else ''}"
 
 require conf/machine/include/imx-base.inc
 require conf/machine/include/arm/armv8a/tune-cortexa53.inc
+
+SOC_PREFIX = "imx8m"
+
+SOC_FAMILY ??= ""
+SOC_FAMILY:mx8mm-nxp-bsp = "imx8mm"
+SOC_FAMILY:mx8mn-nxp-bsp = "imx8mn"
+SOC_FAMILY:mx8mp-nxp-bsp = "imx8mp"
+MACHINEOVERRIDES =. "${@ "${SOC_FAMILY}:" if "${SOC_FAMILY}" != "" else ""}"
 
 MACHINE_FEATURES += "emmc"
 MACHINE_FEATURES:remove = "nxp8987"
@@ -32,7 +43,7 @@ ATF_PLATFORM ?= "imx8mm"
 ATF_LOAD_ADDR ?= "0x920000"
 
 # Set Serial console
-SERIAL_CONSOLES = "115200;ttymxc0 115200;ttymxc1 115200;ttymxc2"
+SERIAL_CONSOLES ?= "115200;ttymxc0 115200;ttymxc1 115200;ttymxc2"
 # for imx-atf
 IMX_BOOT_UART_BASE ?= "0x30860000"
 
@@ -59,35 +70,3 @@ PREFERRED_PROVIDER_ptpd = "ptpd"
 KERNEL_MODULE_PROBECONF += "evbug"
 module_conf_evbug = "blacklist evbug"
 
-# PREFERRED_VERSION_isp-imx                 = "4.2.2.14+basler"
-# PREFERRED_VERSION_basler-camera           = "4.2.2.14+basler"
-# PREFERRED_VERSION_kernel-module-isp-vvcam = "4.2.2.14+basler"
-
-# PREFERRED_PROVIDER_opencl-headers:imxgpu = "imx-gpu-viv"
-# PREFERRED_PROVIDER_opencl-icd-loader:imxgpu = "imx-gpu-viv"
-# PREFERRED_PROVIDER_virtual/libgles3:imxgpu3d = "imx-gpu-viv"
-
-# PREFERRED_VERSION_gstreamer1.0-plugins-base = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-bad  = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-good = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-good-qt = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-ugly = "1.20.1"
-# PREFERRED_VERSION_gstreamer1.0              = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-libav        = "1.20.1"
-# PREFERRED_VERSION_gstreamer1.0-rtsp-server  = "1.20.1"
-
-# PREFERRED_VERSION_gstreamer1.0-plugins-base:mx8-nxp-bsp = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-bad:mx8-nxp-bsp  = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-good:mx8-nxp-bsp = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-good-qt:mx8-nxp-bsp = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-plugins-ugly:mx8-nxp-bsp = "1.20.1"
-# PREFERRED_VERSION_gstreamer1.0:mx8-nxp-bsp              = "1.20.0.imx"
-# PREFERRED_VERSION_gstreamer1.0-libav:mx8-nxp-bsp        = "1.20.1"
-# PREFERRED_VERSION_gstreamer1.0-rtsp-server:mx8-nxp-bsp  = "1.20.1"
-
-# PREFERRED_VERSION_opengl-es-cts:aarch64 = "3.2.7.0"
-
-# Set a more generic tuning for code reuse across parts
-# taken from fsl-imx-base.inc
-DEFAULTTUNE:mx8-nxp-bsp    ?= "armv8a-crc-crypto"
-DEFAULTTUNE:mx8m-nxp-bsp   ?= "armv8a-crc-crypto"
