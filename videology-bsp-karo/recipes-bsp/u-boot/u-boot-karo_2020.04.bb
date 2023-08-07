@@ -6,7 +6,7 @@
 DESCRIPTION = "i.MX U-Boot suppporting Ka-Ro electronics boards."
 HOMEPAGE = "http://www.denx.de/wiki/U-Boot/WebHome"
 SECTION = "bootloaders"
-DEPENDS += "flex-native bison-native dtc-native"
+DEPENDS += "flex-native bison-native dtc-native xxd-native "
 
 require recipes-bsp/u-boot/u-boot.inc
 inherit fsl-u-boot-localversion

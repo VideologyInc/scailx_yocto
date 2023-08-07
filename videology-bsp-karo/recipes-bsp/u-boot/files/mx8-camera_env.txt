@@ -1,15 +1,18 @@
 # default environment for QSXP-ML81
-append_bootargs=quiet
+append_bootargs=pv_rev=0 shell=before:pantavisor
 autoload=no
 baseboard=
-boot_mode=mmc
+pv_rev=0
+boot_mode=pvr
+bootargs_pvr=run default_bootargs; setenv bootargs ${bootargs} root=/dev/ram rootfstype=ramfs rdinit=/bin/sh rootwait quiet ${append_bootargs}
 bootargs_mmc=run default_bootargs; setenv bootargs ${bootargs} root=${rootfs} rootwait ${append_bootargs}
 bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${nfsroot},nolock,v4 ip=dhcp ${append_bootargs}
 bootcmd=run bootcmd_${boot_mode} bootm_cmd
 bootcmd_mmc=run loadkernel bootargs_mmc
+bootcmd_pvr=run loadscript bootargs_pvr; source ${scriptaddr}
 bootcmd_nfs=dhcp; run tftpfdt tftpkernel bootargs_nfs
 bootdelay=1
-bootm_cmd=booti ${loadaddr} ${initrd_addr} ${fdt_addr}
+bootm_cmd=booti ${kernel_addr_r} ${initrd_addr} ${fdt_addr}
 bootserverdetect=dhcp; if ping ${serverip}; then setenv boot_mode nfs; else setenv boot_mode mmc; fi; run bootswitch
 bootswitch=run bootcmd_${boot_mode} bootm_cmd
 console=ttymxc0,115200 earlycon=ec_imx6q,0x30890000,115200
@@ -18,20 +21,24 @@ emmc_boot_ack=0
 emmc_boot_part=1
 emmc_dev=0
 fastboot_dev=mmc
-fdtaddr=43000000
 fdtsave=save mmc ${mmcdev} ${fdt_addr} /${fdt_file} ${fdt_size}
-fdt_addr=43000000
-fdt_file=boot/devicetree/default.dtb
-fdt_high=63000000
+fdt_file=devicetree/scailx_karo.dtb
+fdt_addr=40400000
+fdt_addr_r=40400000
+fdtoverlay_addr_r=40800000
+scriptaddr=40B00000
+kernel_addr_r=41000000
+ramdisk_addr_r=47000000
 initrd_addr=-
+fdt_high=63000000
 initrd_high=63800000
-linux_image=boot/Image
-loadaddr=40400000
+linux_image=Image-initramfs
 loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}
-rootfs=/dev/mmcblk0p1
+loadscript=load mmc ${mmcdev}:2 ${scriptaddr} /boot/boot.scr
+rootfs=/dev/mmcblk0p2
 tftpfdt=tftpboot ${fdt_addr} ${fdt_file}
-loadkernel=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${linux_image}
-tftpkernel=tftpboot ${loadaddr} ${linux_image}
+loadkernel=load mmc ${mmcdev}:${mmcpart} ${kernel_addr_r} ${linux_image}
+tftpkernel=tftpboot ${kernel_addr_r} ${linux_image}
 mmcdev=0
 mmcpart=1
 nfsroot=/
