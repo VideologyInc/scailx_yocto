@@ -7,6 +7,8 @@ DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
 DESCRIPTION = "Scailx Image. includes most AI/gstreamer related packages and demos"
 LICENSE = "MIT"
 
+IMAGE_FSTYPES += 'uuuimg wic'
+
 ## Select Image Features
 IMAGE_FEATURES += " \
     debug-tweaks \
@@ -16,7 +18,7 @@ IMAGE_FEATURES += " \
     splash \
     nfs-server \
     tools-debug \
-    ssh-server-dropbear \
+    ssh-server-openssh \
     tools-testapps \
     hwcodecs \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'weston', \

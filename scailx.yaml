@@ -24,7 +24,7 @@ bblayers_conf_header:
     # BBPATH = "${TOPDIR}"
     # BBFILES ?= ""
 
-distro: fsl-imx-xwayland
+distro: scailx
 machine: mx8-camera
 target: scailx-image
 
