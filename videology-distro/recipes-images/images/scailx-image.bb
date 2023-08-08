@@ -68,6 +68,9 @@ IMAGE_INSTALL += " \
     gnupg \
     dtc \
     i2c-tools \
+    gst-perf \
+    libubootenv \
+    fuse-exfat \
     v4l2loopback \
     v4l2loopback-utils \
     avahi-services-ssh \
