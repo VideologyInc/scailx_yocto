@@ -1,0 +1,12 @@
+[Unit]
+Description=v4l2loopback driver service file
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/usr/sbin/modprobe v4l2loopback video_nr=14 exclusive_caps=1 max_buffers=2'
+ExecStop=/bin/sh -c '/usr/sbin/modprobe -r v4l2loopback'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -68,6 +68,8 @@ IMAGE_INSTALL += " \
     gnupg \
     dtc \
     i2c-tools \
+    v4l2loopback \
+    v4l2loopback-utils \
     avahi-services-ssh \
     avahi-services-sftp \
     python3-pyserial \

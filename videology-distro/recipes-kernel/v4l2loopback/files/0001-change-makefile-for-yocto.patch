@@ -1,0 +1,45 @@
+From 861e5abdad7fd5b710063f6ae04ac8409598e161 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Tue, 8 Aug 2023 13:19:22 +0200
+Subject: [PATCH] change makefile for yocto
+
+---
+ Makefile | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 385c24d..0902d67 100644
+--- a/Makefile
++++ b/Makefile
+@@ -7,8 +7,8 @@ endif
+ include Kbuild
+ ifeq ($(KBUILD_MODULES),)
+ 
+-KERNELRELEASE	?= `uname -r`
+-KERNEL_DIR	?= /lib/modules/$(KERNELRELEASE)/build
++KERNELRELEASE	?= $(KERNEL_VERSION)
++KERNEL_DIR	?= $(KERNEL_SRC)
+ PWD		:= $(shell pwd)
+ 
+ PREFIX ?= /usr/local
+@@ -52,13 +52,16 @@ v4l2loopback.ko:
+ 	@echo "Building v4l2-loopback driver..."
+ 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) KCPPFLAGS="$(KCPPFLAGS)" modules
+ 
+-install-all: install install-extra
++install-all: modules_install install-utils
+ install:
+ 	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules_install
+ 	@echo ""
+ 	@echo "SUCCESS (if you got 'SSL errors' above, you can safely ignore them)"
+ 	@echo ""
+ 
++modules_install:
++	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules_install
++
+ install-extra: install-utils install-man install-headers
+ install-utils: utils/v4l2loopback-ctl
+ 	$(INSTALL_DIR) "$(DESTDIR)$(BINDIR)"
+-- 
+2.34.1
+
