@@ -65,6 +65,8 @@ IMAGE_INSTALL += " \
     gnupg \
     dtc \
     i2c-tools \
+    avahi-services-ssh \
+    avahi-services-sftp \
     python3-pyserial \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \
