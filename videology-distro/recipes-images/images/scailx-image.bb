@@ -80,3 +80,10 @@ CORE_IMAGE_EXTRA_INSTALL:remove = " \
     packagegroup-fsl-tools-audio \
     packagegroup-fsl-tools-gpu-external \
 "
+
+TARGET_HOSTNAME ?= "scailx-zb"
+
+ROOTFS_POSTPROCESS_COMMAND:append = " hostname_change; "
+hostname_change () {
+    echo "${TARGET_HOSTNAME}" > ${IMAGE_ROOTFS}${sysconfdir}/hostname
+}
