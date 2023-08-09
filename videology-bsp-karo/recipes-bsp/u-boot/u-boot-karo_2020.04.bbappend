@@ -4,6 +4,7 @@ SRC_URI:append = " \
 "
 
 SRC_URI:append = " file://0001-increase-eqos-ethernet-phy-reset-delay.patch "
+SRC_URI += "file://fw_env.config"
 # SRC_URI:append = " file://0001-add-clk-delay-for-rtl8211.patch "
 UBOOT_ENV_FILE ?= "${MACHINE}_env.txt"
 
