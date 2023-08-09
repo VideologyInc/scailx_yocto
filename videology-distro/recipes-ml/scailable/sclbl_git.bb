@@ -5,16 +5,16 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/license-agreement-03112021.pdf;md5=d918cd2
 
 archurl = ""
 special = ""
-special:mx8-camera = "-videology"
-archurl:aarch64    = "arm64"
-archurl:arm64      = "arm64"
+special:mx8-camera = "_videology"
+archurl:aarch64    = "aarch64"
+archurl:arm64      = "aarch64"
 archurl:armv7      = "arm32"
 archurl:x86_64     = "x86_64"
 
-PV = "2.3.220"
-SRC_URI = "https://download.sclbl.net/lonelinux-sclbl-${archurl}${special}.tgz;name=${archurl}${special};downloadfilename=${PN}-${PV}.tar.gz"
-SRC_URI[arm64.sha256sum] = "c78cc4a616c2bc6a556c770d2aa17cd3ed2024a2743ff9f70dac381439d7a9d7"
-SRC_URI[arm64-videology.sha256sum] = "c78cc4a616c2bc6a556c770d2aa17cd3ed2024a2743ff9f70dac381439d7a9d7"
+PV = "3.0.84"
+SRC_URI = "https://download.sclbl.net/sclbl-${archurl}${special}.tgz;name=${archurl}${special};downloadfilename=${PN}-${PV}.tar.gz"
+SRC_URI[aarch64.sha256sum] = "143c2d162e39f2ae8024cb7171f61b6cbfbf831e0615e6d1ca070ff4fc332935"
+SRC_URI[aarch64_videology.sha256sum] = "143c2d162e39f2ae8024cb7171f61b6cbfbf831e0615e6d1ca070ff4fc332935"
 
 SRC_URI += "https://github.com/scailable/sclbl-tutorials/raw/f788e4c399e3fd6cb669d498a6f9fc75968377a1/terms/license-agreement-03112021.pdf;name=lic"
 SRC_URI[lic.sha256sum] = "470016616c4cee9ee922efa6ad58e46f7fe3c244b93bce1ac789bbfc08343da8"

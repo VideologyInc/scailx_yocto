@@ -4,7 +4,7 @@
     "kas": {
       "url": "https://github.com/VideologyInc/scailx_yocto.git",
       "yaml": "scailx.yaml",
-      "branch": "kas"
+      "branch": "master"
     }
   }
 }
