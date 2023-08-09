@@ -12,18 +12,22 @@ fi
 
 KAS_WORK_DIR=`pwd`
 # workdir from input if entered else use current
-if [ "$1" ]; then 
+if [ "$1" ]; then
     KAS_WORK_DIR="$1"
     KASFILE="$1.yaml"
     if [ ! -d "$KAS_WORK_DIR" ]; then
         mkdir -p "$KAS_WORK_DIR"
     fi
-fi 
+fi
 
 ubuntu=$(grep -q '22.04' /etc/os-release && echo yes)
 export KAS_WORK_DIR
 
 kas checkout "$KASFILE"
+if [ "$?" -ne 0 ]; then
+    echo "KAS CHECKOUT failed"
+    return
+fi
 
 if [ "$ubuntu" ];  then
     source "$KAS_WORK_DIR/poky/oe-init-build-env" "$KAS_WORK_DIR/build"
