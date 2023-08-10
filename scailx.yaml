@@ -11,6 +11,7 @@ header:
     - nxp-imx.yaml
     - kas/kirkstone.yml
     - kas/kirkstone-lts-mixins.yml
+    - kas/pantavisor.yml
     - lf-5.15.71-2.2.0-kirkstone.yaml
 
 repos:

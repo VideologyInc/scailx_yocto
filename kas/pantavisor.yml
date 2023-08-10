@@ -1,0 +1,14 @@
+header:
+  version: 11
+
+repos:
+  meta-pantavisor:
+    url: https://github.com/VideologyInc/meta-pantavisor
+    # refspec: remove_submods
+    refspec: 6ca00f5ed22f85443eccd2f9cb2dd8953df1bcfb
+
+local_conf_header:
+  pantavisor: |
+    GOVERSION = "1.20%"
+    KERNEL_CLASSES += "pvbsp"
+    IMAGE_CLASSES += "bspimage-pvrexport"
