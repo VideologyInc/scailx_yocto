@@ -11,4 +11,7 @@ local_conf_header:
   pantavisor: |
     GOVERSION = "1.20%"
     KERNEL_CLASSES += "pvbsp"
-    IMAGE_CLASSES += "bspimage-pvrexport"
+    PANTAVISOR_SYSTEM_DISTRO = "yes"
+    # IMAGE_CLASSES += " bspimage-pvrexport "
+    PVROOT_IMAGE_BSP ?= "fsl-image-network-full-cmdline"
+    IMAGE_CLASSES:append:pn-fsl-image-network-full-cmdline = " bspimage-pvrexport "
