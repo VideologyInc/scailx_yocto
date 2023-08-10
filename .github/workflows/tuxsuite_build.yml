@@ -38,6 +38,36 @@ jobs:
 
       - name: Run build
         run: |
-          tuxsuite bake submit plan.json
+          mkdir dep_dir
+          tuxsuite bake submit -d -o ./dep_dir plan.json
         env:
           TUXSUITE_TOKEN: ${{ secrets.TUXSUITE_TOKEN }}
+
+      - name: upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: dep_dir
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifacts (outputs)
+        uses: actions/download-artifact@v2
+        with:
+          name: outputs
+          path: outputs
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OUTPUTS_NAME=${GITHUB_REPOSITORY##*/}-$GITHUB_REF_NAME-outputs.zip
+          cd outputs && zip -r ../$OUTPUTS_NAME *; cd ..
+          tree || :
+          gh release delete --repo $GITHUB_REPOSITORY $GITHUB_REF_NAME -y || :
+          gh release create --generate-notes --repo $GITHUB_REPOSITORY $GITHUB_REF_NAME $OUTPUTS_NAME
