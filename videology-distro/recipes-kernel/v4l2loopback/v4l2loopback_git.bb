@@ -1,8 +1,7 @@
 SUMMARY = "V4L2Loopback"
 DESCRIPTION = "v4l2loopback module"
 LICENSE = "GPLv2"
-LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0-only;md5=801f80980d171dd6425610833a22dbe6"
-
+LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 # Use local tarball
 SRC_URI = " \
@@ -23,12 +22,12 @@ FILES:${PN} += "/usr/lib/modules"
 PACKAGES += " ${PN}-utils ${PN}-examples "
 
 do_compile:append () {
-    oe_runmake utils
+    ${CC} ${CFLAGS} ${LDFLAGS} -Wall utils/v4l2loopback-ctl.c -I. -o ${PN}-ctl
 }
 
 do_install:append () {
-    export PREFIX="$prefix"
-    oe_runmake install-utils DESTDIR="${D}"
+    install -d ${D}/${bindir}
+    install -m 755 ${S}/${PN}-ctl ${D}/${bindir}
 }
 
 RPROVIDES:${PN} += "kernel-module-${PN}"
