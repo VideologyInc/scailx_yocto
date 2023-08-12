@@ -45,3 +45,4 @@ nfsroot=/
 nfsvers=4
 serverip=192.168.0.132
 otg_mode=peripheral
+localargs=pvrsdk_httpd_listen=0.0.0.0
