@@ -1,19 +1,33 @@
 software =
 {
-	version = "0.1.0";
+	version = "@@SCAILX_VERSION@@";
 
-	mx8-camera = {
+	@@MACHINE@@ = {
 		hardware-compatibility: [ "1.0" ];
+
+		images: (
+			{
+				name: "bootloader";
+				filename = "imx-boot-karo";
+				sha256 = "$swupdate_get_sha256(imx-boot-karo)";
+				version = "@@SCAILX_UBOOT_VERSION@@";
+				type = "raw";
+				device = "/dev/ubootdev";
+				install-if-different = true;
+			}
+		);
 
 		files: (
 			{
-				filename = "scailx-image-swupdate-mx8-camera.tar.gz";
-				type = "archive";
-				compressed = true;
-				device = "/dev/update";
-				filesystem = "ext4";
-				preserve-attributes = true;
-				path = "/";
+				filename = "@@SWU_ROOTFS_IMAGE@@-@@MACHINE@@.squashfs";
+				sha256 = "$swupdate_get_sha256(@@SWU_ROOTFS_IMAGE@@-@@MACHINE@@.squashfs)";
+				path = "/update_bsp/rootfs.squashfs";
+			},
+			{
+				filename = "Image-initramfs-@@MACHINE@@.bin";
+				sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
+				device = "/dev/bootdev";
+				path = "/boot_bsp/Image-initramfs";
 			}
 		);
 
@@ -24,4 +38,4 @@ software =
 			}
 		);
 	};
-}
+};

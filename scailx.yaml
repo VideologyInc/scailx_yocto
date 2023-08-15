@@ -13,6 +13,7 @@ header:
     - kas/kirkstone-lts-mixins.yml
     - lf-5.15.71-2.2.0-kirkstone.yaml
     - kas/layers/meta-swupdate.yml
+    - kas/layers/meta-security.yml
 
 repos:
   scailx:

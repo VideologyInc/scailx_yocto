@@ -1,6 +1,7 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
 SRC_URI += "\
+	file://index.html \
 	file://background.jpg \
 	file://favicon.png \
 	file://logo.png \
@@ -10,9 +11,12 @@ SRC_URI += "\
 
 do_install:append () {
 	install -m 644 ${WORKDIR}/background.jpg ${D}/www/images/
+	install -m 644 ${WORKDIR}/index.html ${D}/www/
 	install -m 644 ${WORKDIR}/favicon.png ${D}/www/images/
 	install -m 644 ${WORKDIR}/logo.png ${D}/www/images/
 	install -m 644 ${WORKDIR}/swupdate.cfg ${D}${sysconfdir}/
 	install -d ${D}${sysconfdir}/default/
 	install -m 644 ${WORKDIR}/swupdate.default ${D}${sysconfdir}/default/swupdate
 }
+
+RM_WORK_EXCLUDE += "${PN}"

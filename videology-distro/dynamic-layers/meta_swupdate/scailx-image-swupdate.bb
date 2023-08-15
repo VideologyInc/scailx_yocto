@@ -34,9 +34,7 @@ IMAGE_INSTALL += " \
     ${DOCKER} \
 "
 
-DOCKER            ?= "podman podman-compose"
-
-export IMAGE_BASENAME = "scailx-swupdate-image"
+DOCKER ?= "podman podman-compose catatonit"
 
 CORE_IMAGE_EXTRA_INSTALL += " \
 	swupdate \
