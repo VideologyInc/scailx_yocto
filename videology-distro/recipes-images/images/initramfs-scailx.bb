@@ -15,15 +15,22 @@ PACKAGE_INSTALL = " \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
 	"
 
-# PACKAGE_INSTALL += " initramfs-module-overlayroot "
-PACKAGE_INSTALL += " initramfs-module-nfsrootfs "
+PACKAGE_INSTALL += " initramfs-module-overlayroot "
+PACKAGE_INSTALL += " initramfs-module-swupdate "
+PACKAGE_INSTALL += " initramfs-module-storage "
+
+# PACKAGE_INSTALL += " initramfs-module-nfsrootfs "
 
 PACKAGE_INSTALL:append:scailx-swu = " \
 		base-passwd \
 		busybox \
 		mtd-utils \
 		libconfig \
+		mmc-utils \
+		libubootenv-bin \
+		u-boot-default-env \
 		swupdate \
+		swupdate-config \
 		swupdate-www \
         initscripts \
 		util-linux-sfdisk \
@@ -38,8 +45,7 @@ export IMAGE_BASENAME = "initramfs-scailx"
 IMAGE_LINGUAS = ""
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
-IMAGE_FSTYPES:remove = "wic wic.gz wic.bmap wic.nopt ext4 ext4.gz pvbspit"
-IMAGE_CLASSES:remove = "image_repo_manifest"
+IMAGE_FSTYPES:remove = "wic wic.gz wic.bmap wic.nopt ext4 ext4.gz"
 
 # avoid circular dependencies
 EXTRA_IMAGEDEPENDS = ""

@@ -1,0 +1,22 @@
+#!/bin/sh
+
+mkdir -p /tmp
+swupdate_enabled() {
+    if [ -f /tmp/swupdate_enabled ]; then
+        return 0
+    elif [ -n "$bootparam_swupdate" ]; then
+        return 0
+    else
+        # swupdate not enabled. Set variable so its enabled in the final slot.
+        echo "yes" > /tmp/swupdate_enabled
+        return 1
+    fi
+}
+
+swupdate_run() {
+    mount -t tmpfs tmpfs /tmp
+    # get dhcp lease
+    udhcpc &
+    source /etc/default/swupdate
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg $SWUPDATE_EXTRA_ARGS -w "" -p 'sync; echo b >/proc/sysrq-trigger'
+}

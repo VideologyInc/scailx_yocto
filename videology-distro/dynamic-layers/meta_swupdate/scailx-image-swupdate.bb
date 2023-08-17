@@ -17,7 +17,6 @@ IMAGE_FEATURES += " \
 
 IMAGE_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'x11 wayland', 'weston-xwayland xterm', '', d)} \
-    imx-test \
     firmwared \
 	openssh-sftp-server \
 	xauth \
@@ -37,8 +36,10 @@ IMAGE_INSTALL += " \
 DOCKER ?= "podman podman-compose catatonit"
 
 CORE_IMAGE_EXTRA_INSTALL += " \
-	swupdate \
+	mmc-utils \
+    swupdate \
 	swupdate-www \
+    swupdate-config \
 "
 
-IMAGE_FSTYPES += "squashfs uuuimg wic"
+IMAGE_FSTYPES = "squashfs"

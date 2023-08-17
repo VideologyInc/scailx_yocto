@@ -21,13 +21,12 @@ software =
 			{
 				filename = "@@SWU_ROOTFS_IMAGE@@-@@MACHINE@@.squashfs";
 				sha256 = "$swupdate_get_sha256(@@SWU_ROOTFS_IMAGE@@-@@MACHINE@@.squashfs)";
-				path = "/update_bsp/rootfs.squashfs";
+				path = "/tmp/update_bsp/rootfs.squashfs";
 			},
 			{
 				filename = "Image-initramfs-@@MACHINE@@.bin";
 				sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
-				device = "/dev/bootdev";
-				path = "/boot_bsp/Image-initramfs";
+				path = "/tmp/update_boot/Image-initramfs";
 			}
 		);
 

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+storage_enabled() {
+    return 0
+}
+
+storage_run() {
+    mkdir -p /storage
+    mount /dev/mmcblk0p3 /storage
+}
