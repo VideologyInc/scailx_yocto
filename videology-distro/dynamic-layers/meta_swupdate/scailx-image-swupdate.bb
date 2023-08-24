@@ -3,6 +3,9 @@ LICENSE = "MIT"
 
 inherit core-image
 inherit link_default_dtb
+inherit extra-dirs
+EXTRA_ROOTFS_DIRS = "storage containers config"
+
 DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
 
 IMAGE_FEATURES += " \
