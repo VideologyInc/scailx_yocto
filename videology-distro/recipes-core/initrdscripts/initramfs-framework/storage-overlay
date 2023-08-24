@@ -1,0 +1,40 @@
+#!/bin/sh
+
+STORAGE_DEV="/dev/mmcblk0p3"
+storage_enabled() {
+    return 0
+}
+
+STORAGE_DIRS="containers config"
+OVERLAY_DIRS="etc home"
+storage_run() {
+    for d in $STORAGE_DIRS; do
+        if [ -d "$ROOTFS_DIR/$d" ]; then                                # check for a mount point in the rootfs
+            mkdir -p /storage/$d                                        # create the folder in case it doesnt already exist
+            mount --bind /storage/$d "$ROOTFS_DIR/$d"                   # bind mount the folder
+            if [ -d /storage/config/persist/%d ]; then
+                cp -fr /storage/config/persist/%d "$ROOTFS_DIR/$d"      # check if the user has a persistent config they want to apply to this location
+            fi
+        fi
+    done
+    for d in $OVERLAY_DIRS; do
+        if [ -d "$ROOTFS_DIR/$d" ]; then                                # check for a mount point in the rootfs
+            mkdir -p /storage/overlay/upper/$d                          # create overlay work dirs
+            mkdir -p /storage/overlay/work/$d                           # v----< ount the overlay
+            mount -t overlay -o index=off,metacopy=off,lowerdir=$ROOTFS_DIR/$d,upperdir=/storage/overlay/upper/$d,workdir=/storage/overlay/work/$d overlay "$ROOTFS_DIR/$d"
+            if [ $? -ne 0 ]; then
+                echo "Failed to mount overlay for $d. Clearing overlay."
+                rm -rf /storage/overlay/upper/$d/*
+                rm -rf /storage/overlay/work/$d/*
+                mount -t overlay -o index=off,metacopy=off,lowerdir=$ROOTFS_DIR/$d,upperdir=/storage/overlay/upper/$d,workdir=/storage/overlay/work/$d overlay "$ROOTFS_DIR/$d"
+            fi
+            if [ -d /storage/config/persist/%d ]; then
+                cp -fr /storage/config/persist/%d "$ROOTFS_DIR/$d"      # check if the user has a persistent config they want to apply to this location
+            fi
+        fi
+    done
+
+    if [ -d /$ROOTFS_DIR/storage ]; then
+        mount -n --move /storage "$ROOTFS_DIR/storage"                  # move the storage mount to the rootfs
+    fi
+}

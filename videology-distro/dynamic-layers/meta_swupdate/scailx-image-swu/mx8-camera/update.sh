@@ -35,7 +35,7 @@ if [ $1 == "preinst" ]; then
     mkdir -p /tmp/storage
     mount /dev/storage /tmp/storage
     mkdir -p /tmp/storage/bsp/0/ /tmp/storage/bsp/1/
-    rm -rf /tmp/storage/overlay/*
+    # rm -rf /tmp/storage/overlay/*
     ln -sf -T "/tmp/storage/bsp/${UPDATE_SLOT}" /tmp/update_bsp
 
     if [ "$UPDATE_SLOT" = "0" ]; then

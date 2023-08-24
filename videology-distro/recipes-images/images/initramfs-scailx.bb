@@ -15,7 +15,7 @@ PACKAGE_INSTALL = " \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
 	"
 
-PACKAGE_INSTALL += " initramfs-module-overlayroot "
+# PACKAGE_INSTALL += " initramfs-module-overlayroot "
 PACKAGE_INSTALL += " initramfs-module-swupdate "
 PACKAGE_INSTALL += " initramfs-module-storage "
 

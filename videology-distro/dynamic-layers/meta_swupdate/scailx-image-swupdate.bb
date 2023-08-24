@@ -36,7 +36,8 @@ IMAGE_INSTALL += " \
     ${DOCKER} \
 "
 
-DOCKER ?= "podman podman-compose catatonit"
+DOCKER ?= "podman podman-compose catatonit fuse-overlayfs "
+# slirp4netns
 
 CORE_IMAGE_EXTRA_INSTALL += " \
 	mmc-utils \

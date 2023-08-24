@@ -1,6 +1,6 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-SRC_URI:append = " file://swupdate file://storage file://pstree "
+SRC_URI:append = " file://swupdate file://storage file://storage-overlay file://pstree "
 
 PACKAGES  += " initramfs-module-swupdate "
 PACKAGES  += " initramfs-module-storage "
@@ -10,6 +10,7 @@ do_install:append() {
     install -m 0755 ${WORKDIR}/swupdate ${D}/init.d/50-swupdate
     install -m 0755 ${WORKDIR}/swupdate ${D}/init.d/99-swupdate
     install -m 0755 ${WORKDIR}/storage ${D}/init.d/60-storage
+    install -m 0755 ${WORKDIR}/storage-overlay ${D}/init.d/90-storage-overlay
     install -d ${D}${base_bindir}/
     install -m 0755 ${WORKDIR}/pstree ${D}${base_bindir}/pstree
 }
@@ -20,4 +21,4 @@ FILES:initramfs-module-swupdate = "/init.d/50-swupdate /init.d/99-swupdate ${bas
 
 SUMMARY:initramfs-module-storage = "initramfs support for storage partitiion"
 RDEPENDS:initramfs-module-storage = "${PN}-base"
-FILES:initramfs-module-storage = "/init.d/60-storage "
+FILES:initramfs-module-storage = "/init.d/60-storage /init.d/90-storage-overlay "
