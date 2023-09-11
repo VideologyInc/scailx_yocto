@@ -1,23 +1,25 @@
 DESCRIPTION = "Scailx initramfs image"
 LICENSE = "MIT"
 
-VIRTUAL-RUNTIME_dev_manager ?= "busybox-mdev"
+VIRTUAL-RUNTIME_dev_manager ?= "udev"
 
 PACKAGE_INSTALL = " \
 	initramfs-framework-base \
 	initramfs-module-debug \
-	initramfs-module-mdev \
+	initramfs-module-udev \
 	initramfs-module-rootfs \
 	busybox \
 	${VIRTUAL-RUNTIME_base-utils} \
 	base-passwd e2fsprogs-e2fsck \
 	i2c-tools \
+	libgpiod-tools \
 	${ROOTFS_BOOTSTRAP_INSTALL} \
 	"
 
 # PACKAGE_INSTALL += " initramfs-module-overlayroot "
 PACKAGE_INSTALL += " initramfs-module-swupdate "
 PACKAGE_INSTALL += " initramfs-module-storage "
+PACKAGE_INSTALL += " initramfs-module-i2cdetect "
 
 # PACKAGE_INSTALL += " initramfs-module-nfsrootfs "
 
