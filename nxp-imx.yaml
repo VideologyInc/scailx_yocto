@@ -40,9 +40,6 @@ repos:
       meta-ml:
       meta-sdk:
 
-  meta-nxp-demo-experience:
-    url: https://source.codeaurora.org/external/imxsupport/meta-nxp-demo-experience
-
   meta-virtualization:
     url: git://git.yoctoproject.org/meta-virtualization
 
