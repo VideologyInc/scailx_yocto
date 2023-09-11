@@ -16,23 +16,26 @@ SWU_ROOTFS_IMAGE = "scailx-image-swupdate"
 
 # IMAGE_DEPENDS: list of Yocto images that contains a root filesystem
 # it will be ensured they are built before creating swupdate image
-IMAGE_DEPENDS += "${SWU_ROOTFS_IMAGE} virtual/kernel virtual/bootloader"
+IMAGE_DEPENDS += "${SWU_ROOTFS_IMAGE} virtual/kernel virtual/bootloader virtual/dtb"
 
 # SWUPDATE_IMAGES: list of images that will be part of the compound image
 # the list can have any binaries - images must be in the DEPLOY directory
 SWUPDATE_IMAGES = " \
     ${SWU_ROOTFS_IMAGE} \
     imx-boot-karo \
+    devicetrees \
+    modules \
     Image-initramfs \
 "
 
 # Images can have multiple formats - define which image must be
 # taken to be put in the compound image
 SWUPDATE_IMAGES_FSTYPES[Image-initramfs] = ".bin"
+SWUPDATE_IMAGES_FSTYPES[devicetrees] = ".tgz"
+SWUPDATE_IMAGES_FSTYPES[modules] = ".squashfs"
 python () {
     d.setVarFlag("SWUPDATE_IMAGES_FSTYPES", d.getVar('SWU_ROOTFS_IMAGE'), ".squashfs")
 }
-
 # SWUPDATE_SIGNING : if set, the SWU is signed. There are 3 allowed values: RSA, CMS, CUSTOM. This value determines used signing mechanism.
 # SWUPDATE_SIGN_TOOL : instead of using openssl, use SWUPDATE_SIGN_TOOL to sign the image. A typical use case is together with a hardware key. It is available if SWUPDATE_SIGNING is set to CUSTOM
 # SWUPDATE_PRIVATE_KEY : this is the file with the private key used to sign the image using RSA mechanism. Is available if SWUPDATE_SIGNING is set to RSA.

@@ -61,9 +61,10 @@ fatal() {
     if [ -n "$bootparam_init_fatal_sh" ]; then
         sh
     else
-    while [ "true" ]; do
-        sleep 3600
-    done
+        # use swupdate as an error fallback
+        echo "yes" > /tmp/swupdate_enabled
+        echo "err" > /tmp/initrd_error
+        eval "swupdate_run"
     fi
 }
 
@@ -149,7 +150,7 @@ for m in $MODULES_DIR/*; do
     fi
 
     debug "Running ${module}_run"
-    eval "${module}_run"
+    eval "${module}_run" || fatal "ERROR: Failed to run module $module"
 
     # post hooks
     for h in $MODULE_POST_HOOKS; do

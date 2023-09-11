@@ -3,6 +3,7 @@
 # Licensed on MIT
 
 rootfs_enabled() {
+	[ -f /tmp/initrd_error ] && return 1
 	return 0
 }
 

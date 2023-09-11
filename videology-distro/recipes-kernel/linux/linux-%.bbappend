@@ -1,0 +1,1 @@
+inherit kernel-modules-squashfs

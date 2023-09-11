@@ -1,10 +1,6 @@
-DESCRIPTION = "Scailx swupdate image"
-LICENSE = "MIT"
+DESCRIPTION = "Scailx swupdate container image"
 
-inherit core-image
-inherit link_default_dtb
-inherit extra-dirs
-EXTRA_ROOTFS_DIRS = "storage containers config"
+inherit scailx-swupdate-image
 
 DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
 
@@ -26,9 +22,7 @@ IMAGE_INSTALL += " \
     gnupg \
     dtc \
     i2c-tools \
-    libubootenv-bin \
-	u-boot-default-env \
-	avahi-services-ssh \
+    avahi-services-ssh \
     avahi-services-sftp \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
@@ -39,11 +33,3 @@ IMAGE_INSTALL += " \
 DOCKER ?= "podman podman-compose catatonit fuse-overlayfs "
 # slirp4netns
 
-CORE_IMAGE_EXTRA_INSTALL += " \
-	mmc-utils \
-    swupdate \
-	swupdate-www \
-    swupdate-config \
-"
-
-IMAGE_FSTYPES = "squashfs"

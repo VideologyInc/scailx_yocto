@@ -1,8 +1,13 @@
 #!/bin/sh
 
-if [ $# -lt 1 ]; then
-    exit 0;
-fi
+[ $# -lt 1 ] && exit 0;
+
+# split the arguments into KEY=VALUE pairs
+for ARGUMENT in "$@"; do
+   KEY=$(echo "$ARGUMENT" | cut -f1 -d=)
+   VALUE=$(echo "$ARGUMENT" | cut -f2 -d=)
+   export "$KEY"="$VALUE"
+done
 
 function get_slot
 {
@@ -35,7 +40,7 @@ if [ $1 == "preinst" ]; then
     mkdir -p /tmp/storage
     mount /dev/storage /tmp/storage
     mkdir -p /tmp/storage/bsp/0/ /tmp/storage/bsp/1/
-    # rm -rf /tmp/storage/overlay/*
+    rm -rf /tmp/storage/overlay/*
     ln -sf -T "/tmp/storage/bsp/${UPDATE_SLOT}" /tmp/update_bsp
 
     if [ "$UPDATE_SLOT" = "0" ]; then
