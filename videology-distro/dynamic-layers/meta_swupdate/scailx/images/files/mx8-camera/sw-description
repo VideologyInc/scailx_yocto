@@ -24,11 +24,6 @@ software =
                 path = "/tmp/update_bsp/rootfs.squashfs";
             },
             {
-                filename = "modules-@@MACHINE@@.squashfs";
-                sha256 = "$swupdate_get_sha256(modules-@@MACHINE@@.squashfs)";
-                path = "/tmp/update_bsp/modules.squashfs";
-            },
-            {
                 filename = "Image-initramfs-@@MACHINE@@.bin";
                 sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
                 path = "/tmp/update_boot/Image-initramfs";
