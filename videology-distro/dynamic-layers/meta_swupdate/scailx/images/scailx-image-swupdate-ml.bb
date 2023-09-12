@@ -34,6 +34,7 @@ IMAGE_INSTALL += " \
 	openssh-sftp-server \
     gst-perf \
     fuse-exfat \
+    kernel-modules \
 	xauth \
     gnupg \
     dtc \

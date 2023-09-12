@@ -17,7 +17,7 @@ IMAGE_CMD:squashsplit(){
     for d in ${SQUASH_SPLIT_DIRS}; do
         fname=$(echo $d | tr / @)
         bbnote "Creating ${IMGDEPLOYDIR}/${IMAGE_NAME}.${fname}.squashfs"
-        mksquashfs "${IMAGE_ROOTFS}/$d" "${IMGDEPLOYDIR}/${IMAGE_NAME}.${fname}.squashfs" ${SQUASHFS_OPTS}
+        mksquashfs "$d" "${IMGDEPLOYDIR}/${IMAGE_NAME}.${fname}.squashfs" -tarstyle ${SQUASHFS_OPTS}
     done
 
     exclude=$(echo "${SQUASH_SPLIT_DIRS} ${SQUASH_SPLIT_RM}" | sed -E 's#(\S+)#\1\/\*#g')

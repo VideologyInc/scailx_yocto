@@ -39,9 +39,10 @@ if [ $1 == "preinst" ]; then
     ln -sf -T "/dev/mmcblk0p3" /dev/storage
     mkdir -p /tmp/storage
     mount /dev/storage /tmp/storage
-    mkdir -p /tmp/storage/bsp/0/ /tmp/storage/bsp/1/
+    mkdir -p /tmp/storage/bsp/0/mounts /tmp/storage/bsp/1/mounts
     rm -rf /tmp/storage/overlay/*
     ln -sf -T "/tmp/storage/bsp/${UPDATE_SLOT}" /tmp/update_bsp
+    rm -rf /tmp/update_bsp/*
 
     if [ "$UPDATE_SLOT" = "0" ]; then
         ln -sf -T "/dev/mmcblk0p1" /dev/bootdev
