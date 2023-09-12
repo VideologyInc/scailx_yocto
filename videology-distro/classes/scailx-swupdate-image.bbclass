@@ -5,6 +5,8 @@ inherit link_default_dtb
 inherit extra-dirs
 EXTRA_ROOTFS_DIRS = "storage ${nonarch_libdir}/modules"
 
+inherit squashfs-split
+
 IMAGE_FEATURES += " \
 "
 # overlayfs-etc
@@ -19,7 +21,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     swupdate-config \
 "
 
-IMAGE_FSTYPES = "squashfs"
+IMAGE_FSTYPES = "squashsplit"
 
 OVERLAYFS_QA_SKIP[storage] = "mount-configured"
 
