@@ -23,16 +23,7 @@ software =
                 sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.rootfs.squashfs)";
                 path = "/tmp/update_bsp/rootfs.squashfs";
             },
-            {
-                filename = "@@IMAGE_LINK_NAME@@.lib@modules.squashfs";
-                sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.lib@modules.squashfs)";
-                path = "/tmp/update_bsp/mounts/lib@modules.squashfs";
-            },
-            {
-                filename = "@@IMAGE_LINK_NAME@@.lib@firmware.squashfs";
-                sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.lib@firmware.squashfs)";
-                path = "/tmp/update_bsp/mounts/lib@firmware.squashfs";
-            },
+            @@EXTRA_LOWERDIRS@@,
             {
                 filename = "Image-initramfs-@@MACHINE@@.bin";
                 sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";

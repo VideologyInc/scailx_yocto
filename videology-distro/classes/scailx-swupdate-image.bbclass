@@ -56,9 +56,25 @@ python () {
     for sub in subimages:
         fn = linkname+'.'+sub
         fe = '.squashfs'
-        bb.note("adding subimage %s->%s" % (fn,fe))
         d.appendVar("SWUPDATE_IMAGES", f" {fn}")
         d.setVarFlag("SWUPDATE_IMAGES_FSTYPES", fn, fe)
+}
+
+python do_swupdate_copy_swdescription:append () {
+    subimages = d.getVar('SQUASH_SPLIT_DIRS').replace('/', '@').split()
+
+    lower_dirs = [f"""{{
+                filename = "{image}.{sub}.squashfs";
+                sha256 = "$swupdate_get_sha256({image}.{sub}.squashfs)";
+                path = "/tmp/update_bsp/mounts/{sub}";
+            }}""" for sub in subimages]
+
+    with open(os.path.join(workdir, "sw-description"), 'r') as f:
+        content = f.read()
+    with open(os.path.join(workdir, "sw-description"), 'w') as f:
+        f.write(content.replace('@@EXTRA_LOWERDIRS@@', ',\n            '.join(lower_dirs)))
+    with open(os.path.join(d.getVar('WORKDIR'), "sw-description"), 'w') as f:
+        f.write(content.replace('@@EXTRA_LOWERDIRS@@', ',\n            '.join(lower_dirs)))
 }
 
 inherit swupdate-image
