@@ -1,0 +1,96 @@
+#!/bin/sh
+# Copyright (C) 2023/08/29 VideologyInc
+# Licensed on MIT
+
+i2cdetect_enabled() {
+	return 0
+}
+
+# Hardware detection and device-tree-overlay loading script.
+# Loads device-tree-overlays based on the i2c devices detected, and the overlays file.
+
+# | I2C_OVERLAYS structure:  |
+# |  addr  |  overlay_fname  |
+# |--------|-----------------|
+# |  0x40  |  device.dtbo    |
+
+OVERLAYS_FILE="/storage/config/overlays"
+I2C_OVERLAYS="/storage/config/i2c-overlays"
+CAM_OVERLAYS="/etc/cam-overlays"
+MACHINE=$(cat /etc/build | grep '^MACHINE = ' | awk '{ print $3 }')
+
+i2cdetect_run() {
+    # get named gpios
+    GPIOS=$(gpioinfo | awk '{ print $3}' | grep '\"*\"' | tr -d '"')
+
+    # enable the power GPIOs for the cameras and gpio ports
+    for f in $GPIOS; do
+        if [[ "$f" == *PWR-EN* ]]; then
+            pp=$(gpiofind $f)
+            gpioset ${pp}=1
+        fi
+    done
+
+   # enable the power GPIOs for the cameras
+    for f in $GPIOS; do
+        if [[ "$f" == *RST_CAM* ]]; then
+            pp=$(gpiofind $f)
+            gpioset ${pp}=1
+        fi
+    done
+
+    # mount configfs so we can dynamically load DTB overlays
+    mount -t configfs configfs /sys/kernel/config/
+
+    # add everything from the overlays file:
+    if [ -f $OVERLAYS_FILE ]; then
+        while read -r line
+        do
+            mkdir /sys/kernel/config/device-tree/overlays/${line%.*}
+            cat /boot/devicetree/$line > /config/device-tree/overlays/${line%.*}/dtbo
+        done < $OVERLAYS_FILE
+    fi
+
+    # Itterate over the camera devices
+    cat $CAM_OVERLAYS | while read -r line || [[ -n "$line" ]]; do
+        echo "Loading camera overlays $line"
+        addr=$(echo $line | awk '{ print $1 }')
+        overlay=$(echo $line | awk '{ print $2 }')
+
+        for i in 0 1 2 3 4 5; do
+            i2c_name=$(strings "/dev/i2c_names/csi${i}_i2c" 2> /dev/null) || continue
+            if i2cget -y "$i2c_name" "$addr" 0x00 > /dev/null 2>&1; then
+                echo "Found camera $i on i2c bus $i2c_name at address $addr"
+                # load the overlay
+                mkdir -p "/sys/kernel/config/device-tree/overlays/${overlay%.*}"
+                cat "/boot/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${overlay%.*}/dtbo" | \
+                cat "/boot/devicetree/*cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${overlay%.*}/dtbo"
+            fi
+        done
+    done
+
+    # look for i2c devices
+    # if [ -f $I2C_OVERLAYS ]; then
+    #     cat $I2C_OVERLAYS | while read -r line || [[ -n "$line" ]]; do
+    #         addr=$(echo $line | awk '{ print $1 }')
+    #         overlay=$(echo $line | awk '{ print $2 }')
+
+    #         # load the overlay
+    #         for f in /sys/bus/i2c/devices/i2c-*/name; do
+    #             i2c_name=$(strings $f 2> /dev/null) || continue
+    #             if i2cget -y "$i2c_name" "$addr" 0x00 > /dev/null 2>&1; then
+    #                 echo "Found device on i2c bus $f at address $addr. Loading overlay $overlay"
+    #                 # load the overlay
+    #                 mkdir -p "/sys/kernel/config/device-tree/overlays/${overlay%.*}"
+    #                 cat "/boot/devicetree/cam${i}-${overlay}" > "/config/device-tree/overlays/${overlay%.*}/dtbo"
+    #             fi
+    #         done
+
+    #         mkdir /config/device-tree/overlays/${overlay%.*}
+    #         cat /boot/devicetree/$overlay > >/config/device-tree/overlays/${overlay%.*}/dtbo
+
+    #         # get the i2c device
+    #         i2c-dev -r -f -y $bus $addr
+    #     done < $I2C_OVERLAYS
+    # fi
+}

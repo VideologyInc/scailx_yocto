@@ -37,10 +37,10 @@ repos:
     # path: sources/meta-imx
     refspec: refs/tags/rel_imx_5.15.71_2.2.0
     url: https://github.com/nxp-imx/meta-imx
-  meta-nxp-demo-experience:
-    # path: sources/meta-nxp-demo-experience
-    refspec: 52eaf8bf42f8eda2917a1c8c046003c8c2c8f629
-    url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
+  # meta-nxp-demo-experience:
+  #   # path: sources/meta-nxp-demo-experience
+  #   refspec: 52eaf8bf42f8eda2917a1c8c046003c8c2c8f629
+  #   url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
   # meta-nxp-desktop:
   #   # path: sources/meta-nxp-desktop
   #   refspec: refs/tags/rel_lf_5.15.71_2.2.0_ldp

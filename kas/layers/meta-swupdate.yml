@@ -9,3 +9,8 @@ header:
 repos:
   meta-swupdate:
     url: https://github.com/sbabic/meta-swupdate.git
+
+local_conf_header:
+  swupdate: |
+    DISTROOVERRIDES:append = ":scailx-swu"
+

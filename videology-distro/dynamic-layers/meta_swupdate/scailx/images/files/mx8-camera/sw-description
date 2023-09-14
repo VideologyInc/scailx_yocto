@@ -1,0 +1,48 @@
+software =
+{
+    version = "@@SCAILX_VERSION@@";
+
+    @@MACHINE@@ = {
+        hardware-compatibility: [ "1.0" ];
+
+        images: (
+            {
+                name: "bootloader";
+                filename = "imx-boot-karo";
+                sha256 = "$swupdate_get_sha256(imx-boot-karo)";
+                version = "@@SCAILX_UBOOT_VERSION@@";
+                type = "raw";
+                device = "/dev/ubootdev";
+                install-if-different = true;
+            }
+        );
+
+        files: (
+            {
+                filename = "@@IMAGE_LINK_NAME@@.squashfs";
+                sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.squashfs)";
+                path = "/tmp/update_bsp/rootfs.squashfs";
+            },
+            {
+                filename = "Image-initramfs-@@MACHINE@@.bin";
+                sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
+                path = "/tmp/update_boot/Image-initramfs";
+            },
+            {
+                filename = "devicetrees.tgz";
+                type = "archive";
+                path = "/tmp/update_boot";
+                sha256 = "$swupdate_get_sha256(devicetrees.tgz)";
+            }
+        );
+
+        scripts: (
+            {
+                data = "DEFAULT_DTB=@@DEFAULT_DTB@@\n";
+                filename = "update.sh";
+                type = "shellscript";
+                sha256 = "$swupdate_get_sha256(update.sh)";
+            }
+        );
+    };
+};

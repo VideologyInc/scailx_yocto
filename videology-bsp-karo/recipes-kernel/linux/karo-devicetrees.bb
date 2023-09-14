@@ -25,3 +25,8 @@ S = "${WORKDIR}/dts/freescale"
 COMPATIBLE_MACHINE = ".*(mx8).*"
 
 RM_WORK_EXCLUDE += "${PN}"
+
+do_deploy:append() {
+	cd ${DEPLOYDIR}
+	tar czf ${DEPLOYDIR}/devicetrees.tgz *
+}
