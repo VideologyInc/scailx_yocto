@@ -19,14 +19,9 @@ software =
 
         files: (
             {
-                filename = "@@SWU_ROOTFS_IMAGE@@-@@MACHINE@@.squashfs";
-                sha256 = "$swupdate_get_sha256(@@SWU_ROOTFS_IMAGE@@-@@MACHINE@@.squashfs)";
+                filename = "@@IMAGE_LINK_NAME@@.squashfs";
+                sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.squashfs)";
                 path = "/tmp/update_bsp/rootfs.squashfs";
-            },
-            {
-                filename = "modules-@@MACHINE@@.squashfs";
-                sha256 = "$swupdate_get_sha256(modules-@@MACHINE@@.squashfs)";
-                path = "/tmp/update_bsp/modules.squashfs";
             },
             {
                 filename = "Image-initramfs-@@MACHINE@@.bin";

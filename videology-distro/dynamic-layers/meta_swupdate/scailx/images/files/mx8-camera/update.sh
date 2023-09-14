@@ -25,7 +25,7 @@ function get_slot
 
 function get_update_devices
 {
-    BOOTLOADER_PART="/dev/mmcblk0boot${UPDATE_SLOT}"
+    export BOOTLOADER_PART="/dev/mmcblk0boot${UPDATE_SLOT}"
 }
 
 if [ $1 == "preinst" ]; then
@@ -39,9 +39,10 @@ if [ $1 == "preinst" ]; then
     ln -sf -T "/dev/mmcblk0p3" /dev/storage
     mkdir -p /tmp/storage
     mount /dev/storage /tmp/storage
-    mkdir -p /tmp/storage/bsp/0/ /tmp/storage/bsp/1/
-    rm -rf /tmp/storage/overlay/*
     ln -sf -T "/tmp/storage/bsp/${UPDATE_SLOT}" /tmp/update_bsp
+    rm -rf /tmp/update_bsp/*
+    mkdir -p /tmp/update_bsp/mounts
+    rm -rf /tmp/storage/overlay/*
 
     if [ "$UPDATE_SLOT" = "0" ]; then
         ln -sf -T "/dev/mmcblk0p1" /dev/bootdev

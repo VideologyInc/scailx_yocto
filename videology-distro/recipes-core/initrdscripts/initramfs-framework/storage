@@ -24,14 +24,17 @@ storage_overlay_hook() {
 
     get_slot
     #install modules.squashfs in rootfs
-    if [ -f "/storage/bsp/$CURRENT_SLOT/modules.squashfs" ]; then
-        # mkdir -p /$ROOTFS_DIR/lib/modules
-        mount -t squashfs /storage/bsp/$CURRENT_SLOT/modules.squashfs /$ROOTFS_DIR/lib/modules
-    fi
+    mounts=""
+    for f in /storage/bsp/$CURRENT_SLOT/mounts/*.squashfs; do
+        [ -f "$f" ] || continue
+        f=$(basename -s .squashfs $f)
+        mkdir -p /volumes/$f
+        mount -t squashfs -o loop /storage/bsp/$CURRENT_SLOT/mounts/$f.squashfs /volumes/$f && mounts="/volumes/$f:$mounts"
+    done
 
     mkdir -p /storage/overlay/upper
     mkdir -p /storage/overlay/work
-    mount -t overlay -o index=off,metacopy=off,lowerdir=$ROOTFS_DIR,upperdir=/storage/overlay/upper,workdir=/storage/overlay/work overlay "$ROOTFS_DIR"
+    mount -t overlay -o index=off,metacopy=off,lowerdir=${mounts}${ROOTFS_DIR},upperdir=/storage/overlay/upper,workdir=/storage/overlay/work overlay "$ROOTFS_DIR"
     if [ $? -ne 0 ]; then
         echo "Failed to mount overlay for /. Clearing overlay."
         rm -rf /storage/overlay/upper/*
