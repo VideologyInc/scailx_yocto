@@ -1,5 +1,5 @@
 header:
-  version: 11
+  version: 14
   includes:
     - kas/layers/meta-oe.yml
     - kas/layers/meta-multimedia.yml
@@ -11,8 +11,9 @@ header:
     - kas/layers/meta-networking.yml
     - kas/layers/poky.yml
     - kas/layers/meta-freescale.yml
-    - kas/layers/meta-qt6.yml
+    # - kas/layers/meta-qt6.yml
     - kas/layers/meta-browser.yml
+    - kas/layers/meta-security.yml
 
 build_system: oe
 
@@ -33,15 +34,15 @@ repos:
     url: https://github.com/Freescale/meta-freescale-distro
 
   meta-imx:
-    url: https://source.codeaurora.org/external/imx/meta-imx
-    refspec: "kirkstone-5.15.32-2.0.0"
+    url: https://github.com/nxp-imx/meta-imx
+    branch: mickledore-6.1.22-2.0.0
     layers:
-      meta-bsp:
-      meta-ml:
-      meta-sdk:
+      meta-bsp: ''
+      meta-ml: ''
+      meta-sdk: ''
 
   meta-virtualization:
-    url: git://git.yoctoproject.org/meta-virtualization
+    url: https://git.yoctoproject.org/meta-virtualization
 
   poky:
     layers:

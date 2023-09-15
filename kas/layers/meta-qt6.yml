@@ -2,9 +2,9 @@
 # Copyright (c) 2021-2022 Tano Systems LLC. All rights reserved.
 
 header:
-  version: 11
+  version: 14
 
 repos:
   meta-qt6:
     url: git://code.qt.io/yocto/meta-qt6.git
-    refspec: "6.3"
+    commit: "6.3"

@@ -3,7 +3,7 @@ header:
 
 defaults:
   repos:
-    commit: kirkstone
+    branch: mickledore
 
 local_conf_header:
   standard: |

@@ -1,12 +1,12 @@
 header:
-  version: 11
+  version: 14
   includes:
     - kas/layers/meta-oe.yml
 
 repos:
   meta-debian:
     url: https://github.com/meta-debian/meta-debian.git
-    refspec: warrior
+    commit: warrior
 
 local_conf_header:
   debian: |

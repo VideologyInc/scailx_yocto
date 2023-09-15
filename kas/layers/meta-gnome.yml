@@ -9,4 +9,4 @@ header:
 repos:
   meta-openembedded:
     layers:
-      meta-filesystems:
+      meta-gnome:
