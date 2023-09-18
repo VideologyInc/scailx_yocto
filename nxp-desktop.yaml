@@ -1,0 +1,32 @@
+header:
+  version: 14
+  includes:
+    - kas/layers/meta-gnome.yml
+    # - kas/layers/meta-xfce.yml
+    - kas/layers/meta-qt6.yml
+
+distro: imx-desktop-xwayland
+machine: imx8mpevk
+target: imx-image-desktop
+
+local_conf_header:
+  nxp-desktop: |
+    # Switch to rpm packaging to avoid rootfs build break
+    PACKAGE_CLASSES = "package_rpm"
+    # Save lots of disk space
+    INHERIT += "rm_work"
+    # Set your proxy if necessary
+    #ENV_HOST_PROXIES = "http_proxy="
+    # Set user account and password
+    #APTGET_ADD_USERS = "user:password:shell"
+    #  format 'name:password:shell'.
+    #    'name' is the user name.
+    #    'password' is an encrypted password (e.g. generated with
+    #    \`echo "P4sSw0rD" \| openssl passwd -stdin\`).
+    #    If empty or missing, they'll get an empty password.
+    #    'shell' is the default shell (if empty, default is /bin/sh).
+
+repos:
+  meta-nxp-desktop:
+    url: https://github.com/nxp-imx/meta-nxp-desktop
+
