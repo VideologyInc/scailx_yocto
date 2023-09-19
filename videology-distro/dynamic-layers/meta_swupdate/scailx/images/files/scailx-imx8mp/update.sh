@@ -51,6 +51,7 @@ if [ $1 == "preinst" ]; then
     fi
     mkdir -p /tmp/update_boot
     mount /dev/bootdev /tmp/update_boot
+    rm -rf /tmp/update_boot/*
     # enable write on emmc boot partitions
     echo 0 > "/sys/block/mmcblk0boot${UPDATE_SLOT}/force_ro"
 fi
@@ -62,8 +63,8 @@ if [ $1 == "postinst" ]; then
     if which fw_setenv; then
         fw_setenv bootslot $UPDATE_SLOT
         fw_setenv mmcpart $(( $UPDATE_SLOT + 1 ))
-
     fi
+    [ -z "$DEFAULT_DTB" ] || ln -sf -T "${DEFAULT_DTB}" /tmp/update_boot/devicetree/default.dtb
     if which mmc; then
         # select the mmcblkXbootY partition based on UPDATE_SLOT
         # mmc bootpart enable <partition_number> <send_ack> </path/to/mmcblkX>

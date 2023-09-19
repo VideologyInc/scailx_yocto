@@ -2,7 +2,7 @@ inherit core-image
 inherit kernel_devel
 
 inherit link_default_dtb
-DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
+DEFAULT_DTB = "scailx_karo.dtb"
 
 DESCRIPTION = "Scailx Image. includes most AI/gstreamer related packages and demos"
 LICENSE = "MIT"

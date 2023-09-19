@@ -64,7 +64,7 @@ Its possible to run the images directly from a development computer over the net
     for example:
 ```
 sudo rm -rf /work/karo/build/tmp/deploy/images/nfs-rootfs/*
-sudo tar --same-owner -pxjf /work/karo/build/tmp/deploy/images/mx8-camera/karo-image-ml-mx8-camera.tar.bz2 -C /work/karo/build/tmp/deploy/images/nfs-rootfs
+sudo tar --same-owner -pxjf /work/karo/build/tmp/deploy/images/scailx-imx8mp/karo-image-ml-scailx-imx8mp.tar.bz2 -C /work/karo/build/tmp/deploy/images/nfs-rootfs
 ```
 
 ### Device

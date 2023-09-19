@@ -27,7 +27,7 @@ bblayers_conf_header:
     # BBFILES ?= ""
 
 distro: scailx
-machine: mx8-camera
+machine: scailx-imx8mp
 target: scailx-image
 
 local_conf_header:

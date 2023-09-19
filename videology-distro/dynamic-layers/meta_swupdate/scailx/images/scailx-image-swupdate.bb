@@ -2,7 +2,7 @@ DESCRIPTION = "Scailx swupdate container image"
 
 inherit scailx-swupdate-image
 
-DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
+DEFAULT_DTB = "scailx_karo.dtb"
 
 IMAGE_FEATURES += " \
     debug-tweaks \
