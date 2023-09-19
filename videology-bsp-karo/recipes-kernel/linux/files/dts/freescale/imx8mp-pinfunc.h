@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0+ */
 /*
- * Copyright 2019 NXP
+ * Copyright (C) 2023 VideologyInc
  */
 
 #ifndef __DTS_IMX8MP_PINFUNC_H

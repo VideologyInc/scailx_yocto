@@ -7,12 +7,34 @@
 #include <dt-bindings/clock/imx8mp-clock.h>
 #include <dt-bindings/gpio/gpio.h>
 
+&{/chosen} {
+	overlays {
+		cam1-ov5640;
+	};
+};
 
-&cameradev {
+&mipi_csi_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <594000000>;
 	status = "okay";
+
+	port@1 {
+		reg = <1>;
+		mipi_csi1_ep: endpoint {
+			remote-endpoint = <&mipi_1_ep>;
+			data-lanes = <2>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
 };
 
 &csi1_i2c {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
 	ov5640_1: ov5640_mipi@3c {
 		compatible = "ovti,ov5640";
 		reg = <0x3c>;
@@ -27,7 +49,7 @@
 		mclk_source = <0>;
 		mipi_csi;
 		status = "okay";
-		
+
 		port {
 			mipi_1_ep: endpoint {
 				remote-endpoint = <&mipi_csi1_ep>;
@@ -38,28 +60,13 @@
 	};
 };
 
-&isi_1 {
+&cameradev {
 	status = "okay";
-
-	cap_device {
-		status = "okay";
-	};
 };
 
-&mipi_csi_1 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	clock-frequency = <594000000>; 
+&isi_1 {
 	status = "okay";
-
-	port@1 {
-		reg = <1>;
-		mipi_csi1_ep: endpoint {
-			remote-endpoint = <&mipi_1_ep>;
-			data-lanes = <2>;
-			csis-hs-settle = <13>;
-			csis-clk-settle = <2>;
-			csis-wclk;
-		};
+	cap_device {
+		status = "okay";
 	};
 };
