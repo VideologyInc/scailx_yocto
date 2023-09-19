@@ -17,6 +17,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     libubootenv-bin \
 	u-boot-default-env \
 	mmc-utils \
+    volatile-binds \
     swupdate \
 	swupdate-www \
     swupdate-config \

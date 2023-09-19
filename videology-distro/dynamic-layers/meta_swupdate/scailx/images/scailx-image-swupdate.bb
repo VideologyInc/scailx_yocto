@@ -30,6 +30,9 @@ IMAGE_INSTALL += " \
     ${DOCKER} \
 "
 
-DOCKER ?= "podman podman-compose catatonit fuse-overlayfs "
+#Drivers
+IMAGE_INSTALL += " kernel-module-crosslink-lvds2mipi "
+
+DOCKER ?= "docker-ce python3-docker-compose fuse-overlayfs "
 # slirp4netns
 
