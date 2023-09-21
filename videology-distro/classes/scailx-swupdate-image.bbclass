@@ -6,6 +6,7 @@ RM_WORK_EXCLUDE += "${PN}"
 inherit extra-dirs
 EXTRA_ROOTFS_DIRS = "storage ${nonarch_libdir}/modules"
 
+FILESEXTRAPATHS:prepend := "${SCAILX_SCRIPTS_DIRS}:"
 SRC_URI += "file://update.sh"
 
 IMAGE_FEATURES += " \
