@@ -26,12 +26,17 @@ software =
             {
                 filename = "Image-initramfs-@@MACHINE@@.bin";
                 sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
-                path = "/tmp/update_boot/Image-initramfs";
+                path = "/tmp/update_boot_dir/Image-initramfs";
+            },
+            {
+                filename = "boot.scr";
+                sha256 = "$swupdate_get_sha256(boot.scr)";
+                path = "/tmp/update_boot_dir/boot.scr";
             },
             {
                 filename = "devicetrees.tgz";
                 type = "archive";
-                path = "/tmp/update_boot";
+                path = "/tmp/update_boot_dir";
                 sha256 = "$swupdate_get_sha256(devicetrees.tgz)";
             }
         );
