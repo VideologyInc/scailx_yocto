@@ -1,6 +1,5 @@
 #!/bin/sh
 
-STORAGE_DEV="/dev/mmcblk0p3"
 storage_enabled() {
     return 0
 }
@@ -15,6 +14,7 @@ function get_slot
     [ "$CURRENT_SLOT" = "1" ] || CURRENT_SLOT="0";
 }
 
+# run module pre-rootfs to load the disks.
 storage_overlay_hook() {
 	status=$1
 	module=$2
@@ -54,11 +54,25 @@ storage_run() {
     # add function to add overlay after rootfs
     add_module_post_hook "storage_overlay_hook"
 
+    # wait for disks to become available
+	C=0
+	delay=${bootparam_rootdelay:-1}
+	timeout=${bootparam_roottimeout:-5}
+	while true; do
+		[ $(( $C * $delay )) -gt $timeout ] && fatal "root '$bootparam_root' doesn't exist or does not contain a /dev."
+
+        findfs LABEL=storage && break
+
+		debug "Sleeping for $delay second(s) to wait for disk to settle..."
+		sleep $delay
+		C=$(( $C + 1 ))
+	done
+
     # mount boot partition
     get_slot
     mkdir -p /boot
-    mount /dev/disk/by-label/boot${CURRENT_SLOT} /boot
+    mount /dev/disk/by-label/boot /boot
 
     mkdir -p /storage
-    mount "${STORAGE_DEV}" /storage
+    mount /dev/disk/by-label/storage /storage
 }
