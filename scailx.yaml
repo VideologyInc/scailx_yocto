@@ -35,7 +35,6 @@ local_conf_header:
     BB_GENERATE_MIRROR_TARBALLS = "1"
     DEPLOY_DIR = "${TOPDIR}/deploy"
 
-    VOLATILE_BINDS += " /storage/containers /var/lib/docker \n\ "
   rmwork: |
     INHERIT += "rm_work"
   other: |
