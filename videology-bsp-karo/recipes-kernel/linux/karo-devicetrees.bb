@@ -10,6 +10,7 @@ SRC_URI = " \
 	file://dts/freescale/imx8mp-qsxp-ml81.dts \
 	file://dts/freescale/scailx_karo.dts \
 	file://dts/freescale/scailx-imx8mp-cam0-crosslink.dts \
+	file://dts/freescale/scailx_karo_crosslink1.dts \
 	file://dts/freescale/scailx-imx8mp-cam1-crosslink.dts \
 	file://dts/freescale/scailx-imx8mp-cam0-ov5640.dts \
 	file://dts/freescale/scailx-imx8mp-cam1-ov5640.dts \

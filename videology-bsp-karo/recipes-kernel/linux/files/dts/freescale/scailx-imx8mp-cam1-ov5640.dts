@@ -9,7 +9,7 @@
 
 &{/chosen} {
 	overlays {
-		cam1-ov5640;
+		cam1-ov5640 = __TIMESTAMP__;
 	};
 };
 
@@ -64,9 +64,3 @@
 	status = "okay";
 };
 
-&isi_1 {
-	status = "okay";
-	cap_device {
-		status = "okay";
-	};
-};

@@ -12,7 +12,7 @@
 
 &{/chosen} {
 	overlays {
-		cam0-crosslink;
+		cam0-crosslink = __TIMESTAMP__;
 	};
 };
 
@@ -55,17 +55,5 @@
 
 &cameradev {
 	status = "okay";
-};
-
-&isi_0 {
-	status = "okay";
-
-	cap_device {
-		status = "okay";
-	};
-
-	m2m_device {
-		status = "disabled";
-	};
 };
 

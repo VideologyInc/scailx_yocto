@@ -9,7 +9,7 @@
 
 &{/chosen} {
 	overlays {
-		cam0-ov5640;
+		cam0-ov5640 = __TIMESTAMP__;
 	};
 };
 
@@ -40,18 +40,6 @@
 				clock-lanes = <0>;
 			};
 		};
-	};
-};
-
-&isi_0 {
-	status = "okay";
-
-	cap_device {
-		status = "okay";
-	};
-
-	m2m_device {
-		status = "disabled";
 	};
 };
 
