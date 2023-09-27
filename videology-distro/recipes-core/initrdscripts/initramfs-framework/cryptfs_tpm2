@@ -1,0 +1,33 @@
+# Copyright (C) 2022 Fondries.IO
+# SPDX-License-Identifier: MIT
+
+cryptfs_check_tpm2() {
+	[ ! -d /sys/firmware/efi/efivars ] && fatal "EFI vars sysfs mount point not found"
+
+	# Check for SecureBoot support as PCR 7 differs based on its state
+	efi_secure=`hexdump /sys/firmware/efi/efivars/SecureBoot-* | head -n1 | awk '{print $4}'`
+	efi_mode=`hexdump /sys/firmware/efi/efivars/SetupMode-* | head -n1 | awk '{print $4}'`
+	if [ "${efi_secure}" != "0001" ] || [ "${efi_mode}" != "0000" ]; then
+		fatal "UEFI SecureBoot not enabled (required due PCR 7)"
+	fi
+
+	[ ! -e /sys/class/tpm ] && fatal "Linux TPM subsystem not found"
+
+	! systemd-cryptenroll --tpm2-device=list | grep -q "^/dev" &&
+		fatal "Make sure a valid TPM 2.0 device is available, aborting."
+}
+
+cryptfs_pre_tpm2() {
+	:
+}
+
+cryptfs_post_tpm2() {
+	:
+}
+
+cryptfs_enroll_tpm2() {
+	root_dev=$1
+
+	# Use auto, assuming there is only one TPM 2.0 device on the target hardware
+	PASSWORD=`cat /run/cryptsetup/passphrase` PIN=foo systemd-cryptenroll ${root_dev} --tpm2-device=auto --tpm2-pcrs=7 --wipe-slot=password
+}

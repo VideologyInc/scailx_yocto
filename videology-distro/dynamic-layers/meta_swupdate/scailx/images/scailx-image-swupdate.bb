@@ -22,6 +22,8 @@ IMAGE_INSTALL += " \
     gnupg \
     dtc \
     i2c-tools \
+    p11-kit \
+    opensc openssl-bin libp11 \
     avahi-services-ssh \
     avahi-services-sftp \
     packagegroup-imx-core-tools \

@@ -13,8 +13,35 @@ swupdate_enabled() {
     fi
 }
 
+format_disk() {
+    dev="$1"
+    # get hw sector size for disk
+    # bzs=$(cat /sys/block/$(basename "$dev")/queue/hw_sector_size)
+    # size=$((450 * 1024 * 1024 / bzs))
+	# partition device:
+	# gpt
+	#  512M boot
+	#  rest is storage
+
+    [ -b "$dev" ] || echo "not a block device: $dev" && return 1
+
+    sfdisk -w always -W always "$dev" <<EOF
+label: gpt
+
+name=boot,  size=880640,    type=21686148-6449-6E6F-744E-656564454649, bootable
+name=storage,               type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
+EOF
+
+	udevadm settle
+
+	mkfs.ext4 "${dev}1" -L boot
+	mkfs.ext4 "${dev}2" -L storage
+}
+
 swupdate_run() {
-    mount -t tmpfs tmpfs /tmp
+    # if we're in an error condition, format the disk
+    [ -f "/tmp/initrd_error" ] && format_disk /dev/mmcblk0
+
     # get dhcp lease
     udhcpc &
     source /etc/default/swupdate
