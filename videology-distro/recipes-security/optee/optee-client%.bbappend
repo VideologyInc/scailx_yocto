@@ -1,0 +1,1 @@
+EXTRA_OECMAKE += " -DCFG_TEE_FS_PARENT_PATH='boot/tee' "
