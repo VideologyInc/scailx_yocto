@@ -4,7 +4,7 @@
 ATTR{device/of_node/symlink}!="", ENV{DEVNAME}!="", ENV{OF_SYMLINK}+="%s{device/of_node/symlink}", SYMLINK+="%s{device/of_node/symlink}", TAG+="systemd"
 
 # create a symlink for each /proc/device-tree/alias entry that matches our of-node, skipping if it matches the first alias
-ACTION=="add|change", SUBSYSTEM=="i2c-dev|tty|spidev", PROGRAM+="/bin/sh -c '         \
+ACTION=="add|change", KERNEL!="ptyp[0-9]*", KERNEL!="tty[0-9]*", SUBSYSTEM=="i2c-dev|tty|spidev", PROGRAM+="/bin/sh -c '         \
     TTYNODE=$$(readlink $sys$devpath/device/of_node | sed 's/base/:/' | cut -d: -f2); \
     aliases=$$(ls /proc/device-tree/aliases/* | sed s@.*/@@ | awk \"!/(^i2c|^can|^serial)[0-9]/\"); \
     ret=0;                                                                            \
