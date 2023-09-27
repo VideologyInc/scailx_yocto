@@ -40,6 +40,7 @@ finish_run() {
 		mount --move /proc $ROOTFS_DIR/proc
 		mount --move /sys $ROOTFS_DIR/sys
 		mount --move /run $ROOTFS_DIR/run
+		mount --move /boot $ROOTFS_DIR/boot
 
 		cd $ROOTFS_DIR
 		exec switch_root -c /dev/console $ROOTFS_DIR ${bootparam_init:-/sbin/init}
