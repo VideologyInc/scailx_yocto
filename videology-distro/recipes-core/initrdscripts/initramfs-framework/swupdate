@@ -14,36 +14,42 @@ swupdate_enabled() {
 }
 
 format_disk() {
-    dev="$1"
+    # get the primary disk
+    for i in `cat /proc/cmdline`; do
+        [[ $i == primary-disk=* ]] && dev="${i: -1}"
+    done
+    [ -b "$dev" ] || dev=$(findfs LABEL=boot || findfs LABEL=root || findfs LABEL=rootfs); dev=$(echo $dev | sed -r 's/p?[0-9]*$//')
+    [ -b "$dev" ] || (echo "not a block device: $dev" && return 1)
+    # unmount everything on the disk
+    umount -f /boot;     umount -f /rootfs;     umount -f /storage;
+
     # get hw sector size for disk
-    # bzs=$(cat /sys/block/$(basename "$dev")/queue/hw_sector_size)
-    # size=$((450 * 1024 * 1024 / bzs))
+    # bzs=$(cat /sys/block/$(basename "$dev")/queue/hw_sector_size); size=$((450 * 1024 * 1024 / bzs))
 	# partition device:
-	# gpt
-	#  512M boot
-	#  rest is storage
-
-    [ -b "$dev" ] || echo "not a block device: $dev" && return 1
-
+	# gpt label, 512M boot, rest is storage
     sfdisk -w always -W always "$dev" <<EOF
 label: gpt
 
 name=boot,  size=880640,    type=21686148-6449-6E6F-744E-656564454649, bootable
-name=storage,               type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
+name=storage,                  type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
 EOF
 
 	udevadm settle
 
-	mkfs.ext4 "${dev}1" -L boot
-	mkfs.ext4 "${dev}2" -L storage
+    mkfs.ext4 "$(findfs PARTLABEL=boot)" -L boot
+	mkfs.ext4 "$(findfs PARTLABEL=storage)" -L storage
+}
+
+run_swupd() {
+    source /etc/default/swupdate
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg $SWUPDATE_EXTRA_ARGS -w "" -p 'sync; echo b >/proc/sysrq-trigger'
 }
 
 swupdate_run() {
     # if we're in an error condition, format the disk
-    [ -f "/tmp/initrd_error" ] && format_disk /dev/mmcblk0
+    [ -f "/tmp/initrd_error" ] && format_disk
 
     # get dhcp lease
     udhcpc &
-    source /etc/default/swupdate
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg $SWUPDATE_EXTRA_ARGS -w "" -p 'sync; echo b >/proc/sysrq-trigger'
+    run_swupd || (format_disk; run_swupd)
 }
