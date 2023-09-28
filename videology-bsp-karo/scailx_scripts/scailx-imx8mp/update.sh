@@ -26,13 +26,15 @@ function get_slot
 if [ $1 == "preinst" ]; then
     # get the current root device
     get_slot
-    DISK="/dev/$(lsblk -no PKNAME /dev/disk/by-label/boot)"
+    DISK=$(findfs LABEL=boot | sed -r 's/p?[0-9]*$//')
+    [ -b $DISK ] || exit 1
 
     # create a symlink for the update process
     ln -sf -T "${DISK}boot${UPDATE_SLOT}" /dev/ubootdev
     ln -sf -T "/dev/disk/by-label/storage" /dev/storage
     mkdir -p /tmp/storage
-    mount /dev/storage /tmp/storage
+    mount /dev/storage /tmp/storage || (umount -f /tmp/storage; mount /dev/storage /tmp/storage)
+    mkdir -p /tmp/storage/bsp/0 /tmp/storage/bsp/1
     ln -sf -T "/tmp/storage/bsp/${UPDATE_SLOT}" /tmp/update_bsp
     rm -rf /tmp/update_bsp/*
     mkdir -p /tmp/update_bsp/mounts
@@ -40,7 +42,8 @@ if [ $1 == "preinst" ]; then
 
     ln -sf -T "/dev/disk/by-label/boot" /dev/bootdev
     mkdir -p /tmp/update_boot
-    mount /dev/bootdev /tmp/update_boot
+    mount /dev/bootdev /tmp/update_boot || (umount -f /dev/bootdev; mount /dev/bootdev /tmp/update_boot)
+    mkdir -p /tmp/update_boot/bsp0 /tmp/update_boot/bsp1
     ln -sf -T "/tmp/update_boot/bsp${UPDATE_SLOT}/" /tmp/update_boot_dir
     rm -rf /tmp/update_boot_dir/*
     # enable write on emmc boot partitions
@@ -49,7 +52,7 @@ fi
 
 if [ $1 == "postinst" ]; then
     get_slot
-    DISK="/dev/$(lsblk -no PKNAME /dev/disk/by-label/boot)"
+    DISK=$(findfs LABEL=boot | sed -r 's/p?[0-9]*$//')
 
     # Adjust u-boot-fw-utils for eMMC on the installed rootfs
     rm -f /tmp/update_boot/slot*
@@ -59,7 +62,7 @@ if [ $1 == "postinst" ]; then
         fw_setenv fdt_file default.dtb
     fi
     if [ -n "$DEFAULT_DTB" ]; then
-        ln -sf -T "bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" bsp${UPDATE_SLOT}/devicetree/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb
+        ln -sf -T "bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb
         ln -sf -T "bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb
         ln -sf -T "bsp${UPDATE_SLOT}/boot.scr" /tmp/update_boot/boot.scr
     fi
