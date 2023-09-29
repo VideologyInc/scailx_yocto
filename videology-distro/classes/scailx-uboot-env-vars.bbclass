@@ -11,6 +11,7 @@ else \
   run bootcmd_${boot_mode} bootm_cmd; \
 fi'
 
+SCAILX_UBOOT_ENV[bootcmd] = 'run scailx_bootcmd'
 SCAILX_UBOOT_ENV[devtype] = 'mmc'
 SCAILX_UBOOT_ENV[devnum] ?= '0'
 SCAILX_UBOOT_ENV[distro_bootpart] ?= '1'

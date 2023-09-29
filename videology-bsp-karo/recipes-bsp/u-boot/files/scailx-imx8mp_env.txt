@@ -7,7 +7,7 @@ boot_mode=mmc
 bootargs_pvr=run default_bootargs; setenv bootargs ${bootargs} root=/dev/ram rootfstype=ramfs rdinit=/bin/sh rootwait quiet ${append_bootargs}
 bootargs_mmc=run default_bootargs; setenv bootargs ${bootargs} root=/storage/bsp/${rootfs} rootwait ${append_bootargs}
 bootargs_nfs=run default_bootargs; setenv bootargs ${bootargs} root=/dev/nfs nfsroot=${serverip}:${nfsroot},nolock,v4 ip=dhcp ${append_bootargs}
-bootcmd=run bootcmd_${boot_mode} bootm_cmd
+bootcmd=run scailx_bootcmd
 bootcmd_mmc=run loadkernel bootargs_mmc
 bootcmd_pvr=run loadscript bootargs_pvr; source ${scriptaddr}
 bootcmd_nfs=dhcp; run tftpfdt tftpkernel bootargs_nfs
