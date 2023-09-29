@@ -14,6 +14,12 @@ software =
                 type = "raw";
                 device = "/dev/ubootdev";
                 install-if-different = true;
+            },
+            {
+                name: "uboot-env";
+                filename = "uboot-env.txt";
+                sha256 = "$swupdate_get_sha256(uboot-env.txt)";
+                type: "bootloader";
             }
         );
 

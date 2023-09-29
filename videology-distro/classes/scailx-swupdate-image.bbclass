@@ -5,6 +5,7 @@ inherit core-image
 RM_WORK_EXCLUDE += "${PN}"
 inherit extra-dirs
 EXTRA_ROOTFS_DIRS += "storage ${nonarch_libdir}/modules"
+inherit scailx-uboot-env
 
 FILESEXTRAPATHS:prepend := "${SCAILX_SCRIPTS_DIRS}:"
 SRC_URI += "file://update.sh"
@@ -40,6 +41,7 @@ SWUPDATE_IMAGES += " \
     devicetrees \
     Image-initramfs \
     boot \
+    uboot-env \
 "
 
 # Images can have multiple formats - define which image must be
@@ -47,10 +49,16 @@ SWUPDATE_IMAGES += " \
 SWUPDATE_IMAGES_FSTYPES[Image-initramfs] = ".bin"
 SWUPDATE_IMAGES_FSTYPES[devicetrees] = ".tgz"
 SWUPDATE_IMAGES_FSTYPES[boot] = ".scr"
+SWUPDATE_IMAGES_FSTYPES[uboot-env] = ".txt"
 
 python () {
     linkname = d.getVar('IMAGE_LINK_NAME')
     d.setVarFlag("SWUPDATE_IMAGES_FSTYPES", linkname, ".squashfs")
+}
+
+do_fetch:append() {
+    s = d.getVar('DEPLOY_DIR_IMAGE')
+    output_env_file(d, os.path.join(s,'uboot-env.txt'))
 }
 
 inherit swupdate-image

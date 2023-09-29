@@ -26,7 +26,7 @@ fdt_file=/devicetree/default.dtb
 fdt_addr=40400000
 fdt_addr_r=40400000
 fdtoverlay_addr_r=40800000
-scriptaddr=40B00000
+script_addr=40D00000
 kernel_addr_r=41000000
 ramdisk_addr_r=47000000
 initrd_addr=-
@@ -43,6 +43,16 @@ mmcdev=0
 mmcpart=1
 nfsroot=/
 nfsvers=4
-serverip=192.168.0.132
 otg_mode=peripheral
-
+scailx_bootcmd=run default_bootargs; \
+if test -e ${devtype} ${devnum}:${distro_bootpart} boot.scr; then \
+  load ${devtype} ${devnum}:${distro_bootpart} ${script_addr} boot.scr; \
+  echo "Running distro script boot.scr"; \
+  source ${script_addr}; \
+else \
+  run bootcmd_${boot_mode} bootm_cmd; \
+fi
+devtype=mmc
+devnum=0
+distro_bootpart=1
+load_addr=40B00000
