@@ -25,7 +25,9 @@ OPENCV_PKGS:imxgpu = " \
     python3-opencv \
 "
 
-DOCKER ?= "podman podman-compose catatonit fuse-overlayfs podman-tui"
+# DOCKER ?= "podman podman-compose catatonit fuse-overlayfs podman-tui"
+DOCKER ?= "docker-ce python3-docker-compose fuse-overlayfs "
+
 # slirp4netns
 
 IMAGE_INSTALL += " \
