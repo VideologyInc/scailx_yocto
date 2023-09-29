@@ -4,8 +4,10 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 inherit core-image
 RM_WORK_EXCLUDE += "${PN}"
 inherit extra-dirs
-EXTRA_ROOTFS_DIRS = "storage ${nonarch_libdir}/modules"
+EXTRA_ROOTFS_DIRS += "storage ${nonarch_libdir}/modules"
+inherit scailx-uboot-env
 
+FILESEXTRAPATHS:prepend := "${SCAILX_SCRIPTS_DIRS}:"
 SRC_URI += "file://update.sh"
 
 IMAGE_FEATURES += " \
@@ -17,19 +19,20 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     libubootenv-bin \
 	u-boot-default-env \
 	mmc-utils \
+    volatile-binds \
     swupdate \
 	swupdate-www \
     swupdate-config \
+    scailx-mounts-boot \
+    scailx-mounts-storage \
 "
 
 IMAGE_FSTYPES = "squashfs"
 
-OVERLAYFS_QA_SKIP[storage] = "mount-configured"
-
 
 # IMAGE_DEPENDS: list of Yocto images that contains a root filesystem
 # it will be ensured they are built before creating swupdate image
-IMAGE_DEPENDS += "virtual/kernel virtual/bootloader virtual/dtb"
+IMAGE_DEPENDS += "virtual/kernel virtual/bootloader virtual/dtb scailx-boot-script"
 
 # SWUPDATE_IMAGES: list of images that will be part of the compound image
 # the list can have any binaries - images must be in the DEPLOY directory
@@ -37,16 +40,25 @@ SWUPDATE_IMAGES += " \
     imx-boot-karo \
     devicetrees \
     Image-initramfs \
+    boot \
+    uboot-env \
 "
 
 # Images can have multiple formats - define which image must be
 # taken to be put in the compound image
 SWUPDATE_IMAGES_FSTYPES[Image-initramfs] = ".bin"
 SWUPDATE_IMAGES_FSTYPES[devicetrees] = ".tgz"
+SWUPDATE_IMAGES_FSTYPES[boot] = ".scr"
+SWUPDATE_IMAGES_FSTYPES[uboot-env] = ".txt"
 
 python () {
     linkname = d.getVar('IMAGE_LINK_NAME')
     d.setVarFlag("SWUPDATE_IMAGES_FSTYPES", linkname, ".squashfs")
+}
+
+do_fetch:append() {
+    s = d.getVar('DEPLOY_DIR_IMAGE')
+    output_env_file(d, os.path.join(s,'uboot-env.txt'))
 }
 
 inherit swupdate-image

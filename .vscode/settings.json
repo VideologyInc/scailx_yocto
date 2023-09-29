@@ -10,7 +10,7 @@
             "icon": "terminal-bash"
         }
     },
-    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.defaultProfile.linux": "kas",
     "search.exclude": {
         "**/.repo": true,
         "**/build/**": true,

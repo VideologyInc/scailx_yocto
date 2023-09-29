@@ -1,0 +1,26 @@
+From aa002118e588dcc4a3c31f502c54a83bf3d1641f Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Fri, 22 Sep 2023 12:29:53 +0200
+Subject: [PATCH] add reboot-reason to env
+
+---
+ board/karo/tx8m/tx8mp.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/board/karo/tx8m/tx8mp.c b/board/karo/tx8m/tx8mp.c
+index ebf650da06..fda68f38ac 100644
+--- a/board/karo/tx8m/tx8mp.c
++++ b/board/karo/tx8m/tx8mp.c
+@@ -442,6 +442,9 @@ int board_late_init(void)
+ 		printf("Watchog reset detected; reboot required!\n");
+ 		env_set("wdreset", "1");
+ 	}
++
++	env_set_hex("reset_cause", get_imx_reset_cause());
++
+ 	if (had_ctrlc()) {
+ 		env_set("safeboot", "1");
+ 		fdt_file = NULL;
+-- 
+2.34.1
+

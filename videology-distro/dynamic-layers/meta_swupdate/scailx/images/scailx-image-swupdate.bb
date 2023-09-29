@@ -2,7 +2,7 @@ DESCRIPTION = "Scailx swupdate container image"
 
 inherit scailx-swupdate-image
 
-DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
+DEFAULT_DTB = "scailx_karo_cameras.dtb"
 
 IMAGE_FEATURES += " \
     debug-tweaks \
@@ -22,6 +22,8 @@ IMAGE_INSTALL += " \
     gnupg \
     dtc \
     i2c-tools \
+    p11-kit \
+    opensc openssl-bin libp11 \
     avahi-services-ssh \
     avahi-services-sftp \
     packagegroup-imx-core-tools \
@@ -30,6 +32,9 @@ IMAGE_INSTALL += " \
     ${DOCKER} \
 "
 
-DOCKER ?= "podman podman-compose catatonit fuse-overlayfs "
+#Drivers
+IMAGE_INSTALL += " kernel-module-crosslink-lvds2mipi "
+
+DOCKER ?= "docker-ce python3-docker-compose fuse-overlayfs "
 # slirp4netns
 

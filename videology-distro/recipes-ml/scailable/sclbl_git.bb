@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/license-agreement-03112021.pdf;md5=d918cd2
 
 archurl = ""
 special = ""
-special:mx8-camera = "_videology"
+special:scailx-imx8mp = "_videology"
 archurl:aarch64    = "aarch64"
 archurl:arm64      = "aarch64"
 archurl:armv7      = "arm32"

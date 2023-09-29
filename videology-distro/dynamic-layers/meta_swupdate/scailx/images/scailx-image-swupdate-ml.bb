@@ -2,7 +2,7 @@ DESCRIPTION = "Scailx swupdate container image"
 
 inherit scailx-swupdate-image
 
-DEFAULT_DTB = "scailx_karo_crosslink1.dtb"
+DEFAULT_DTB = "scailx_karo_cameras.dtb"
 
 IMAGE_FEATURES += " \
     debug-tweaks \
@@ -25,7 +25,9 @@ OPENCV_PKGS:imxgpu = " \
     python3-opencv \
 "
 
-DOCKER ?= "podman podman-compose catatonit fuse-overlayfs podman-tui"
+# DOCKER ?= "podman podman-compose catatonit fuse-overlayfs podman-tui"
+DOCKER ?= "docker-ce python3-docker-compose fuse-overlayfs "
+
 # slirp4netns
 
 IMAGE_INSTALL += " \
