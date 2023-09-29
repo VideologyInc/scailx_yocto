@@ -26,8 +26,8 @@ cryptfs_post_tpm2() {
 }
 
 cryptfs_enroll_tpm2() {
-	root_dev=$1
+	crypt_dev=$1
 
 	# Use auto, assuming there is only one TPM 2.0 device on the target hardware
-	PASSWORD=`cat /run/cryptsetup/passphrase` PIN=foo systemd-cryptenroll ${root_dev} --tpm2-device=auto --tpm2-pcrs=7 --wipe-slot=password
+	PASSWORD=`cat /run/cryptsetup/passphrase` PIN=foo systemd-cryptenroll ${crypt_dev} --tpm2-device=auto --tpm2-pcrs=7 --wipe-slot=password
 }

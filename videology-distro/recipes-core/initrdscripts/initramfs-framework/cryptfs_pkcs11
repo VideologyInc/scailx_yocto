@@ -6,7 +6,7 @@ cryptfs_check_pkcs11() {
 }
 
 cryptfs_pre_pkcs11() {
-	# Use TEE Identity with user authentication - root
+	# Use TEE Identity with user authentication - crypt
 	export CKTEEC_LOGIN_TYPE=user
 
 	# tee-supplicant is needed for OP-TEE related operations
@@ -18,7 +18,7 @@ cryptfs_post_pkcs11() {
 }
 
 cryptfs_enroll_pkcs11() {
-	root_dev=$1
+	crypt_dev=$1
 
 	MODULE=/usr/lib/libckteec.so.0
 	# We force usage of the second slot (1) to avoid clashes with lmp-device-register
@@ -48,7 +48,7 @@ EOF
 	pkcs11-tool --module $MODULE --login --pin foo --write-object /run/crypt/9d.crt --type cert --label luks --token-label lmp --id 9d
 	rm -rf /run/crypt
 
-	PASSWORD=`cat /run/cryptsetup/passphrase` PIN=foo systemd-cryptenroll ${root_dev} --pkcs11-token-uri="pkcs11:token=lmp;object=luks" --wipe-slot=password
+	PASSWORD=`cat /run/cryptsetup/passphrase` PIN=foo systemd-cryptenroll ${crypt_dev} --pkcs11-token-uri="pkcs11:token=lmp;object=luks" --wipe-slot=password
 }
 
 

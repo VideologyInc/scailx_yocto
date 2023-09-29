@@ -36,7 +36,7 @@ do_install:append() {
 }
 
 SUMMARY:initramfs-module-swupdate = "initramfs support for swupdate"
-RDEPENDS:initramfs-module-swupdate = "swupdate swupdate-www busybox-udhcpc busybox"
+RDEPENDS:initramfs-module-swupdate = "swupdate swupdate-www busybox-udhcpc busybox e2fsprogs-mke2fs "
 FILES:initramfs-module-swupdate = "/init.d/50-swupdate /init.d/99-swupdate ${base_bindir}/pstree "
 # ${base_bindir}/disk-format"
 
