@@ -22,11 +22,11 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     swupdate \
 	swupdate-www \
     swupdate-config \
+    scailx-mounts-boot \
+    scailx-mounts-storage \
 "
 
 IMAGE_FSTYPES = "squashfs"
-
-OVERLAYFS_QA_SKIP[storage] = "mount-configured"
 
 
 # IMAGE_DEPENDS: list of Yocto images that contains a root filesystem

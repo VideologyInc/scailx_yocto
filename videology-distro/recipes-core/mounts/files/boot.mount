@@ -1,0 +1,11 @@
+[Unit]
+Description=mount boot partition
+Before=local-fs-pre.target
+ConditionPathExists=/storage
+
+[Mount]
+What=/dev/disk/by-label/boot
+Where=/boot
+
+[Install]
+WantedBy=multi-user.target
