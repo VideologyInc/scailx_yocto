@@ -62,7 +62,7 @@ if [ $1 == "postinst" ]; then
         fw_setenv fdt_file default.dtb
     fi
     if [ -n "$DEFAULT_DTB" ]; then
-        ln -sf -T "bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb
+        ln -sf -T "${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb
         ln -sf -T "bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb
         ln -sf -T "bsp${UPDATE_SLOT}/boot.scr" /tmp/update_boot/boot.scr
     fi
