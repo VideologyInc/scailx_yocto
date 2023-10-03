@@ -41,10 +41,11 @@ EOF
 }
 
 run_swupd() {
-    source /etc/default/swupdate
+    . /etc/default/swupdate
+    . /usr/bin/swupdate-env "recovery"
     dl_url="https://github.com/VideologyInc/scailx_yocto/releases/download/v0.2-kirkstone/scailx-image-swupdate-ml-${hardware}.swu"
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg $SWUPDATE_EXTRA_ARGS -d "--url $dl_url -r 1" -p 'sync; echo b >/proc/sysrq-trigger'
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg $SWUPDATE_EXTRA_ARGS -w "" -p 'sync; echo b >/proc/sysrq-trigger'
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger'
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg "$selection" -w "" -p 'sync; echo b >/proc/sysrq-trigger'
 }
 
 swupdate_run() {
@@ -52,6 +53,6 @@ swupdate_run() {
     [ -f "/tmp/initrd_error" ] && format_disk
 
     # get dhcp lease
-    udhcpc &
+    udhcpc
     run_swupd || (format_disk; run_swupd)
 }

@@ -1,0 +1,27 @@
+#! /bin/sh
+
+function get_slot {
+    for i in `cat /proc/cmdline`; do
+        if [[ $i == bootslot=* ]]; then
+            CURRENT_SLOT="${i: -1}"
+        fi;
+    done
+    # if recovery flag is set, use the other slot
+    if [ "$CURRENT_SLOT" = "1" ]; then
+        [ -f /boot/recovery ] && CURRENT_SLOT="0";
+    else
+        CURRENT_SLOT="0";
+        [ -f /boot/recovery ] && CURRENT_SLOT="1";
+    fi
+}
+
+get_slot
+
+#check if 'recovery' in args
+select='stable'
+[[ $@ == *recovery* ]] && select='recovery'
+
+[ "$CURRENT_SLOT" = "1" ] && selection="-e ${select},slot0"
+[ "$CURRENT_SLOT" = "0" ] && selection="-e ${select},slot1"
+
+echo SWUPDATE_EXTRA_ARGS="${selection}" > /tmp/swupdate.env

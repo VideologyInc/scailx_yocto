@@ -2,11 +2,13 @@
 Description=SWUpdate daemon
 Documentation=https://github.com/sbabic/swupdate
 Documentation=https://sbabic.github.io/swupdate
+After=tmp.target
 
 [Service]
 ExecStartPre=-/usr/bin/swupdate-env
 Environment=LC_CTYPE="en_US.utf8"
 EnvironmentFile=-/etc/default/swupdate
+EnvironmentFile=-/tmp/swupdate.env
 ExecStart=/usr/bin/swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg $SWUPDATE_EXTRA_ARGS -w "" -p 'reboot'
 
 [Install]
