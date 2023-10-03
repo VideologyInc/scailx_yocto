@@ -62,6 +62,7 @@ fatal() {
         sh
     else
         # use swupdate as an error fallback
+        . /init.d/*swupdate
         echo "yes" > /tmp/swupdate_enabled
         echo "err" > /tmp/initrd_error
         eval "swupdate_run"

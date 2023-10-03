@@ -16,3 +16,5 @@ do_install:append () {
 }
 
 RM_WORK_EXCLUDE += "${PN}"
+
+DEPENDS += "util-linux e2fsprogs"
