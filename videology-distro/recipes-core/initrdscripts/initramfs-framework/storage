@@ -61,7 +61,7 @@ storage_run() {
 	while true; do
 		[ $(( $C * $delay )) -gt $timeout ] && fatal "root '$bootparam_root' doesn't exist or does not contain a /dev."
 
-        findfs LABEL=storage && break
+        (findfs LABEL=storage || findfs PARTLABEL=storage) && break
 
 		debug "Sleeping for $delay second(s) to wait for disk to settle..."
 		sleep $delay
@@ -71,8 +71,8 @@ storage_run() {
     # mount boot partition
     get_slot
     mkdir -p /boot
-    mount /dev/disk/by-label/boot /boot
+    mount /dev/disk/by-label/boot    /boot    || mount /dev/disk/by-partlabel/boot    /boot
 
     mkdir -p /storage
-    mount /dev/disk/by-label/storage /storage
+    mount /dev/disk/by-label/storage /storage || mount /dev/disk/by-partlabel/storage /storage
 }

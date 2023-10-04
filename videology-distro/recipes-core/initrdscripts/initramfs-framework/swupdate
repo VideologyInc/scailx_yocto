@@ -2,6 +2,7 @@
 
 mkdir -p /tmp
 swupdate_enabled() {
+    [ -f /run/media/*/*.swu ] && mv /run/media/*/*.swu /tmp/ && return 0
     if [ -f /tmp/swupdate_enabled ]; then
         return 0
     elif [ -n "$bootparam_swupdate" ]; then
@@ -13,46 +14,40 @@ swupdate_enabled() {
     fi
 }
 
-format_disk() {
-    # get the primary disk
+function get_slot {
     for i in `cat /proc/cmdline`; do
-        [[ $i == primary-disk=* ]] && dev="${i: -1}"
+        if [[ $i == bootslot=* ]]; then
+            CURRENT_SLOT="${i: -1}"
+        fi;
     done
-    [ -b "$dev" ] || dev=$(findfs LABEL=boot || findfs LABEL=root || findfs LABEL=rootfs); dev=$(echo $dev | sed -r 's/p?[0-9]*$//')
-    [ -b "$dev" ] || (echo "not a block device: $dev" && return 1)
-    # unmount everything on the disk
-    umount -f /boot;     umount -f /rootfs;     umount -f /storage;
-
-    # get hw sector size for disk
-    # bzs=$(cat /sys/block/$(basename "$dev")/queue/hw_sector_size); size=$((450 * 1024 * 1024 / bzs))
-	# partition device:
-	# gpt label, 512M boot, rest is storage
-    sfdisk -w always -W always "$dev" <<EOF
-label: gpt
-
-name=boot,  size=880640,    type=21686148-6449-6E6F-744E-656564454649, bootable
-name=storage,                  type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
-EOF
-
-	udevadm settle
-
-    mkfs.ext4 "$(findfs PARTLABEL=boot)" -L boot
-	mkfs.ext4 "$(findfs PARTLABEL=storage)" -L storage
+    # if recovery flag is set, use the other slot
+    if [ "$CURRENT_SLOT" = "1" ]; then
+        export UPDATE_SLOT="0";
+        [ -f /boot/recovery ] && export UPDATE_SLOT="1";
+    else
+        export UPDATE_SLOT="1";
+        [ -f /boot/recovery ] && export UPDATE_SLOT="0";
+    fi
 }
 
 run_swupd() {
     . /etc/default/swupdate
-    . /usr/bin/swupdate-env "recovery"
-    dl_url="https://github.com/VideologyInc/scailx_yocto/releases/download/v0.2-kirkstone/scailx-image-swupdate-ml-${hardware}.swu"
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger'
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg "$selection" -w "" -p 'sync; echo b >/proc/sysrq-trigger'
+    get_slot
+
+    umount -f /dev/disk/by-label/storage; umount -f /dev/disk/by-partlabel/storage; umount -f /dev/disk/by-label/boot; umount -f /dev/disk/by-partlabel/boot;
+
+    selection="recovery,slot${UPDATE_SLOT}"
+    [ -f /tmp/*.swu ] && swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -i /tmp/*.swu -p 'sync; echo b >/proc/sysrq-trigger'
+    dl_url="https://github.com/VideologyInc/scailx_yocto/releases/latest/download/scailx-image-swupdate-${hardware}.swu"
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger'
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -w ""              -p 'sync; echo b >/proc/sysrq-trigger'
 }
 
 swupdate_run() {
     # if we're in an error condition, format the disk
-    [ -f "/tmp/initrd_error" ] && format_disk
+    [ -f "/tmp/initrd_error" ] && echo "boot error. Updating"
 
     # get dhcp lease
     udhcpc
-    run_swupd || (format_disk; run_swupd)
+    run_swupd
 }

@@ -23,6 +23,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     swupdate \
 	swupdate-www \
     swupdate-config \
+    e2fsprogs-tune2fs \
     scailx-mounts-boot \
     scailx-mounts-storage \
 "
@@ -59,6 +60,16 @@ python () {
 do_fetch:append() {
     s = d.getVar('DEPLOY_DIR_IMAGE')
     output_env_file(d, os.path.join(s,'uboot-env.txt'))
+}
+
+do_swuimage:append() {
+    import libconf, io, json
+    swd = os.path.join(d.getVar('S') ,'sw-description')
+    with open(swd, 'r') as f:
+        conf = libconf.load(f)
+    data = conf.software
+    output = os.path.join(d.getVar('WORKDIR'), 'sw-description.json')
+    json.dump(data, open(output, 'w'), indent=4)
 }
 
 inherit swupdate-image
