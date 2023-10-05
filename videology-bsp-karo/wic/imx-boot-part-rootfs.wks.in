@@ -11,6 +11,6 @@
 #   ${IMX_BOOT_SEEK} 32 or 33kiB, see reference manual
 bootloader --ptable msdos
 
-part /boot --source bootimg-partition   --ondisk mmcblk --label boot  --fstype=ext4 --active --align 8192 --size 128M
+part /boot --source bootimg-partition   --ondisk mmcblk --label boot  --fstype=ext4 --active --align 8192 --size 100M
 part /     --source rootfs              --ondisk mmcblk --label root  --fstype=ext4
 

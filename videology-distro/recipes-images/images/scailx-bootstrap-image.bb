@@ -1,15 +1,15 @@
-DESCRIPTION = "kernel and devicetree image"
+DESCRIPTION = "initramfs- only image to uuu onto production devices. Fetches full install from inline."
 LICENSE = "MIT"
 
 # PACKAGE_INSTALL = " "
 
 IMAGE_FEATURES = ""
-IMAGE_INSTALL = " karo-devicetrees kernel-initramfs "
+IMAGE_INSTALL = " karo-devicetrees "
 
-export IMAGE_BASENAME = "boot-image"
+DEPENDS += "scailx-boot-script "
+export IMAGE_BASENAME = "scailx-bootstrap-image"
 
-IMAGE_FSTYPES = "tar.gz"
-IMAGE_CLASSES := ""
+IMAGE_FSTYPES = "uuuimg wic"
 
 # avoid circular dependencies
 EXTRA_IMAGEDEPENDS = ""
@@ -25,3 +25,4 @@ IMAGE_OVERHEAD_FACTOR = "1.0"
 
 RM_WORK_EXCLUDE += "${PN}"
 
+OVERLAYFS_QA_SKIP[storage] = "mount-configured"

@@ -62,15 +62,15 @@ do_fetch:append() {
     output_env_file(d, os.path.join(s,'uboot-env.txt'))
 }
 
-do_swuimage:append() {
-    import libconf, io, json
-    swd = os.path.join(d.getVar('S') ,'sw-description')
-    with open(swd, 'r') as f:
-        conf = libconf.load(f)
-    data = conf.software
-    output = os.path.join(d.getVar('WORKDIR'), 'sw-description.json')
-    json.dump(data, open(output, 'w'), indent=4)
-}
+# do_swuimage:append() {
+#     import libconf, io, json
+#     swd = os.path.join(d.getVar('S') ,'sw-description')
+#     with open(swd, 'r') as f:
+#         conf = libconf.load(f)
+#     data = conf.software
+#     output = os.path.join(d.getVar('WORKDIR'), 'sw-description.json')
+#     json.dump(data, open(output, 'w'), indent=4)
+# }
 
 inherit swupdate-image
 do_swuimage[stamp-extra-info] = "${IMAGE_LINK_NAME}"
