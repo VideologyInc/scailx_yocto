@@ -26,6 +26,7 @@ jobs:
           cat << EOF > plan.json
           {
             "container": "ubuntu-22.04",
+            "artifacts": ["deploy/images"],
             "sources": {
               "kas": {
                 "url": "https://github.com/VideologyInc/scailx_yocto.git",
