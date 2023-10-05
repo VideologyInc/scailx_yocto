@@ -55,6 +55,7 @@ IMAGE_INSTALL += " \
     git \
     python3-pycairo \
     python3-pip \
+    python3-periphery \
     ${DOCKER} \
 "
 
