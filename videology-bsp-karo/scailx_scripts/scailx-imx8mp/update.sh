@@ -9,18 +9,47 @@ for ARGUMENT in "$@"; do
    export "$KEY"="$VALUE"
 done
 
-function get_slot
-{
+function get_slot {
     for i in `cat /proc/cmdline`; do
         if [[ $i == bootslot=* ]]; then
             CURRENT_SLOT="${i: -1}"
         fi;
     done
-    if [ "$CURRENT_SLOT" = "0" ]; then
-        UPDATE_SLOT="1";
+    # if recovery flag is set, use the other slot
+    if [ "$CURRENT_SLOT" = "1" ]; then
+        export UPDATE_SLOT="0";
+        [ -f /boot/recovery ] && export UPDATE_SLOT="1";
     else
-        UPDATE_SLOT="0";
+        export UPDATE_SLOT="1";
+        [ -f /boot/recovery ] && export UPDATE_SLOT="0";
     fi
+}
+
+format_disk() {
+    # get the primary disk
+    for i in `cat /proc/cmdline`; do
+        [[ $i == primary-disk=* ]] && dev="${i: -1}"
+    done
+    [ -b "$dev" ] || dev=$(findfs LABEL=boot || findfs LABEL=root || findfs LABEL=rootfs); dev=$(echo $dev | sed -r 's/p?[0-9]*$//')
+    [ -b "$dev" ] || (echo "not a block device: $dev" && return 1)
+    # unmount everything on the disk
+    umount -f /boot;     umount -f /rootfs;     umount -f /storage;
+
+    # get hw sector size for disk
+    # bzs=$(cat /sys/block/$(basename "$dev")/queue/hw_sector_size); size=$((450 * 1024 * 1024 / bzs))
+	# partition device:
+	# gpt label, 512M boot, rest is storage
+    sfdisk -w always -W always "$dev" <<EOF
+label: gpt
+
+name=boot,  size=880640,    type=21686148-6449-6E6F-744E-656564454649, bootable
+name=storage,                  type=0FC63DAF-8483-4772-8E79-3D69D8477DE4
+EOF
+
+	udevadm settle
+
+    mkfs.ext4 "$(findfs PARTLABEL=boot)" -L boot
+	mkfs.ext4 "$(findfs PARTLABEL=storage)" -L storage
 }
 
 if [ $1 == "preinst" ]; then
@@ -30,31 +59,31 @@ if [ $1 == "preinst" ]; then
     [ -b $DISK ] || exit 1
 
     # create a symlink for the update process
-    ln -sf -T "${DISK}boot${UPDATE_SLOT}" /dev/ubootdev
-    ln -sf -T "/dev/disk/by-label/storage" /dev/storage
     mkdir -p /tmp/storage
-    mount /dev/storage /tmp/storage || (umount -f /tmp/storage; mount /dev/storage /tmp/storage)
-    mkdir -p /tmp/storage/bsp/0 /tmp/storage/bsp/1
-    ln -sf -T "/tmp/storage/bsp/${UPDATE_SLOT}" /tmp/update_bsp
-    rm -rf /tmp/update_bsp/*
-    mkdir -p /tmp/update_bsp/mounts
+    mount /dev/disk/by-label/storage /tmp/storage || (umount -f /tmp/storage; mount /dev/disk/by-label/storage /tmp/storage)
+    rm -rf /tmp/storage/bsp/$UPDATE_SLOT/*
+    mkdir -p /tmp/storage/bsp/$UPDATE_SLOT/mounts
+    [ -d /tmp/storage/overlay/upper/etc/ssh ] && (mkdir -p /tmp/storage/config/persist/etc/; cp -fr -t /tmp/storage/config/persist/etc/ /tmp/storage/overlay/upper/etc/ssh)
     rm -rf /tmp/storage/overlay/*
 
-    ln -sf -T "/dev/disk/by-label/boot" /dev/bootdev
     mkdir -p /tmp/update_boot
-    mount /dev/bootdev /tmp/update_boot || (umount -f /dev/bootdev; mount /dev/bootdev /tmp/update_boot)
-    mkdir -p /tmp/update_boot/bsp0 /tmp/update_boot/bsp1
-    ln -sf -T "/tmp/update_boot/bsp${UPDATE_SLOT}/" /tmp/update_boot_dir
-    rm -rf /tmp/update_boot_dir/*
+    mount /dev/disk/by-label/boot /tmp/update_boot || (umount -f /dev/disk/by-label/boot; mount /dev/disk/by-label/boot /tmp/update_boot)
+    rm -rf /tmp/update_boot/bsp${UPDATE_SLOT}/*
     # enable write on emmc boot partitions
     echo 0 > "/sys/block/mmcblk0boot${UPDATE_SLOT}/force_ro"
+    sync; umount -f /tmp/storage; umount -f /tmp/update_boot;
 fi
 
 if [ $1 == "postinst" ]; then
     get_slot
-    DISK=$(findfs LABEL=boot | sed -r 's/p?[0-9]*$//')
+    DISK=$(findfs PARTLABEL=boot | sed -r 's/p?[0-9]*$//')
+
+    # create partlabels for the devices created with the update in case they don't exist
+    e2label /dev/disk/by-partlabel/storage 'storage'
+    e2label /dev/disk/by-partlabel/boot    'boot'
 
     # Adjust u-boot-fw-utils for eMMC on the installed rootfs
+    mount /dev/disk/by-partlabel/boot /tmp/update_boot
     rm -f /tmp/update_boot/slot*
     echo "$UPDATE_SLOT" > /tmp/update_boot/slot$UPDATE_SLOT
     if which fw_setenv; then
@@ -62,8 +91,8 @@ if [ $1 == "postinst" ]; then
         fw_setenv fdt_file default.dtb
     fi
     if [ -n "$DEFAULT_DTB" ]; then
-        ln -sf -T "${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot_dir/devicetree/default.dtb
-        ln -sf -T "bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb || cp -f "/tmp/update_boot_dir/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb
+        ln -sf -T "${DEFAULT_DTB}" /tmp/update_boot/bsp${UPDATE_SLOT}/devicetree/default.dtb || cp -f "/tmp/update_boot/bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot/bsp${UPDATE_SLOT}/devicetree/default.dtb
+        ln -sf -T "bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb || cp -f "/tmp/update_boot/bsp${UPDATE_SLOT}/devicetree/${DEFAULT_DTB}" /tmp/update_boot/default.dtb
         ln -sf -T "bsp${UPDATE_SLOT}/boot.scr" /tmp/update_boot/boot.scr
     fi
     if which mmc; then

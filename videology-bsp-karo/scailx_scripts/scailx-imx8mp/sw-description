@@ -4,56 +4,309 @@ software =
 
     @@MACHINE@@ = {
         hardware-compatibility: [ "1.0" ];
+        stable : {
+            slot0 : {
+                images: (
+                    {
+                        name: "bootloader";
+                        filename = "imx-boot-karo";
+                        sha256 = "$swupdate_get_sha256(imx-boot-karo)";
+                        version = "@@SCAILX_UBOOT_VERSION@@";
+                        type = "raw";
+                        device = "/dev/mmcblk0boot0";
+                        install-if-different = "true";
+                    },
+                    {
+                        name: "uboot-env";
+                        filename = "uboot-env.txt";
+                        sha256 = "$swupdate_get_sha256(uboot-env.txt)";
+                        type: "bootloader";
+                    }
+                );
+                bootenv: (
+                    {
+                        name: "bootslot";
+                        value="0"
+                    }
+                );
+                files: (
+                    {
+                        filename = "@@IMAGE_LINK_NAME@@.squashfs";
+                        sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.squashfs)";
+                        device = "/dev/disk/by-partlabel/storage";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp/0/rootfs.squashfs";
+                    },
+                    {
+                        filename = "Image-initramfs-@@MACHINE@@.bin";
+                        sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp0/Image-initramfs";
+                    },
+                    {
+                        filename = "boot.scr";
+                        sha256 = "$swupdate_get_sha256(boot.scr)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp0/boot.scr";
+                    },
+                    {
+                        filename = "devicetrees.tgz";
+                        type = "archive";
+                        path = "/bsp0";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        sha256 = "$swupdate_get_sha256(devicetrees.tgz)";
+                    }
+                );
+                scripts: (
+                    {
+                        data = "DEFAULT_DTB=@@DEFAULT_DTB@@\n";
+                        filename = "update.sh";
+                        type = "shellscript";
+                        sha256 = "$swupdate_get_sha256(update.sh)";
+                    }
+                );
+            };
+            slot1 : {
+                images: (
+                    {
+                        name: "bootloader";
+                        filename = "imx-boot-karo";
+                        sha256 = "$swupdate_get_sha256(imx-boot-karo)";
+                        version = "@@SCAILX_UBOOT_VERSION@@";
+                        type = "raw";
+                        device = "/dev/mmcblk0boot1";
+                        install-if-different = "true";
+                    },
+                    {
+                        name: "uboot-env";
+                        filename = "uboot-env.txt";
+                        sha256 = "$swupdate_get_sha256(uboot-env.txt)";
+                        type: "bootloader";
+                    }
+                );
+                bootenv: (
+                    {
+                        name: "bootslot";
+                        value="1"
+                    }
+                );
+                files: (
+                    {
+                        filename = "@@IMAGE_LINK_NAME@@.squashfs";
+                        sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.squashfs)";
+                        device = "/dev/disk/by-partlabel/storage";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp/1/rootfs.squashfs";
+                    },
+                    {
+                        filename = "Image-initramfs-@@MACHINE@@.bin";
+                        sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp1/Image-initramfs";
+                    },
+                    {
+                        filename = "boot.scr";
+                        sha256 = "$swupdate_get_sha256(boot.scr)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp1/boot.scr";
+                    },
+                    {
+                        filename = "devicetrees.tgz";
+                        type = "archive";
+                        path = "/bsp1";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        sha256 = "$swupdate_get_sha256(devicetrees.tgz)";
+                    }
+                );
+                scripts: (
+                    {
+                        data = "DEFAULT_DTB=@@DEFAULT_DTB@@\n";
+                        filename = "update.sh";
+                        type = "shellscript";
+                        sha256 = "$swupdate_get_sha256(update.sh)";
+                    }
+                );
+            };
+        };
+        recovery : {
+            slot0 : {
+                partitions: (
+                    {
+                        type = "diskpart";
+                        device = "/dev/mmcblk0";
 
-        images: (
-            {
-                name: "bootloader";
-                filename = "imx-boot-karo";
-                sha256 = "$swupdate_get_sha256(imx-boot-karo)";
-                version = "@@SCAILX_UBOOT_VERSION@@";
-                type = "raw";
-                device = "/dev/ubootdev";
-                install-if-different = true;
-            },
-            {
-                name: "uboot-env";
-                filename = "uboot-env.txt";
-                sha256 = "$swupdate_get_sha256(uboot-env.txt)";
-                type: "bootloader";
-            }
-        );
+                        properties: {
+                            labeltype = "gpt";
+                            noinuse = "true";
+                            nolock = "true";
+                            partition-1 = ["name=boot",   "fstype=ext4", "size=448M", "partuuid=5d4c0c04-5ed4-11ee-a18b-4d7b1324c734", "type=21686148-6449-6E6F-744E-656564454649"];
+                            partition-2 = ["name=storage","fstype=ext4",              "partuuid=61ea19f4-5ed4-11ee-a1a0-83893fa1e82e", "type=0FC63DAF-8483-4772-8E79-3D69D8477DE4"];
+                        };
+                    }
+                );
+                images: (
+                    {
+                        name: "bootloader";
+                        filename = "imx-boot-karo";
+                        sha256 = "$swupdate_get_sha256(imx-boot-karo)";
+                        version = "@@SCAILX_UBOOT_VERSION@@";
+                        type = "raw";
+                        device = "/dev/mmcblk0boot0";
+                        install-if-different = "true";
+                    },
+                    {
+                        name: "uboot-env";
+                        filename = "uboot-env.txt";
+                        sha256 = "$swupdate_get_sha256(uboot-env.txt)";
+                        type: "bootloader";
+                    }
+                );
+                bootenv: (
+                    {
+                        name: "bootslot";
+                        value="0"
+                    }
+                );
+                files: (
+                    {
+                        filename = "@@IMAGE_LINK_NAME@@.squashfs";
+                        sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.squashfs)";
+                        device = "/dev/disk/by-partlabel/storage";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp/0/rootfs.squashfs";
+                    },
+                    {
+                        filename = "Image-initramfs-@@MACHINE@@.bin";
+                        sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp0/Image-initramfs";
+                    },
+                    {
+                        filename = "boot.scr";
+                        sha256 = "$swupdate_get_sha256(boot.scr)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp0/boot.scr";
+                    },
+                    {
+                        filename = "devicetrees.tgz";
+                        type = "archive";
+                        path = "/bsp0";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        sha256 = "$swupdate_get_sha256(devicetrees.tgz)";
+                    }
+                );
+                scripts: (
+                    {
+                        data = "DEFAULT_DTB=@@DEFAULT_DTB@@\n";
+                        filename = "update.sh";
+                        type = "shellscript";
+                        sha256 = "$swupdate_get_sha256(update.sh)";
+                    }
+                );
+            };
+            slot1 : {
+                partitions: (
+                    {
+                        type = "diskpart";
+                        device = "/dev/mmcblk0";
 
-        files: (
-            {
-                filename = "@@IMAGE_LINK_NAME@@.squashfs";
-                sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.squashfs)";
-                path = "/tmp/update_bsp/rootfs.squashfs";
-            },
-            {
-                filename = "Image-initramfs-@@MACHINE@@.bin";
-                sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
-                path = "/tmp/update_boot_dir/Image-initramfs";
-            },
-            {
-                filename = "boot.scr";
-                sha256 = "$swupdate_get_sha256(boot.scr)";
-                path = "/tmp/update_boot_dir/boot.scr";
-            },
-            {
-                filename = "devicetrees.tgz";
-                type = "archive";
-                path = "/tmp/update_boot_dir";
-                sha256 = "$swupdate_get_sha256(devicetrees.tgz)";
-            }
-        );
-
-        scripts: (
-            {
-                data = "DEFAULT_DTB=@@DEFAULT_DTB@@\n";
-                filename = "update.sh";
-                type = "shellscript";
-                sha256 = "$swupdate_get_sha256(update.sh)";
-            }
-        );
+                        properties: {
+                            labeltype = "gpt";
+                            noinuse = "true";
+                            nolock = "true";
+                            partition-1 = ["name=boot",   "fstype=ext4", "size=448M", "partuuid=5d4c0c04-5ed4-11ee-a18b-4d7b1324c734", "type=21686148-6449-6E6F-744E-656564454649"];
+                            partition-2 = ["name=storage","fstype=ext4",              "partuuid=61ea19f4-5ed4-11ee-a1a0-83893fa1e82e", "type=0FC63DAF-8483-4772-8E79-3D69D8477DE4"];
+                        };
+                    },
+                );
+                images: (
+                    {
+                        name: "bootloader";
+                        filename = "imx-boot-karo";
+                        sha256 = "$swupdate_get_sha256(imx-boot-karo)";
+                        version = "@@SCAILX_UBOOT_VERSION@@";
+                        type = "raw";
+                        device = "/dev/mmcblk0boot1";
+                        install-if-different = "true";
+                    },
+                    {
+                        name: "uboot-env";
+                        filename = "uboot-env.txt";
+                        sha256 = "$swupdate_get_sha256(uboot-env.txt)";
+                        type: "bootloader";
+                    }
+                );
+                bootenv: (
+                    {
+                        name: "bootslot";
+                        value="1"
+                    }
+                );
+                files: (
+                    {
+                        filename = "@@IMAGE_LINK_NAME@@.squashfs";
+                        sha256 = "$swupdate_get_sha256(@@IMAGE_LINK_NAME@@.squashfs)";
+                        device = "/dev/disk/by-partlabel/storage";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp/1/rootfs.squashfs";
+                    },
+                    {
+                        filename = "Image-initramfs-@@MACHINE@@.bin";
+                        sha256 = "$swupdate_get_sha256(Image-initramfs-@@MACHINE@@.bin)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp1/Image-initramfs";
+                    },
+                    {
+                        filename = "boot.scr";
+                        sha256 = "$swupdate_get_sha256(boot.scr)";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        path = "/bsp1/boot.scr";
+                    },
+                    {
+                        filename = "devicetrees.tgz";
+                        type = "archive";
+                        path = "/bsp1";
+                        device = "/dev/disk/by-partlabel/boot";
+                        filesystem = "ext4";
+                        properties = {create-destination = "true";};
+                        sha256 = "$swupdate_get_sha256(devicetrees.tgz)";
+                    }
+                );
+                scripts: (
+                    {
+                        data = "DEFAULT_DTB=@@DEFAULT_DTB@@\n";
+                        filename = "update.sh";
+                        type = "shellscript";
+                        sha256 = "$swupdate_get_sha256(update.sh)";
+                    }
+                );
+            };
+        };
     };
 };

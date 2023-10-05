@@ -1,6 +1,6 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
 
-RDEPENDS_${PN} += "swupdate-config"
+RDEPENDS_${PN} += "swupdate-config e2fsprogs-tune2fs"
 
 SRC_URI += "\
 	file://index.html \
@@ -16,3 +16,5 @@ do_install:append () {
 }
 
 RM_WORK_EXCLUDE += "${PN}"
+
+DEPENDS += "util-linux e2fsprogs"
