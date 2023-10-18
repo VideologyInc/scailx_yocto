@@ -455,7 +455,7 @@ entity_cleanup:
 	return ret;
 }
 
-static int crosslink_remove(struct i2c_client *client)
+static void crosslink_remove(struct i2c_client *client)
 {
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
@@ -463,8 +463,6 @@ static int crosslink_remove(struct i2c_client *client)
 	v4l2_async_unregister_subdev(&sensor->sd);
 	media_entity_cleanup(&sensor->sd.entity);
 	mutex_destroy(&sensor->lock);
-
-	return 0;
 }
 
 static const struct i2c_device_id crosslink_id[] = {
