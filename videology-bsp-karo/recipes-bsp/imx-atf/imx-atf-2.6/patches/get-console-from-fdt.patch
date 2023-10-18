@@ -1,0 +1,745 @@
+Index: git/plat/imx/common/include/plat_params.h
+===================================================================
+--- /dev/null
++++ git/plat/imx/common/include/plat_params.h
+@@ -0,0 +1,13 @@
++/*
++ * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#ifndef PLAT_PARAMS_H
++#define PLAT_PARAMS_H
++
++#include <stdint.h>
++
++
++#endif /* PLAT_PARAMS_H */
+Index: git/plat/imx/common/include/plat_private.h
+===================================================================
+--- /dev/null
++++ git/plat/imx/common/include/plat_private.h
+@@ -0,0 +1,23 @@
++/*
++ * Copyright (C) Lothar Waßmann <LW@KARO-electronics.de>
++ *
++ * based on: plat/rockchip/common/include/plat_private.h
++ * Copyright (c) 2014-2019, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#ifndef PLAT_PRIVATE_H
++#define PLAT_PRIVATE_H
++
++#ifndef __ASSEMBLER__
++
++uint32_t imx_get_uart_base(void);
++uint32_t imx_get_uart_baudrate(void);
++uint32_t imx_get_uart_clock(void);
++
++void imx_params_early_setup(u_register_t plat_param_from_bl2);
++
++#endif /* __ASSEMBLER__ */
++
++#endif /* PLAT_PRIVATE_H */
+Index: git/plat/imx/common/params_setup.c
+===================================================================
+--- /dev/null
++++ git/plat/imx/common/params_setup.c
+@@ -0,0 +1,307 @@
++/*
++ * Copyright (c) 2016-2019, ARM Limited and Contributors. All rights reserved.
++ *
++ * SPDX-License-Identifier: BSD-3-Clause
++ */
++
++#include <assert.h>
++#include <errno.h>
++#include <string.h>
++
++#include <lib/bl_aux_params/bl_aux_params.h>
++#include <common/bl_common.h>
++#include <common/debug.h>
++#include <drivers/console.h>
++#include <drivers/gpio.h>
++#include <libfdt.h>
++#include <lib/mmio.h>
++#include <plat/common/platform.h>
++
++#include <plat_params.h>
++#include <plat_private.h>
++#ifdef IMX_BOOT_UART_BASE
++static uint32_t imx_uart_base = IMX_BOOT_UART_BASE;
++#elif defined(IMX_LPUART_BASE)
++static uint32_t imx_uart_base = IMX_LPUART_BASE;
++#endif
++static uint32_t imx_uart_baudrate = IMX_CONSOLE_BAUDRATE;
++static uint32_t imx_uart_clock = IMX_BOOT_UART_CLK_IN_HZ;
++
++#if LOG_LEVEL > LOG_LEVEL_VERBOSE
++static inline void print_tabs(int num)
++{
++	while (num--)
++		printf("\t");
++}
++
++static const char *str_props[] = {
++	"model",
++	"compatible",
++	"status",
++	"clock-output-names",
++	"stdout-path",
++	NULL,
++};
++
++static const char *hex_props[] = {
++	"reg",
++	"phandle",
++	NULL,
++};
++
++static const char *dec_props[] = {
++	"clock-frequency",
++	NULL,
++};
++
++enum {
++      PROP_TYPE_ANY,
++      PROP_TYPE_STR,
++      PROP_TYPE_INT,
++      PROP_TYPE_HEX,
++      PROP_TYPE_PTR,
++} prop_type;
++
++static int find_prop(const char *name, const char **list)
++{
++	while (*list) {
++		if (strcmp(name, *list) == 0)
++			return 1;
++		list++;
++	}
++	return 0;
++}
++
++static void print_property(const char *name, const void *prop, int len,
++			   int type)
++{
++	int i;
++
++	printf("%s = ", name);
++	if (type == PROP_TYPE_ANY) {
++		if (find_prop(name, hex_props))
++			type = PROP_TYPE_HEX;
++		else if (find_prop(name, str_props))
++			type = PROP_TYPE_STR;
++		else if (find_prop(name, dec_props) || name[0] == '#')
++			type = PROP_TYPE_INT;
++		else
++			type = PROP_TYPE_PTR;
++	}
++
++	switch (type) {
++	case PROP_TYPE_HEX:
++		if (len % 4 == 0) {
++			const uint32_t *p = prop;
++
++			printf("<");
++			for (i = 0; i < len / 4; i++) {
++				int val = fdt32_to_cpu(p[i]);
++				if (i)
++					printf(" ");
++				printf("0x%08x", val);
++			}
++			printf(">");
++		} else {
++			printf("<%p>", prop);
++		}
++		break;
++	case PROP_TYPE_STR:
++		printf("\"%s\"", (const char *)prop);
++		break;
++	case PROP_TYPE_INT:
++		printf("<%d>", fdt32_to_cpu(*(uint32_t *)prop));
++		break;
++	default:
++		printf("<%p>", prop);
++	}
++	printf(";\n");
++}
++
++static int dump_props(const void *fdt, int node, int lvl, int type)
++{
++	int offs;
++	int num = 0;
++
++	fdt_for_each_property_offset(offs, fdt, node) {
++		const void *prop;
++		const char *name;
++		int len;
++
++		prop = fdt_getprop_by_offset(fdt, offs, &name, &len);
++		print_tabs(lvl);
++		if (len)
++			print_property(name, prop, len, type);
++		else
++			printf("%s;\n", name);
++		num++;
++	}
++	return num;
++}
++
++static void dump_subnodes(const void *fdt, int root, int lvl);
++static void dump_subnodes(const void *fdt, int root, int lvl)
++{
++	int node;
++	int nl;
++
++	if (strcmp(fdt_get_name(fdt, root, NULL), "aliases") == 0)
++		nl = dump_props(fdt, root, lvl, PROP_TYPE_STR);
++	else
++		nl = dump_props(fdt, root, lvl, PROP_TYPE_ANY);
++
++	fdt_for_each_subnode(node, fdt, root) {
++		if (!nl)
++			nl = 1;
++		else
++			printf("\n");
++		print_tabs(lvl);
++		printf("%s {\n", fdt_get_name(fdt, node, NULL));
++		lvl++;
++		dump_subnodes(fdt, node, lvl);
++		lvl--;
++		print_tabs(lvl);
++		printf("};\n");
++	}
++}
++#endif
++
++void dump_fdt(const void *fdt)
++{
++#if LOG_LEVEL > LOG_LEVEL_VERBOSE
++	int root = fdt_path_offset(fdt, "/");
++
++	printf("/ {\n");
++	dump_subnodes(fdt, root, 1);
++	printf("};\n");
++#endif
++}
++
++static void plat_imx_dt_process_fdt_uart(void *fdt)
++{
++	const char *path_name = "/chosen";
++	const char *prop_name = "stdout-path";
++	int node_offset;
++	int stdout_path_len;
++	const char *stdout_path;
++	const char *separator;
++	const char *baud_start;
++	uint32_t uart_base;
++	uint32_t baud;
++
++	node_offset = fdt_path_offset(fdt, path_name);
++	if (node_offset < 0) {
++		ERROR("No 'chosen' node found in DTB: %s\n",
++		      fdt_strerror(node_offset));
++		return;
++	}
++
++	dump_fdt(fdt);
++	stdout_path = fdt_getprop(fdt, node_offset, prop_name,
++				  &stdout_path_len);
++	if (stdout_path == NULL) {
++		ERROR("'stdout-path' not found in DTB\n");
++		return;
++	}
++
++	int len;
++	int offs;
++	const void *prop;
++	separator = strchr(stdout_path, ':');
++	if (strchr(stdout_path, '/') != stdout_path) {
++		if (separator) {
++			const char *alias;
++
++			len = separator - stdout_path;
++			offs = fdt_path_offset(fdt, "/aliases");
++			if (offs < 0)
++				ERROR("No '/aliases' node in DT: %d\n", offs);
++			alias = fdt_get_alias_namelen(fdt, stdout_path, len);
++			if (alias)
++				INFO("alias '%s'='%s'\n",
++				     stdout_path, alias);
++			else
++				ERROR("Could not resolve alias '%s'(%u)\n",
++				      stdout_path, len);
++			stdout_path = alias;
++		} else {
++			len = strlen(stdout_path);
++		}
++	} else {
++		len = strlen(stdout_path);
++	}
++
++	offs = fdt_path_offset(fdt, stdout_path);
++	if (offs <= 0) {
++		ERROR("Failed to find '%s' node\n", stdout_path);
++		return;
++	}
++	prop = fdt_getprop(fdt, offs, "reg", &len);
++	if (prop) {
++		uart_base = fdt32_to_cpu(*((const uint32_t *)prop));
++		INFO("uart_base set to %08x from '%s' node\n",
++		     uart_base, stdout_path);
++	} else {
++		ERROR("'reg' property not found in '%s'\n",
++		      stdout_path);
++		return;
++	}
++
++	INFO("%s@%d: setting uart_base=%08x from FDT\n", __func__, __LINE__,
++	     uart_base);
++	imx_uart_base = uart_base;
++
++	if (!separator)
++		return;
++
++	baud = 0;
++	baud_start = separator + 1;
++	while (*baud_start != '\0') {
++		/*
++		 * uart binding is <baud>{<parity>{<bits>{...}}}
++		 * So the baudrate either is the whole string, or
++		 * we end in the parity characters.
++		 */
++		if (*baud_start == 'n' || *baud_start == 'o' ||
++		    *baud_start == 'e')
++			break;
++
++		baud = baud * 10 + (*baud_start - '0');
++		baud_start++;
++	}
++
++	INFO("%s@%d: setting uart_baudrate=%u from FDT\n", __func__, __LINE__,
++	     baud);
++	imx_uart_baudrate = baud;
++}
++
++static int dt_process_fdt(u_register_t param_from_bl2)
++{
++	plat_imx_dt_process_fdt_uart((void *)param_from_bl2);
++	return 0;
++}
++
++uint32_t imx_get_uart_base(void)
++{
++	INFO("%s@%d: UART_BASE=%08x\n", __func__, __LINE__, imx_uart_base);
++	return imx_uart_base;
++}
++
++uint32_t imx_get_uart_baudrate(void)
++{
++	return imx_uart_baudrate;
++}
++
++uint32_t imx_get_uart_clock(void)
++{
++	return imx_uart_clock;
++}
++
++void imx_params_early_setup(u_register_t plat_param_from_bl2)
++{
++	/*
++	 * Test if this is a FDT passed as a platform-specific parameter
++	 * block.
++	 */
++	dt_process_fdt(plat_param_from_bl2);
++}
+Index: git/plat/imx/imx8m/imx8mm/platform.mk
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mm/platform.mk
++++ git/plat/imx/imx8m/imx8mm/platform.mk
+@@ -6,6 +6,7 @@
+ #
+ # Translation tables library
+ include lib/xlat_tables_v2/xlat_tables.mk
++include lib/libfdt/libfdt.mk
+ 
+ PLAT_INCLUDES		:=	-Iplat/imx/common/include		\
+ 				-Iplat/imx/imx8m/include		\
+@@ -43,6 +44,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_he
+ 				plat/imx/common/imx_sip_handler.c		\
+ 				plat/imx/common/imx_sip_svc.c			\
+ 				plat/imx/common/imx_uart_console.S		\
++				plat/imx/common/params_setup.c			\
+ 				lib/cpus/aarch64/cortex_a53.S			\
+ 				drivers/arm/tzc/tzc380.c			\
+ 				drivers/delay_timer/delay_timer.c		\
+@@ -156,6 +158,11 @@ $(eval $(call add_define,BL32_SIZE))
+ IMX_BOOT_UART_BASE	?=	0x30890000
+ $(eval $(call add_define,IMX_BOOT_UART_BASE))
+ 
++IMX_WDOG_B_RESET	?=	1
++ifeq ($(IMX_WDOG_B_RESET),1)
++$(eval $(call add_define,IMX_WDOG_B_RESET))
++endif
++
+ $(eval $(call add_define,IMX8M_DDR4_DVFS))
+ 
+ ifeq (${SPD},trusty)
+Index: git/plat/imx/imx8m/imx8mn/platform.mk
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mn/platform.mk
++++ git/plat/imx/imx8m/imx8mn/platform.mk
+@@ -9,6 +9,7 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/incl
+ 				-Iplat/imx/imx8m/imx8mn/include
+ # Translation tables library
+ include lib/xlat_tables_v2/xlat_tables.mk
++include lib/libfdt/libfdt.mk
+ 
+ # Include GICv3 driver files
+ include drivers/arm/gic/v3/gicv3.mk
+@@ -41,6 +42,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_he
+ 				plat/imx/common/imx_sip_handler.c		\
+ 				plat/imx/common/imx_sip_svc.c			\
+ 				plat/imx/common/imx_uart_console.S		\
++				plat/imx/common/params_setup.c			\
+ 				lib/cpus/aarch64/cortex_a53.S			\
+ 				drivers/arm/tzc/tzc380.c			\
+ 				drivers/delay_timer/delay_timer.c		\
+@@ -66,6 +68,11 @@ $(eval $(call add_define,BL32_SIZE))
+ IMX_BOOT_UART_BASE	?=	0x30890000
+ $(eval $(call add_define,IMX_BOOT_UART_BASE))
+ 
++IMX_WDOG_B_RESET	?=	1
++ifeq ($(IMX_WDOG_B_RESET),1)
++$(eval $(call add_define,IMX_WDOG_B_RESET))
++endif
++
+ $(eval $(call add_define,IMX8M_DDR4_DVFS))
+ 
+ ifeq (${SPD},trusty)
+Index: git/plat/imx/imx8m/imx8mp/platform.mk
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mp/platform.mk
++++ git/plat/imx/imx8m/imx8mp/platform.mk
+@@ -11,6 +11,7 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/incl
+ 				-Iinclude/common/tbbr
+ # Translation tables library
+ include lib/xlat_tables_v2/xlat_tables.mk
++include lib/libfdt/libfdt.mk
+ 
+ # Include GICv3 driver files
+ include drivers/arm/gic/v3/gicv3.mk
+@@ -42,6 +43,7 @@ BL31_SOURCES		+=	plat/imx/common/imx8_he
+ 				plat/imx/common/imx_sip_handler.c		\
+ 				plat/imx/common/imx_sip_svc.c			\
+ 				plat/imx/common/imx_uart_console.S		\
++				plat/imx/common/params_setup.c			\
+ 				lib/cpus/aarch64/cortex_a53.S			\
+ 				drivers/arm/tzc/tzc380.c			\
+ 				drivers/delay_timer/delay_timer.c		\
+@@ -157,6 +159,11 @@ $(eval $(call add_define,BL32_SIZE))
+ IMX_BOOT_UART_BASE	?=	0x30890000
+ $(eval $(call add_define,IMX_BOOT_UART_BASE))
+ 
++IMX_WDOG_B_RESET	?=	1
++ifeq ($(IMX_WDOG_B_RESET),1)
++$(eval $(call add_define,IMX_WDOG_B_RESET))
++endif
++
+ $(eval $(call add_define,IMX8M_DDR4_DVFS))
+ 
+ ifeq (${SPD},trusty)
+Index: git/plat/imx/imx93/platform.mk
+===================================================================
+--- git.orig/plat/imx/imx93/platform.mk
++++ git/plat/imx/imx93/platform.mk
+@@ -9,6 +9,7 @@ PLAT_INCLUDES		:=	-Iplat/imx/common/incl
+ 				-Iplat/imx/common
+ # Translation tables library
+ include lib/xlat_tables_v2/xlat_tables.mk
++include lib/libfdt/libfdt.mk
+ 
+ GICV3_SUPPORT_GIC600  :=      1
+ GICV3_OVERRIDE_DISTIF_PWR_OPS	:=	1
+@@ -26,16 +27,17 @@ IMX_DRAM_SOURCES	:=	plat/imx/imx93/ddr/d
+ 				plat/imx/imx93/ddr/ddr_dvfs.c	        \
+ 				plat/imx/imx93/ddr/dram_retention.c
+ 
+-BL31_SOURCES		+=	plat/common/aarch64/crash_console_helpers.S   \
++BL31_SOURCES		+=	plat/common/aarch64/crash_console_helpers.S	\
+ 				plat/imx/imx93/aarch64/plat_helpers.S		\
+ 				plat/imx/imx93/plat_topology.c			\
+ 				plat/imx/common/lpuart_console.S		\
+-				plat/imx/imx93/trdc.c			\
++				plat/imx/imx93/trdc.c				\
+ 				plat/imx/imx93/imx93_bl31_setup.c		\
+ 				plat/imx/imx93/imx93_psci.c			\
+-				plat/imx/imx93/src.c			\
++				plat/imx/imx93/src.c				\
+ 				plat/imx/common/imx_sip_svc.c			\
+-				plat/imx/common/imx_sip_handler.c			\
++				plat/imx/common/imx_sip_handler.c		\
++				plat/imx/common/params_setup.c			\
+ 				lib/cpus/aarch64/cortex_a55.S			\
+ 				drivers/delay_timer/delay_timer.c		\
+ 				drivers/delay_timer/generic_delay_timer.c	\
+Index: git/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
++++ git/plat/imx/imx8m/imx8mm/imx8mm_bl31_setup.c
+@@ -19,6 +19,7 @@
+ #include <lib/el3_runtime/context_mgmt.h>
+ #include <lib/mmio.h>
+ #include <lib/xlat_tables/xlat_tables_v2.h>
++#include <plat_private.h>
+ #include <plat/common/platform.h>
+ 
+ #include <dram.h>
+@@ -136,7 +137,6 @@ static const struct imx_csu_cfg csu_cfg[
+ static entry_point_info_t bl32_image_ep_info;
+ static entry_point_info_t bl33_image_ep_info;
+ 
+-
+ #if defined (CSU_RDC_TEST)
+ static void csu_rdc_test(void);
+ #endif
+@@ -199,8 +199,23 @@ void bl31_early_platform_setup2(u_regist
+ 
+ 	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+ 		IMX_CONSOLE_BAUDRATE, &console);
++	imx_params_early_setup(arg1);
++	console_imx_uart_register(imx_get_uart_base(), imx_get_uart_clock(),
++				  imx_get_uart_baudrate(), &console);
++
++#if DEBUG
++	console_set_scope(&console,
++			  CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME);
++#else
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
++#endif
++	INFO("uart_base=%08x clock=%uMHz baudrate=%u\n",
++	     IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ / 1000000,
++	     IMX_CONSOLE_BAUDRATE);
++	INFO("%s@%d: args=%08lx %08lx %08lx %08lx\n", __func__, __LINE__,
++	     arg0, arg1, arg2, arg3);
++	INFO("ATF_LOAD_ADDR=%08x\n", BL31_BASE);
+ 
+ 	/*
+ 	 * tell BL3-1 where the non-secure software image is located
+Index: git/plat/imx/imx93/imx93_bl31_setup.c
+===================================================================
+--- git.orig/plat/imx/imx93/imx93_bl31_setup.c
++++ git/plat/imx/imx93/imx93_bl31_setup.c
+@@ -16,6 +16,7 @@
+ #include <lib/el3_runtime/context_mgmt.h>
+ #include <lib/mmio.h>
+ #include <lib/xlat_tables/xlat_tables_v2.h>
++#include <plat_private.h>
+ #include <plat/common/platform.h>
+ 
+ #include <imx8_lpuart.h>
+@@ -73,10 +74,25 @@ void bl31_early_platform_setup2(u_regist
+ 	static console_t console;
+ 
+ 	console_lpuart_register(IMX_LPUART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+-		     IMX_CONSOLE_BAUDRATE, &console);
++				IMX_CONSOLE_BAUDRATE, &console);
+ 
++	imx_params_early_setup(arg1);
++	console_lpuart_register(imx_get_uart_base(), imx_get_uart_clock(),
++				imx_get_uart_baudrate(), &console);
++
++#if DEBUG
++	console_set_scope(&console,
++			  CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME);
++#else
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
++#endif
++	INFO("uart_base=%08x clock=%uMHz baudrate=%u\n",
++	     IMX_LPUART_BASE, IMX_BOOT_UART_CLK_IN_HZ / 1000000,
++	     IMX_CONSOLE_BAUDRATE);
++	INFO("%s@%d: args=%08lx %08lx %08lx %08lx\n", __func__, __LINE__,
++	     arg0, arg1, arg2, arg3);
++	INFO("ATF_LOAD_ADDR=%08x\n", BL31_BASE);
+ 
+ 	/*
+ 	 * tell BL3-1 where the non-secure software image is located
+@@ -152,14 +168,6 @@ void bl31_platform_setup(void)
+ 	plat_gic_init();
+ }
+ 
+-void bl31_plat_runtime_setup(void)
+-{
+-	console_switch_state(CONSOLE_FLAG_RUNTIME);
+-
+-	return;
+-}
+-
+-
+ entry_point_info_t *bl31_plat_get_next_image_ep_info(unsigned int type)
+ {
+ 	if (type == NON_SECURE) {
+Index: git/bl31/aarch64/bl31_entrypoint.S
+===================================================================
+--- git.orig/bl31/aarch64/bl31_entrypoint.S
++++ git/bl31/aarch64/bl31_entrypoint.S
+@@ -132,7 +132,8 @@ bl31_entrypoint_proceed:
+ 	 * ---------------------------------------------------------------------
+ 	 */
+ 	mov	x20, 0
+-	mov	x21, 0
++	/* keep FDT address in x21 */
++	/* mov	x21, 0 */
+ 	mov	x22, 0
+ 	mov	x23, 0
+ #endif /* RESET_TO_BL31 */
+Index: git/plat/imx/imx8m/imx8mp/include/platform_def.h
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mp/include/platform_def.h
++++ git/plat/imx/imx8m/imx8mp/include/platform_def.h
+@@ -197,8 +197,6 @@
+ 
+ #define COUNTER_FREQUENCY		8000000 /* 8MHz */
+ 
+-#define IMX_WDOG_B_RESET
+-
+ #define MAX_IO_HANDLES			3U
+ #define MAX_IO_DEVICES			2U
+ #define MAX_IO_BLOCK_DEVICES		1U
+Index: git/plat/imx/imx8m/imx8mn/include/platform_def.h
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mn/include/platform_def.h
++++ git/plat/imx/imx8m/imx8mn/include/platform_def.h
+@@ -166,8 +166,6 @@
+ #define FORCE_INCR_OFFSET   (0x4044)
+ #define FORCE_INCR_BIT_MASK (0x2)
+ 
+-#define IMX_WDOG_B_RESET
+-
+ #define GIC_MAP		MAP_REGION_FLAT(IMX_GIC_BASE, IMX_GIC_SIZE, MT_DEVICE | MT_RW)
+ #define AIPS_MAP	MAP_REGION_FLAT(IMX_AIPS_BASE, IMX_AIPS_SIZE, MT_DEVICE | MT_RW) /* AIPS map */
+ #define OCRAM_S_MAP	MAP_REGION_FLAT(OCRAM_S_BASE, OCRAM_S_SIZE, MT_DEVICE | MT_RW) /* OCRAM_S */
+Index: git/plat/imx/imx8m/imx8mm/include/platform_def.h
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mm/include/platform_def.h
++++ git/plat/imx/imx8m/imx8mm/include/platform_def.h
+@@ -183,8 +183,6 @@
+ #define IMX_SEPARATE_NOBITS_BASE	U(0x910000)
+ #define IMX_SEPARATE_NOBITS_LIMIT	U(0x920000)
+ 
+-#define IMX_WDOG_B_RESET
+-
+ #define MAX_IO_HANDLES			3U
+ #define MAX_IO_DEVICES			2U
+ #define MAX_IO_BLOCK_DEVICES		1U
+Index: git/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
++++ git/plat/imx/imx8m/imx8mn/imx8mn_bl31_setup.c
+@@ -7,6 +7,8 @@
+ #include <assert.h>
+ #include <stdbool.h>
+ 
++#include <platform_def.h>
++
+ #include <arch_helpers.h>
+ #include <common/bl_common.h>
+ #include <common/debug.h>
+@@ -17,6 +19,7 @@
+ #include <lib/el3_runtime/context_mgmt.h>
+ #include <lib/mmio.h>
+ #include <lib/xlat_tables/xlat_tables_v2.h>
++#include <plat_private.h>
+ #include <plat/common/platform.h>
+ 
+ #include <dram.h>
+@@ -27,7 +30,6 @@
+ #include <imx8m_caam.h>
+ #include <imx8m_csu.h>
+ #include <imx8m_snvs.h>
+-#include <platform_def.h>
+ #include <plat_imx8.h>
+ 
+ #define TRUSTY_PARAMS_LEN_BYTES      (4096*2)
+@@ -211,8 +213,23 @@ void bl31_early_platform_setup2(u_regist
+ 
+ 	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+ 		IMX_CONSOLE_BAUDRATE, &console);
++	imx_params_early_setup(arg1);
++	console_imx_uart_register(imx_get_uart_base(), imx_get_uart_clock(),
++				  imx_get_uart_baudrate(), &console);
++
++#if DEBUG
++	console_set_scope(&console,
++			  CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME);
++#else
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
++#endif
++	INFO("uart_base=%08x clock=%uMHz baudrate=%u\n",
++	     IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ / 1000000,
++	     IMX_CONSOLE_BAUDRATE);
++	INFO("%s@%d: args=%08lx %08lx %08lx %08lx\n", __func__, __LINE__,
++	     arg0, arg1, arg2, arg3);
++	INFO("ATF_LOAD_ADDR=%08x\n", BL31_BASE);
+ 
+ 	/*
+ 	 * tell BL3-1 where the non-secure software image is located
+Index: git/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+===================================================================
+--- git.orig/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
++++ git/plat/imx/imx8m/imx8mp/imx8mp_bl31_setup.c
+@@ -7,6 +7,8 @@
+ #include <assert.h>
+ #include <stdbool.h>
+ 
++#include <platform_def.h>
++
+ #include <arch_helpers.h>
+ #include <common/bl_common.h>
+ #include <common/debug.h>
+@@ -17,6 +19,7 @@
+ #include <lib/el3_runtime/context_mgmt.h>
+ #include <lib/mmio.h>
+ #include <lib/xlat_tables/xlat_tables_v2.h>
++#include <plat_private.h>
+ #include <plat/common/platform.h>
+ 
+ #include <dram.h>
+@@ -27,7 +30,6 @@
+ #include <imx8m_caam.h>
+ #include <imx8m_csu.h>
+ #include <imx8m_snvs.h>
+-#include <platform_def.h>
+ #include <plat_imx8.h>
+ 
+ #if defined(LPA_ENABLE)
+@@ -232,8 +234,23 @@ void bl31_early_platform_setup2(u_regist
+ 
+ 	console_imx_uart_register(IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ,
+ 		IMX_CONSOLE_BAUDRATE, &console);
++	imx_params_early_setup(arg1);
++	console_imx_uart_register(imx_get_uart_base(), imx_get_uart_clock(),
++				  imx_get_uart_baudrate(), &console);
++
++#if DEBUG
++	console_set_scope(&console,
++			  CONSOLE_FLAG_BOOT | CONSOLE_FLAG_RUNTIME);
++#else
+ 	/* This console is only used for boot stage */
+ 	console_set_scope(&console, CONSOLE_FLAG_BOOT);
++#endif
++	INFO("uart_base=%08x clock=%uMHz baudrate=%u\n",
++	     IMX_BOOT_UART_BASE, IMX_BOOT_UART_CLK_IN_HZ / 1000000,
++	     IMX_CONSOLE_BAUDRATE);
++	INFO("%s@%d: args=%08lx %08lx %08lx %08lx\n", __func__, __LINE__,
++	     arg0, arg1, arg2, arg3);
++	INFO("ATF_LOAD_ADDR=%08x\n", BL31_BASE);
+ 
+ 	/*
+ 	 * tell BL3-1 where the non-secure software image is located

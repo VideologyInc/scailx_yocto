@@ -1,0 +1,22 @@
+diff --git a/lib/xlat_tables_v2/xlat_tables_utils.c b/lib/xlat_tables_v2/xlat_tables_utils.c
+index df1738642..1ddd8b188 100644
+--- a/lib/xlat_tables_v2/xlat_tables_utils.c
++++ b/lib/xlat_tables_v2/xlat_tables_utils.c
+@@ -20,7 +20,7 @@
+ 
+ #include "xlat_tables_private.h"
+ 
+-#if LOG_LEVEL < LOG_LEVEL_VERBOSE
++#if LOG_LEVEL <= LOG_LEVEL_VERBOSE
+ 
+ void xlat_mmap_print(__unused const mmap_region_t *mmap)
+ {
+@@ -386,7 +386,7 @@ static int xlat_get_mem_attributes_internal(const xlat_ctx_t *ctx,
+ 
+ 	desc = *entry;
+ 
+-#if LOG_LEVEL >= LOG_LEVEL_VERBOSE
++#if LOG_LEVEL > LOG_LEVEL_VERBOSE
+ 	VERBOSE("Attributes: ");
+ 	xlat_desc_print(ctx, desc);
+ 	printf("\n");

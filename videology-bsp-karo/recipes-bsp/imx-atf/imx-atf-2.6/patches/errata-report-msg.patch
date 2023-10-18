@@ -1,0 +1,26 @@
+Index: imx-atf/lib/cpus/errata_report.c
+===================================================================
+--- imx-atf.orig/lib/cpus/errata_report.c
++++ imx-atf/lib/cpus/errata_report.c
+@@ -28,7 +28,7 @@
+ #endif
+ 
+ /* Errata format: BL stage, CPU, errata ID, message */
+-#define ERRATA_FORMAT	"%s: %s: CPU workaround for %s was %s\n"
++#define ERRATA_FORMAT	"%s: %s: CPU workaround for %s %s\n"
+ 
+ /*
+  * Returns whether errata needs to be reported. Passed arguments are private to
+@@ -67,9 +67,9 @@ void errata_print_msg(unsigned int statu
+ {
+ 	/* Errata status strings */
+ 	static const char *const errata_status_str[] = {
+-		[ERRATA_NOT_APPLIES] = "not applied",
+-		[ERRATA_APPLIES] = "applied",
+-		[ERRATA_MISSING] = "missing!"
++		[ERRATA_NOT_APPLIES] = "is not applicable",
++		[ERRATA_APPLIES] = "was applied",
++		[ERRATA_MISSING] = "is missing!"
+ 	};
+ 	static const char *const __unused bl_str = BL_STRING;
+ 	const char *msg __unused;
