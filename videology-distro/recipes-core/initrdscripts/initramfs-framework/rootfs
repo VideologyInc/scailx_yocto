@@ -64,4 +64,6 @@ rootfs_run() {
 		sleep $delay
 		C=$(( $C + 1 ))
 	done
+	debug "mounting modules from rootfs"
+	mount -o bind $ROOTFS_DIR/lib/modules /lib/modules
 }

@@ -14,7 +14,7 @@ function get_slot
     [ "$CURRENT_SLOT" = "1" ] || CURRENT_SLOT="0";
 }
 
-# run module pre-rootfs to load the disks.
+# run module post-rootfs to load the disks.
 storage_overlay_hook() {
 	status=$1
 	module=$2
@@ -31,7 +31,7 @@ storage_overlay_hook() {
         mkdir -p /volumes/$f
         mount -t squashfs -o loop /storage/bsp/$CURRENT_SLOT/mounts/$f.squashfs /volumes/$f && mounts="/volumes/$f:$mounts"
     done
-
+    modinfo overlay || modprobe overlay
     mkdir -p /storage/overlay/upper
     mkdir -p /storage/overlay/work
     mount -t overlay -o index=off,metacopy=off,lowerdir=${mounts}${ROOTFS_DIR},upperdir=/storage/overlay/upper,workdir=/storage/overlay/work overlay "$ROOTFS_DIR"
