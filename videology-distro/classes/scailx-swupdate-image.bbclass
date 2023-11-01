@@ -30,6 +30,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
 
 IMAGE_FSTYPES = "squashfs"
 
+do_fetch[depends] += "virtual/bootloader:do_deploy"
 
 # IMAGE_DEPENDS: list of Yocto images that contains a root filesystem
 # it will be ensured they are built before creating swupdate image
