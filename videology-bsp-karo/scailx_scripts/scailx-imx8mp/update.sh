@@ -63,7 +63,7 @@ if [ $1 == "preinst" ]; then
     mount /dev/disk/by-label/storage /tmp/storage || (umount -f /tmp/storage; mount /dev/disk/by-label/storage /tmp/storage)
     rm -rf /tmp/storage/bsp/$UPDATE_SLOT/*
     mkdir -p /tmp/storage/bsp/$UPDATE_SLOT/mounts
-    [ -d /tmp/storage/overlay/upper/etc/ssh ] && (mkdir -p /tmp/storage/config/persist/etc/; cp -fr -t /tmp/storage/config/persist/etc/ /tmp/storage/overlay/upper/etc/ssh)
+    [ -d /tmp/storage/overlay/upper/etc ] && (mkdir -p /tmp/storage/config/persist/; cp -fr -t /tmp/storage/config/persist/ /tmp/storage/overlay/upper/etc)
     rm -rf /tmp/storage/overlay/*
 
     mkdir -p /tmp/update_boot
