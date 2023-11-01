@@ -3,6 +3,8 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI += " file://defconfig"
 SRC_URI += " file://add-devicetree-configfs.patch"
 
+inherit kernel-initramfs-compress
+
 # remove the NXP preocesses that clobber the defconfig.
 deltask copy_defconfig
 deltask merge_delta_config
