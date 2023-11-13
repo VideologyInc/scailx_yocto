@@ -10,6 +10,13 @@
             "icon": "terminal-bash"
         }
     },
+    {
+        "bitbake.machine": "scailx-imx8mp",
+        "bitbake.distro": "scailx",
+        "bitbake.oeInitBuildEnvPath": "${workspaceFolder}/poky/oe-init-build-env",
+        "bitbake.bitbakePath": "${workspaceFolder}/poky/bitbake/bin/bitbake/",
+        "bitbake.buildPath": "${workspaceFolder}/build",
+    },
     "terminal.integrated.defaultProfile.linux": "kas",
     "search.exclude": {
         "**/.repo": true,

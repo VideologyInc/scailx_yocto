@@ -20,7 +20,7 @@
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
-		"extensions": ["EugenWiens.bitbake", "mhutchie.git-graph"]
+		"extensions": ["microhobby.bitbake2", "mhutchie.git-graph"]
 		}
 	},
 
