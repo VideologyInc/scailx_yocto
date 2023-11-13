@@ -24,6 +24,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
 	swupdate-www \
     swupdate-config \
     e2fsprogs-tune2fs \
+    scailx-ssh-keys \
     scailx-mounts-boot \
     scailx-mounts-storage \
 "
@@ -62,6 +63,9 @@ do_fetch:append() {
     s = d.getVar('DEPLOY_DIR_IMAGE')
     output_env_file(d, os.path.join(s,'uboot-env.txt'))
 }
+
+inherit extrausers
+EXTRA_USERS_PARAMS += "usermod -a -G docker rootscailx; passwd-expire scailx; usermod -p '' root; passwd-expire root; "
 
 # do_swuimage:append() {
 #     import libconf, io, json
