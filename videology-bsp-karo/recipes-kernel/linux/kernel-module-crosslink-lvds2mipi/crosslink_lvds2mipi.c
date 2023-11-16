@@ -89,7 +89,7 @@ static int crosslink_resolution_upcall(struct crosslink_dev *sensor, int resolut
 	envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
 	envp[2] = NULL;
 
-	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
+	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
 	return 0;
 }
 
@@ -108,7 +108,7 @@ static int crosslink_s_power(struct v4l2_subdev *sd, int on)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	mutex_lock(&sensor->lock);
-	crosslink_power(sensor, on);
+	// crosslink_power(sensor, on);
 	mutex_unlock(&sensor->lock);
 	return 0;
 }
@@ -283,7 +283,7 @@ static int crosslink_enum_mbus_code(struct v4l2_subdev *sub_dev, struct v4l2_sub
 static int crosslink_soft_reset(struct crosslink_dev *sensor, bool enable)
 {
 	dev_dbg_ratelimited(sensor->dev, "%s: \n", __func__);
-	return regmap_write(sensor->regmap, 0x2, enable ? 1 : 0);
+	return regmap_write(sensor->regmap, 0x2, enable ? 0xff : 0);
 }
 
 static int crosslink_s_stream(struct v4l2_subdev *sd, int enable)
@@ -298,6 +298,9 @@ static int crosslink_s_stream(struct v4l2_subdev *sd, int enable)
 
 	mutex_lock(&sensor->lock);
 	ret = regmap_write(sensor->regmap, 0x3, sensor->mode->reg_val);
+	ret |= crosslink_soft_reset(sensor, 0);
+	if (enable)
+		msleep(50);
 	ret |= crosslink_soft_reset(sensor, enable);
 	mutex_unlock(&sensor->lock);
 	if (enable)
@@ -427,7 +430,7 @@ static int crosslink_probe(struct i2c_client *client)
 
 	v4l2_i2c_subdev_init(&sensor->sd, client, &crosslink_subdev_ops);
 
-	sensor->sd.flags |= V4L2_SUBDEV_FL_HAS_EVENTS;
+	sensor->sd.flags |= V4L2_SUBDEV_FL_HAS_EVENTS | V4L2_SUBDEV_FL_HAS_DEVNODE;
 	sensor->sd.dev = &client->dev;
 	sensor->pad.flags = MEDIA_PAD_FL_SOURCE;
 	sensor->sd.entity.ops = &crosslink_sd_media_ops;
@@ -439,7 +442,7 @@ static int crosslink_probe(struct i2c_client *client)
 	mutex_init(&sensor->lock);
 
 	//turn off
-	crosslink_power(sensor, 0);
+	// crosslink_power(sensor, 0);
 
 	ret = v4l2_async_register_subdev_sensor(&sensor->sd);
 	if (ret)

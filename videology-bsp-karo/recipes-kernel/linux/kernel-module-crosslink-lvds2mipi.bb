@@ -15,4 +15,7 @@ do_install:append(){
 }
 
 FILES:${PN} += "${base_bindir}/"
+
+KERNEL_MODULE_AUTOLOAD = "crosslink_lvds2mipi"
+
 RDEPENDS:${PN} += "serial-xfer"
