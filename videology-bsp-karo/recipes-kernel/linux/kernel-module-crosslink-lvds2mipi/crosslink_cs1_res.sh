@@ -7,22 +7,100 @@
 
 port="/dev/ttymxc3"
 
-if [ ! -z "$1" ]; then
-    stty 9600 -F "$port"
-    # 720P25
-    [ "$1" == "0x03" ] && echo -e "\x81\x01\x04\x24\x72\x01\x01\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x00\xFF" > "$port"  # && echo "720P25" > /home/root/res.txt
-	# 720P30
-    [ "$1" == "0x02" ] && echo -e "\x81\x01\x04\x24\x72\x00\x0E\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x00\xFF" > "$port"  # && echo "720P30" > /home/root/res.txt
-	# 720P50
-    [ "$1" == "0x01" ] && echo -e "\x81\x01\x04\x24\x72\x00\x0C\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x00\xFF" > "$port"  # && echo "720P50" > /home/root/res.txt
-	# 720P60
-    [ "$1" == "0x00" ] && echo -e "\x81\x01\x04\x24\x72\x00\x09\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x00\xFF" > "$port"  # && echo "720P60" > /home/root/res.txt
-	# 1080P25
-    [ "$1" == "0x13" ] && echo -e "\x81\x01\x04\x24\x72\x00\x08\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x00\xFF" > "$port"  # && echo "1080P25" > /home/root/res.txt
-	# 1080P30
-    [ "$1" == "0x12" ] && echo -e "\x81\x01\x04\x24\x72\x00\x06\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x00\xFF" > "$port"  # && echo "1080P30" > /home/root/res.txt
-    # 1080p50
-    [ "$1" == "0x93" ] && echo -e "\x81\x01\x04\x24\x72\x01\x04\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x01\xFF" > "$port"  # && echo "1080P50" > /home/root/res.txt
-    # 1080p60
-    [ "$1" == "0x92" ] && echo -e "\x81\x01\x04\x24\x72\x01\x03\xFF" > "$port" && echo -e "\x81\x01\x04\x24\x74\x00\x01\xFF" > "$port"  # && echo "1080P60" > /home/root/res.txt
+log=/home/root/lvds2mipi_log.txt
+
+function write_check() {
+    for _ in {0..20}; do
+        res=$(serial-xfer 9600 "$port" "$1")
+        echo $res >> $log
+        sleep 0.1
+	[[ "$res" == *"9041FF"* ]] && break
+    done
+}
+
+# Sony
+function Sony() {
+    if [ ! -z "$1" ]; then
+        # first check 1 or 2 lane mode
+        # sing_dual=$(serial-xfer 9600 "$port" "8109042474FF")
+        # if [[ "$1" == "0x9"* ]]; then
+        #     [[ $sing_dual == *"0000FF" ]] && echo "go dual ch"  >> $log && write_check "81010424740001FF"
+        # else
+        #     [[ $sing_dual == *"0001FF" ]] && echo "go sngl ch"  >> $log && write_check "81010424740000FF"
+        # fi
+        # echo $sing_dual >> $log
+
+        # # 720P25 Sony FCB-EV9520L
+        # [ "$1" == "0x03" ] && write_check "81010424720101FF" && write_check "8101041903FF" && echo "Sony 720P25"  >> $log
+        # # 720P30 Sony FCB-EV9520L
+        # [ "$1" == "0x02" ] && write_check "8101042472000FFF" && write_check "8101041903FF" && echo "Sony 720P30"  >> $log
+        # # 720P50 Sony FCB-EV9520L
+        # [ "$1" == "0x01" ] && write_check "8101042472000CFF" && write_check "8101041903FF" && echo "Sony 720P50"  >> $log
+        # # 720P60 Sony FCB-EV9520L
+        # [ "$1" == "0x00" ] && write_check "8101042472000AFF" && write_check "8101041903FF" && echo "Sony 720P60"  >> $log
+        # # 1080P25 Sony FCB-EV9520L
+        # [ "$1" == "0x13" ] && write_check "81010424720008FF" && write_check "8101041903FF" && echo "Sony 1080P25" >> $log
+        # # 1080P30 Sony FCB-EV9520L
+        # [ "$1" == "0x12" ] && write_check "81010424720007FF" && write_check "8101041903FF" && echo "Sony 1080P30" >> $log
+        # # 1080p50 Sony FCB-EV9520L
+        # [ "$1" == "0x93" ] && write_check "81010424720104FF" && write_check "8101041903FF" && echo "Sony 1080P50" >> $log
+        # # 1080p60 Sony FCB-EV9520L
+        # [ "$1" == "0x92" ] && write_check "81010424720105FF" && write_check "8101041903FF" && echo "Sony 1080P60" >> $log
+
+         # 720P25 Sony FCB-EV9520L
+        [ "$1" == "0x03" ] && write_check "81010424720101FF" && write_check "81010424740000FF" && write_check "8101041903FF" && echo "Sony 720P25"  >> $log
+        # 720P30 Sony FCB-EV9520L
+        [ "$1" == "0x02" ] && write_check "8101042472000FFF" && write_check "81010424740000FF" && write_check "8101041903FF" && echo "Sony 720P30"  >> $log
+        # 720P50 Sony FCB-EV9520L
+        [ "$1" == "0x01" ] && write_check "8101042472000CFF" && write_check "81010424740000FF" && write_check "8101041903FF" && echo "Sony 720P50"  >> $log
+        # 720P60 Sony FCB-EV9520L
+        [ "$1" == "0x00" ] && write_check "8101042472000AFF" && write_check "81010424740000FF" && write_check "8101041903FF" && echo "Sony 720P60"  >> $log
+        # 1080P25 Sony FCB-EV9520L
+        [ "$1" == "0x13" ] && write_check "81010424720008FF" && write_check "81010424740000FF" && write_check "8101041903FF" && echo "Sony 1080P25" >> $log
+        # 1080P30 Sony FCB-EV9520L
+        [ "$1" == "0x12" ] && write_check "81010424720007FF" && write_check "81010424740000FF" && write_check "8101041903FF" && echo "Sony 1080P30" >> $log
+        # 1080p50 Sony FCB-EV9520L
+        [ "$1" == "0x93" ] && write_check "81010424720104FF" && write_check "81010424740001FF" && write_check "8101041903FF" && echo "Sony 1080P50" >> $log
+        # 1080p60 Sony FCB-EV9520L
+        [ "$1" == "0x92" ] && write_check "81010424720105FF" && write_check "81010424740001FF" && write_check "8101041903FF" && echo "Sony 1080P60" >> $log
+    fi
+    for f in {0..50}; do
+        res=`serial-xfer 9600 $port 81090400FF`
+        if (( "$res" == "905003FF" )); then
+            break
+        fi
+    done
+}
+
+function ZoomBlock() {
+    if [ ! -z "$1" ]; then
+        # 720P25
+        [ "$1" == "0x03" ] && write_check "81010424720101FF" && write_check "81010424740000FF"  && echo "ZoomBlock 720P25" >> $log
+    	# 720P30
+        [ "$1" == "0x02" ] && write_check "8101042472000EFF" && write_check "81010424740000FF"  && echo "ZoomBlock 720P30" >> $log
+    	# 720P50
+        [ "$1" == "0x01" ] && write_check "8101042472000CFF" && write_check "81010424740000FF"  && echo "ZoomBlock 720P50" >> $log
+    	# 720P60
+        [ "$1" == "0x00" ] && write_check "81010424720009FF" && write_check "81010424740000FF"  && echo "ZoomBlock 720P60" >> $log
+    	# 1080P25
+        [ "$1" == "0x13" ] && write_check "81010424720008FF" && write_check "81010424740000FF"  && echo "ZoomBlock 1080P25" >> $log
+    	# 1080P30
+        [ "$1" == "0x12" ] && write_check "81010424720006FF" && write_check "81010424740000FF"  && echo "ZoomBlock 1080P30" >> $log
+        # 1080p50
+        [ "$1" == "0x93" ] && write_check "81010424720104FF" && write_check "81010424740001FF"  && echo "ZoomBlock 1080P50" >> $log
+        # 1080p60
+        [ "$1" == "0x92" ] && write_check "81010424720103FF" && write_check "81010424740001FF"  && echo "ZoomBlock 1080P60" >> $log
+    fi
+}
+
+# check if Sony or Not
+res=$(serial-xfer 9600 "$port" "81090002FF")
+# clear log
+echo $res > $log
+if [[ "$res" == *"0711"* ]]; then
+    Sony $1
+elif [[ "$res" == *"0466"* ]]; then
+    ZoomBlock $1
+else
+    echo "Unknown camera" >> $log
 fi
