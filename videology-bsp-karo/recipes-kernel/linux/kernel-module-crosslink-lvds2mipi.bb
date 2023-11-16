@@ -15,3 +15,4 @@ do_install:append(){
 }
 
 FILES:${PN} += "${base_bindir}/"
+RDEPENDS:${PN} += "serial-xfer"
