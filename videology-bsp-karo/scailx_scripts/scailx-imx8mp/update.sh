@@ -65,6 +65,7 @@ if [ $1 == "preinst" ]; then
     mkdir -p /tmp/storage/bsp/$UPDATE_SLOT/mounts
     [ -d /tmp/storage/overlay/upper/etc ] && (mkdir -p /tmp/storage/config/persist/; cp -fr -t /tmp/storage/config/persist/ /tmp/storage/overlay/upper/etc)
     rm -rf /tmp/storage/overlay/*
+    # [ -f /tmp/storage/config/overlay_persist ] || rm -rf /tmp/storage/overlay/*
 
     mkdir -p /tmp/update_boot
     mount /dev/disk/by-label/boot /tmp/update_boot || (umount -f /dev/disk/by-label/boot; mount /dev/disk/by-label/boot /tmp/update_boot)

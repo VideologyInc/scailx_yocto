@@ -11,7 +11,8 @@ log=/home/root/lvds2mipi_log.txt
 
 function write_check() {
     for _ in {0..20}; do
-        res=$(serial-xfer 9600 "$port" "$1")
+        # for commands, wait for the ACK and DONE = 9041FF9051FF
+        res=$(serial-xfer 9600 "$port" "$1" 220 6)
         echo $res >> $log
         sleep 0.1
 	[[ "$res" == *"9041FF"* ]] && break

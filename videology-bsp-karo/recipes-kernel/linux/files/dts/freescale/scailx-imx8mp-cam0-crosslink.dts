@@ -21,7 +21,7 @@
 		compatible = "scailx,crosslink";
 		reg = <0x1c>;
 		csi_id = <0>;
-		reset-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
+		// reset-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
 		status = "okay";
 		mipi_csi;
 
@@ -32,6 +32,11 @@
 				clock-lanes = <0>;
 			};
 		};
+	};
+	fpga0: lattice-crosslink@40 {
+		compatible = "lattice,crosslink-fpga-mgr";
+		reg = <0x40>;
+		reset-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
 	};
 };
 

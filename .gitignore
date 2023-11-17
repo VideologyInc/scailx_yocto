@@ -5,6 +5,6 @@ sstate-cache*
 .repo*
 bitbake.lock
 bitbake-cookerdaemon.log
-meta-*/
-poky/
+# meta-*/
+# poky/
 *ctags*

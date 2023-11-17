@@ -11,7 +11,7 @@
 #include <sys/ioctl.h>
 
 
-#define DEFAULT_TIMEOUT 100 // Default timeout in milliseconds
+#define DEFAULT_TIMEOUT 200 // Default timeout in milliseconds
 
 static int serial_baudrate_to_bits(int baudrate) {
     switch (baudrate) {
@@ -118,7 +118,7 @@ void flush_rx_buffer(int fd) {
 }
 
 // Function to receive data
-int recv_data(int fd, int timeout_ms) {
+int recv_data(int fd, int timeout_ms, int wait_for_bytes) {
     fd_set read_fds;
     struct timeval timeout;
     int retval;
@@ -146,8 +146,9 @@ int recv_data(int fd, int timeout_ms) {
             n = read(fd, p, sizeof(buf) - (p - buf));
             unsigned char end = p[n - 1];
             p += n;
-            // Check for end of packet (0xFF)
-            if (end == 0xFF)
+            if (wait_for_bytes && (p - buf) >= wait_for_bytes)
+                break;
+            else if (end == 0xFF) // Check for end of packet (0xFF)
                 break;
         } else {
             fprintf(stderr, "No data within timeout period.\n");
@@ -161,7 +162,7 @@ int recv_data(int fd, int timeout_ms) {
 
 int main(int argc, char *argv[]) {
     if (argc < 4) {
-        fprintf(stderr, "Usage: %s baud device hex-data [timeout]\n", argv[0]);
+        fprintf(stderr, "Usage: %s baud device hex-data [timeout] [wait for n bytes]\n", argv[0]);
         fprintf(stderr, "writes hex-data to serial dev, waits for a response and writes hex to stdio.\n" );
         fprintf(stderr, "Designed for strings ending in 0xFF.\n" );
         fprintf(stderr, "Example: %s 9600 /dev/ttyUSB0 100\n", argv[0]);
@@ -183,11 +184,12 @@ int main(int argc, char *argv[]) {
 
     int ret = 1;
     int timeout = (argc >= 5) ? atoi(argv[4]) : DEFAULT_TIMEOUT;
+    int wait_for_bytes = (argc >= 6) ? atoi(argv[5]) : 0;
     if ( send_data(fd, argv[3]) > 0 ) {
         //printf("send");
         tcdrain(fd);                // Wait until all data is sent
         //printf("drain");
-        int r=recv_data(fd, timeout);
+        int r=recv_data(fd, timeout, wait_for_bytes);
         if ((r) > 0)  // Now receive the response
             ret = 0;
         //printf("recv %d", r);

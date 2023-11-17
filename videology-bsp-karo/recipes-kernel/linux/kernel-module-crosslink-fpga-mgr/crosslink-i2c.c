@@ -314,6 +314,8 @@ static int crosslink_fpga_probe(struct i2c_client *client, const struct i2c_devi
 			break;
 	}
 
+	gpiod_set_value_cansleep(priv->reset, 1);
+
 	if (ret) {
 		dev_err(dev, "FPGA reset failed! (%d)\n", ret);
 		return ret;
@@ -338,13 +340,16 @@ static int crosslink_fpga_probe(struct i2c_client *client, const struct i2c_devi
 
 	/* Register with the FPGA manager */
 	priv->mgr = fpga_mgr_register(dev, "Lattice CrossLink FPGA Manager", &crosslink_fpga_ops, priv);
+
+	// make sure reset is high after probe
+	gpiod_set_value_cansleep(priv->reset, 1);
 	return 0;
 }
 
 static void crosslink_fpga_remove(struct i2c_client *client)
 {
-	struct crosslink_fpga_priv *priv = i2c_get_clientdata(client);
-	fpga_mgr_unregister(priv->mgr);
+	// struct crosslink_fpga_priv *priv = i2c_get_clientdata(client);
+	// fpga_mgr_unregister(priv->mgr);
 }
 
 static const struct i2c_device_id crosslink_id[] = {

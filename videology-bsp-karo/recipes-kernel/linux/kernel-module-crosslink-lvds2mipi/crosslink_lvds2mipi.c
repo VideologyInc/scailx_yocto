@@ -63,12 +63,97 @@ struct crosslink_dev {
 	struct v4l2_mbus_framefmt fmt;
 	const struct resolution *mode;
 	int framerate;
+	int has_serial;
+};
+
+#define SERIAL_BAUDRATE 9600
+struct crosslink_ioctl_serial {
+	u32 tx_len;
+	u32 rx_len;
+	u32 timeout_ms;
+	u8 data[32];
+};
+
+enum crosslink_ioctl_cmds {
+	CROSSLINK_CMD_SEND_SERIAL = 0x76001,
+	CROSSLINK_CMD_GET_SERIAL = 0x76002,
+	CROSSLINK_CMD_GET_FW_REV = 0x76003,
+	CROSSLINK_CMD_GET_RX_WAIT = 0x76004,
+};
+
+enum crosslink_regs {
+	CROSSLINK_REG_ID = 0x1,         // RO: 8:  Firmware version
+	CROSSLINK_REG_ENABLE = 0x2,     // RW: 8:  bit[0]: mipi-en, bit[1]: lvds-en, bit[2]: uart-en
+	CROSSLINK_REG_MODE = 0x3,		// RW: 8:  mode, "reg_val" in struct resolution
+	CROSSLINK_REG_LINE_COUNT = 0x4, // RO:16:  Y-count
+	CROSSLINK_REG_COLM_COUNT = 0x6, // RO:16:  X-count
+	CROSSLINK_REG_STATUS = 0x8, 	// RO: 8:  000 & pll_lock & gddr_rdy & bit_lock & word_lock & bw_rdy
+	CROSSLINK_REG_UART_STAT = 0x9,  // RO: 8:  board_detect2 & board_detect1 & s_busy_tx & s_busy_rx & s_data_fulltx & s_data_emptytx & s_data_fullrx & s_data_emptyrx;
+	CROSSLINK_REG_UART_RX_CNT= 0xA, // RO: 8:  count of bytes in UART RX fifo
+	CROSSLINK_REG_UART_PRESCL= 0xB, // RW:16:  UART Prescaler from 24 MHz. default=2500 => 24M/2500=9600 baud.
+	CROSSLINK_REG_SERIAL = 0x80,	// RW:XX:  Any bytes read/written above 0x80 are read from or written to the UART RX/TX fifos. Fifos are 32 bytes deep.
 };
 
 static inline struct crosslink_dev *to_crosslink_dev(struct v4l2_subdev *sd)
 {
 	return container_of(sd, struct crosslink_dev, sd);
 }
+
+// static ssize_t read_file(char *filename, char *buf, size_t count) {
+//     struct file *filp;
+//     mm_segment_t oldfs;
+//     ssize_t ret = 0;
+
+//     // Open the file
+//     filp = filp_open(filename, O_RDONLY, 0);
+//     if (IS_ERR(filp)) {
+//         pr_err("Error opening file %s\n", filename);
+//         return PTR_ERR(filp);
+//     }
+
+//     // Change the filesystem context to kernel's
+//     oldfs = get_fs();
+//     set_fs(KERNEL_DS);
+
+//     // Read the file
+//     ret = kernel_read(filp, buf, count, &filp->f_pos);
+
+//     // Restore the filesystem context
+//     set_fs(oldfs);
+
+//     // Close the file
+//     filp_close(filp, NULL);
+
+//     return ret;
+// }
+
+// static int crosslink_serial_upcall(struct crosslink_dev *sensor, int resolution)
+// {
+// 	char *argv[] = { "/bin/sh", "-c", "/usr/bin/your_command > /tmp/output.txt", NULL };
+// 	char *envp[] = { "HOME=/", "PATH=/sbin:/bin:/usr/sbin:/usr/bin", NULL };
+
+// 	char *argv[5], *envp[3];
+// 	static char buf[32], baud[16];
+
+// 	dev_dbg_ratelimited(sensor->dev, "%s: \n", __func__);
+
+// 	snprintf(buf, sizeof(buf), "0x%02x", resolution);
+
+// 	argv[0] = "/usr/bin/serial-xfer";
+// 	// baudrate
+// 	snprintf(baud, sizeof(baud), "%d", SERIAL_BAUDRATE);
+// 	argv[1] = baud;
+// 	argv[2] = buf;
+// 	argv[3] = NULL;
+
+// 	/* minimal command environment taken from cpu_run_sbin_hotplug */
+// 	envp[0] = "HOME=/home/root/";
+// 	envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
+// 	envp[2] = NULL;
+
+// 	call_usermodehelper(argv[0], argv, envp, UMH_WAIT_PROC);
+// 	return 0;
+// }
 
 static int crosslink_resolution_upcall(struct crosslink_dev *sensor, int resolution)
 {
@@ -108,9 +193,83 @@ static int crosslink_s_power(struct v4l2_subdev *sd, int on)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	mutex_lock(&sensor->lock);
+	int ret = regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, on ? 0xFE : 0x00);
+	msleep(5);
 	// crosslink_power(sensor, on);
 	mutex_unlock(&sensor->lock);
-	return 0;
+	return ret;
+}
+
+static int crosslink_xfer_serial(struct crosslink_dev *sensor, struct crosslink_ioctl_serial *serial)
+{
+	int i, ret=0;
+	unsigned int rx_cnt;
+	unsigned long expire;
+	dev_dbg_ratelimited(sensor->dev, "%s: \n", __func__);
+
+	if (serial->tx_len != 0) {
+		// write the data to the serial tx fifo
+		ret |= regmap_bulk_write(sensor->regmap, CROSSLINK_REG_SERIAL, serial->data, serial->tx_len);
+		if (ret)
+			return ret;
+	}
+	expire = jiffies + msecs_to_jiffies(serial->timeout_ms + 1);
+	while (time_before(jiffies, expire)) {
+		// wait for the rx fifo to fill up.
+		ret |= regmap_read(sensor->regmap, CROSSLINK_REG_UART_RX_CNT, &rx_cnt);
+		if (ret)
+			return ret;
+		if (rx_cnt >= serial->rx_len && rx_cnt != 0)
+			break;
+		usleep_range(1000, 3000);
+	}
+	if (rx_cnt) {
+		if(rx_cnt < serial->rx_len)
+			serial->rx_len = rx_cnt;
+		ret |= regmap_bulk_read(sensor->regmap, CROSSLINK_REG_SERIAL, serial->data, serial->rx_len);
+	}
+	return ret;
+}
+
+static long crosslink_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
+{
+	long ret = 0;
+	struct crosslink_dev *sensor = to_crosslink_dev(sd);
+	struct crosslink_ioctl_serial *serial;
+
+	mutex_lock(&sensor->lock);
+	switch (cmd) {
+		case CROSSLINK_CMD_SEND_SERIAL:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_SEND_SERIAL\n", __func__);
+			serial = (struct crosslink_ioctl_serial *)arg;
+			ret = regmap_bulk_write(sensor->regmap, CROSSLINK_REG_SERIAL, serial->data, serial->tx_len);
+			break;
+		case CROSSLINK_CMD_GET_SERIAL:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_GET_SERIAL\n", __func__);
+			serial = (struct crosslink_ioctl_serial *)arg;
+			if (serial->rx_len == 0)
+				ret = regmap_read(sensor->regmap, CROSSLINK_REG_UART_RX_CNT, &serial->rx_len);
+			ret = regmap_bulk_read(sensor->regmap, CROSSLINK_REG_SERIAL, serial->data, serial->rx_len);
+			break;
+		case CROSSLINK_CMD_GET_FW_REV:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_GET_FW_REV\n", __func__);
+			unsigned int fw_rev;
+			ret = regmap_read(sensor->regmap, CROSSLINK_REG_ID, &fw_rev);
+			*(u8*)arg = fw_rev;
+			break;
+		case CROSSLINK_CMD_GET_RX_WAIT:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_GET_RX_WAIT\n", __func__);
+			unsigned int  rx_wait;
+			ret = regmap_read(sensor->regmap, CROSSLINK_REG_UART_RX_CNT, &rx_wait);
+			*(u8 *)arg = rx_wait;
+			break;
+		default:
+			ret = -ENODEV;
+	}
+
+	mutex_unlock(&sensor->lock);
+
+	return ret;
 }
 
 static int ops_get_fmt(struct v4l2_subdev *sub_dev, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_format *format)
@@ -283,7 +442,7 @@ static int crosslink_enum_mbus_code(struct v4l2_subdev *sub_dev, struct v4l2_sub
 static int crosslink_soft_reset(struct crosslink_dev *sensor, bool enable)
 {
 	dev_dbg_ratelimited(sensor->dev, "%s: \n", __func__);
-	return regmap_write(sensor->regmap, 0x2, enable ? 0xff : 0);
+	return regmap_write(sensor->regmap, 0x2, enable ? 0xFF : 0xFE);
 }
 
 static int crosslink_s_stream(struct v4l2_subdev *sd, int enable)
@@ -316,6 +475,7 @@ static const struct v4l2_subdev_core_ops crosslink_core_ops = {
 	.log_status = v4l2_ctrl_subdev_log_status,
 	.subscribe_event = v4l2_ctrl_subdev_subscribe_event,
 	.unsubscribe_event = v4l2_event_subdev_unsubscribe,
+	.ioctl = crosslink_ioctl,
 };
 
 static const struct v4l2_subdev_video_ops crosslink_video_ops = {
@@ -361,6 +521,7 @@ static int crosslink_probe(struct i2c_client *client)
 	struct v4l2_mbus_framefmt *fmt;
 	int ret;
 	unsigned int id_code;
+	unsigned int uart_stat;
 
 	pr_debug("-->%s crosslink Probe start\n",__func__);
 
@@ -388,8 +549,8 @@ static int crosslink_probe(struct i2c_client *client)
 	if (IS_ERR(sensor->reset_gpio)) {
 		ret = PTR_ERR(sensor->reset_gpio);
 		if (ret != -EPROBE_DEFER)
-			dev_err(dev, "Cannot get reset GPIO (%d)", ret);
-		return ret;
+			dev_warn(dev, "Cannot get reset GPIO (%d)", ret);
+		// return ret;
 	}
 
 	endpoint = fwnode_graph_get_next_endpoint(dev_fwnode(&client->dev), NULL);
@@ -418,7 +579,7 @@ static int crosslink_probe(struct i2c_client *client)
 		return PTR_ERR(sensor->regmap);
 	}
 
-	ret = regmap_read(sensor->regmap, 0x1, &id_code);
+	ret = regmap_read(sensor->regmap, CROSSLINK_REG_ID, &id_code);
 	if (ret) {
 		/* If we can't read the ID, it may be that the FPGA hasn't loaded yet after releasing reset. */
 		dev_dbg(dev, "Could not read device-id. trying again\n");
@@ -441,8 +602,13 @@ static int crosslink_probe(struct i2c_client *client)
 
 	mutex_init(&sensor->lock);
 
-	//turn off
-	// crosslink_power(sensor, 0);
+	// get the uart status reg to see if the crosslink board rev supports i2c->serial passthrough.
+	ret = regmap_read(sensor->regmap, CROSSLINK_REG_UART_STAT, &uart_stat);
+	if (ret == 0)
+		sensor->has_serial = uart_stat & 0b11000000;
+
+	// turn off
+	crosslink_power(sensor, 0);
 
 	ret = v4l2_async_register_subdev_sensor(&sensor->sd);
 	if (ret)

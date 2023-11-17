@@ -1,0 +1,34 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/build/tmp/work-shared/gcc-12.2.0-r0/gcc-12.2.0/include/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        },
+        {
+            "name": "kernel_module",
+            "includePath": [
+                "${workspaceFolder}/build/tmp/work-shared/scailx-imx8mp/kernel-source/include/**",
+                "${workspaceFolder}/build/tmp/work-shared/scailx-imx8mp/kernel-build-artifacts/include/**"
+            ],
+            "defines": [
+                "__KERNEL__",
+                "_LINUX"
+            ],
+            "compilerPath": "${workspaceFolder}/build/tmp/sysroots-components/x86_64/gcc-cross-aarch64/usr/bin/aarch64-poky-linux/aarch64-poky-linux-gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "linux-gcc-x64",
+            "forcedInclude": [
+                "${workspaceFolder}/build/tmp/work-shared/scailx-imx8mp/kernel-build-artifacts/include/generated/autoconf.h"
+            ]
+        }
+    ],
+    "version": 4
+}

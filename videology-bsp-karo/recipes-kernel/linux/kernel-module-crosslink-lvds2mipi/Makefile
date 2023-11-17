@@ -1,7 +1,7 @@
 
 obj-m += crosslink_lvds2mipi.o
 
-# EXTRA_CFLAGS += -DDEBUG
+EXTRA_CFLAGS += -DDEBUG
 
 KERNEL_SRC ?= /usr/src/kernel
 

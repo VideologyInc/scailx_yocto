@@ -5,7 +5,6 @@ inherit scailx-swupdate-image
 DEFAULT_DTB = "scailx_karo_cameras.dtb"
 
 IMAGE_FEATURES += " \
-    debug-tweaks \
     tools-profile \
     ssh-server-openssh \
     hwcodecs \

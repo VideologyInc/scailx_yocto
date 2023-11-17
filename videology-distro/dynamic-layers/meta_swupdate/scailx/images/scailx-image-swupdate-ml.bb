@@ -5,7 +5,6 @@ inherit scailx-swupdate-image
 DEFAULT_DTB = "scailx_karo_cameras.dtb"
 
 IMAGE_FEATURES += " \
-    debug-tweaks \
     tools-profile \
     ssh-server-openssh \
     hwcodecs \
@@ -49,6 +48,7 @@ IMAGE_INSTALL += " \
     python3-pyserial \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \
+    kernel-module-crosslink-fpga-mgr \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
