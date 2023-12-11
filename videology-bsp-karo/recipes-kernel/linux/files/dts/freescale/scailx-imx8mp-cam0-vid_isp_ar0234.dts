@@ -1,0 +1,59 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2023 VideologyInc
+ *
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/clock/imx8mp-clock.h>
+#include <dt-bindings/gpio/gpio.h>
+
+&{/chosen} {
+	overlays {
+		cam0-gs-AR0234 = __TIMESTAMP__;
+	};
+};
+
+&csi0_i2c {
+	gs_AR0234_0: gs_AR0234_mipi_0@38 {
+		compatible = "scailx,gs_AR0234";
+		reg = <0x38>;
+		csi_id = <0>;
+		reset-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
+		status = "okay";
+		mipi_csi;
+
+		port {
+			mipi_0_ep: endpoint {
+				remote-endpoint = <&mipi_csi0_ep>;
+				data-lanes = <1 2 3 4>;
+				clock-lanes = <0>;
+			};
+		};
+	};
+};
+
+&mipi_csi_0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	clock-frequency = <500000000>;
+	status = "okay";
+
+	port@0 {
+		reg = <0>;
+		mipi_csi0_ep: endpoint {
+			remote-endpoint = <&mipi_0_ep>;
+			data-lanes = <4>;
+			csis-hs-settle = <13>;
+			csis-clk-settle = <2>;
+			csis-wclk;
+		};
+	};
+};
+
+&cameradev {
+	status = "okay";
+};
+

@@ -1,6 +1,7 @@
 DESCRIPTION = "Scailx swupdate container image"
 
 inherit scailx-swupdate-image
+inherit kernel_devel
 
 DEFAULT_DTB = "scailx_karo_cameras.dtb"
 
@@ -48,7 +49,7 @@ IMAGE_INSTALL += " \
     python3-pyserial \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \
-    kernel-module-crosslink-fpga-mgr \
+    kernel-module-gs-ar0234 \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
