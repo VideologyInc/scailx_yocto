@@ -10,43 +10,17 @@ port="/dev/ttymxc3"
 log=/home/root/lvds2mipi_log.txt
 
 function write_check() {
-    for _ in {0..20}; do
-        # for commands, wait for the ACK and DONE = 9041FF9051FF
-        res=$(serial-xfer 9600 "$port" "$1" 220 6)
+    for l in {0..20}; do
+        res=$(serial-xfer 9600 "$port" "$1")
         echo $res >> $log
         sleep 0.1
 	[[ "$res" == *"9041FF"* ]] && break
     done
 }
 
-# Sony
+    # Sony
 function Sony() {
     if [ ! -z "$1" ]; then
-        # first check 1 or 2 lane mode
-        # sing_dual=$(serial-xfer 9600 "$port" "8109042474FF")
-        # if [[ "$1" == "0x9"* ]]; then
-        #     [[ $sing_dual == *"0000FF" ]] && echo "go dual ch"  >> $log && write_check "81010424740001FF"
-        # else
-        #     [[ $sing_dual == *"0001FF" ]] && echo "go sngl ch"  >> $log && write_check "81010424740000FF"
-        # fi
-        # echo $sing_dual >> $log
-
-        # # 720P25 Sony FCB-EV9520L
-        # [ "$1" == "0x03" ] && write_check "81010424720101FF" && write_check "8101041903FF" && echo "Sony 720P25"  >> $log
-        # # 720P30 Sony FCB-EV9520L
-        # [ "$1" == "0x02" ] && write_check "8101042472000FFF" && write_check "8101041903FF" && echo "Sony 720P30"  >> $log
-        # # 720P50 Sony FCB-EV9520L
-        # [ "$1" == "0x01" ] && write_check "8101042472000CFF" && write_check "8101041903FF" && echo "Sony 720P50"  >> $log
-        # # 720P60 Sony FCB-EV9520L
-        # [ "$1" == "0x00" ] && write_check "8101042472000AFF" && write_check "8101041903FF" && echo "Sony 720P60"  >> $log
-        # # 1080P25 Sony FCB-EV9520L
-        # [ "$1" == "0x13" ] && write_check "81010424720008FF" && write_check "8101041903FF" && echo "Sony 1080P25" >> $log
-        # # 1080P30 Sony FCB-EV9520L
-        # [ "$1" == "0x12" ] && write_check "81010424720007FF" && write_check "8101041903FF" && echo "Sony 1080P30" >> $log
-        # # 1080p50 Sony FCB-EV9520L
-        # [ "$1" == "0x93" ] && write_check "81010424720104FF" && write_check "8101041903FF" && echo "Sony 1080P50" >> $log
-        # # 1080p60 Sony FCB-EV9520L
-        # [ "$1" == "0x92" ] && write_check "81010424720105FF" && write_check "8101041903FF" && echo "Sony 1080P60" >> $log
 
          # 720P25 Sony FCB-EV9520L
         [ "$1" == "0x03" ] && write_check "81010424720101FF" && write_check "81010424740000FF" && write_check "8101041903FF" && echo "Sony 720P25"  >> $log

@@ -525,7 +525,12 @@ static void crosslink_fw_handler(const struct firmware *fw, void *context)
 
 	sensor->firmware_loaded = 1;
 exit:
+	release_firmware(fw);
 	mutex_unlock(&sensor->lock);
+	if (ret < 0) {
+		dev_err(sensor->dev, "Failed to load firmware: %d\n", ret);
+		crosslink_remove(sensor->i2c_client);
+	}
 }
 
 
