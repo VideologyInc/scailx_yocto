@@ -17,6 +17,7 @@
 };
 
 &csi0_i2c {
+	clock-frequency = <1000000>;
 	crosslink_0: crosslink_mipi_0@1c {
 		compatible = "scailx,crosslink";
 		reg = <0x1c>;
@@ -32,11 +33,6 @@
 				clock-lanes = <0>;
 			};
 		};
-	};
-	fpga0: lattice-crosslink@40 {
-		compatible = "lattice,crosslink-fpga-mgr";
-		reg = <0x40>;
-		reset-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
 	};
 };
 

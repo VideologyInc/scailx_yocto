@@ -26,10 +26,14 @@
     },
     "files.exclude": {
         "build/cache/**": true,
+        "build/tmp/**": true,
         "build/sstate-cache/**": true,
         "downloads/**": true,
         "*ctags*":  true,
         "sstate-cache*/**": true,
+    },
+    "C_Cpp.files.exclude": {
+        "build/**": true,
     },
     "search.followSymlinks": false,
     "git-blame.gitWebUrl": "",
