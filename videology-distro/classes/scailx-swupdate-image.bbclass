@@ -25,6 +25,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     swupdate-config \
     e2fsprogs-tune2fs \
     scailx-ssh-keys \
+    scailx-profile \
     scailx-mounts-boot \
     scailx-mounts-storage \
 "
