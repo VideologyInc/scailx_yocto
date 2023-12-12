@@ -21,7 +21,6 @@ CONFLICT_DISTRO_FEATURES = "directfb"
 OPENCV_PKGS       ?= ""
 OPENCV_PKGS:imxgpu = " \
     opencv-apps \
-    opencv-samples \
     python3-opencv \
 "
 
