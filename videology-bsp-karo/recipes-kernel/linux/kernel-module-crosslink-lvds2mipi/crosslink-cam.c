@@ -503,6 +503,7 @@ static int crosslink_s_stream(struct v4l2_subdev *sd, int enable)
 extern int crosslink_fpga_ops_write_init(struct gpio_desc *reset, struct i2c_client *client);
 extern int crosslink_fpga_ops_write(struct i2c_client *client, const char *buf, size_t count);
 extern int crosslink_fpga_ops_write_complete(struct i2c_client *client);
+static void crosslink_remove(struct i2c_client *client);
 
 static void crosslink_fw_handler(const struct firmware *fw, void *context)
 {

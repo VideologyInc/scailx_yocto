@@ -19,6 +19,7 @@ do_install:append(){
 }
 
 FILES:${PN} += "${base_bindir}/"
+FILES:${PN} += "/lib/firmware/"
 
 KERNEL_MODULE_AUTOLOAD = "crosslink_lvds2mipi"
 
