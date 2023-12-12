@@ -48,6 +48,6 @@ swupdate_run() {
     [ -f "/tmp/initrd_error" ] && echo "boot error. Updating"
 
     # get dhcp lease
-    udhcpc
+    udhcpc || udhcpc -i end0
     run_swupd
 }
