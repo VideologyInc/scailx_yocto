@@ -12,6 +12,8 @@ SRC_URI = " \
 	file://dts/freescale/scailx_karo_cameras.dts \
 	file://dts/freescale/scailx-imx8mp-cam0-crosslink.dts \
 	file://dts/freescale/scailx-imx8mp-cam1-crosslink.dts \
+	file://dts/freescale/scailx-imx8mp-cam0-os08a20.dts \
+	file://dts/freescale/scailx-imx8mp-cam1-os08a20.dts \
 	file://dts/freescale/scailx-imx8mp-cam0-ov5640.dts \
 	file://dts/freescale/scailx-imx8mp-cam1-ov5640.dts \
 	file://dts/freescale/scailx_karo_gpio_a_spi_overlay.dts \
