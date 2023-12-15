@@ -26,7 +26,7 @@
 		mclk = <24000000>;
 		mclk_source = <0>;
 		status = "okay";
-		// rst-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
+		rst-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
 		// pwn-gpios = <&gpio_expander 0 GPIO_ACTIVE_HIGH>;
 
 		port {
@@ -59,10 +59,6 @@
 };
 
 &isi_0 {
-	status = "disabled";
-};
-
-&isi_1 {
 	status = "disabled";
 };
 
