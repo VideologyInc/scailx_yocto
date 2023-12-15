@@ -585,7 +585,7 @@ static int crosslink_probe(struct i2c_client *client)
 	struct crosslink_dev *sensor;
 	struct v4l2_mbus_framefmt *fmt;
 	int ret;
-	unsigned int id_code;
+	unsigned int id_code=0;
 	unsigned int uart_stat;
 
 	pr_debug("-->%s crosslink Probe start\n",__func__);
@@ -650,21 +650,14 @@ static int crosslink_probe(struct i2c_client *client)
 	}
 
 	ret = regmap_read(sensor->regmap, CROSSLINK_REG_ID, &id_code);
-	if (ret) {
-		/* If we can't read the ID, it may be that the FPGA hasn't loaded yet after releasing reset. */
+	if (ret)
 		dev_dbg(dev, "Could not read device-id. trying again\n");
-		// return -EPROBE_DEFER;
-	}
-	else {
-		dev_info(dev, "Got device-id %02x\n", id_code);
-		if (id_code < FIRMWARE_VERSION) {
-			dev_info(dev, "Firmware old. Loading current: %02x\n", FIRMWARE_VERSION);
-			ret = request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT, FIRWARE_NAME, dev, GFP_KERNEL, sensor, crosslink_fw_handler);
-			if (ret) {
-				dev_err(dev, "Failed request_firmware_nowait err %d\n", ret);
-				goto entity_cleanup;
-			}
-			// return -EPROBE_DEFER;
+	if (id_code != FIRMWARE_VERSION) {
+		dev_info(dev, "Loading current Firmware: %02x\n", FIRMWARE_VERSION);
+		ret = request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT, FIRWARE_NAME, dev, GFP_KERNEL, sensor, crosslink_fw_handler);
+		if (ret) {
+			dev_err(dev, "Failed request_firmware_nowait err %d\n", ret);
+			goto entity_cleanup;
 		}
 	}
 
