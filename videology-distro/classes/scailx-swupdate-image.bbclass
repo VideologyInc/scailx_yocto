@@ -24,12 +24,15 @@ CORE_IMAGE_EXTRA_INSTALL += " \
 	swupdate-www \
     swupdate-config \
     e2fsprogs-tune2fs \
+    scailx-ssh-keys \
+    scailx-profile \
     scailx-mounts-boot \
     scailx-mounts-storage \
 "
 
 IMAGE_FSTYPES = "squashfs"
 
+do_fetch[depends] += "virtual/bootloader:do_deploy"
 
 # IMAGE_DEPENDS: list of Yocto images that contains a root filesystem
 # it will be ensured they are built before creating swupdate image
@@ -61,6 +64,9 @@ do_fetch:append() {
     s = d.getVar('DEPLOY_DIR_IMAGE')
     output_env_file(d, os.path.join(s,'uboot-env.txt'))
 }
+
+inherit extrausers
+EXTRA_USERS_PARAMS += "usermod -a -G docker rootscailx; passwd-expire scailx; usermod -p '' root; passwd-expire root; "
 
 # do_swuimage:append() {
 #     import libconf, io, json

@@ -1,0 +1,13 @@
+diff --git a/lib/xlat_tables_v2/xlat_tables_utils.c b/lib/xlat_tables_v2/xlat_tables_utils.c
+index df1738642..661928b94 100644
+--- a/lib/xlat_tables_v2/xlat_tables_utils.c
++++ b/lib/xlat_tables_v2/xlat_tables_utils.c
+@@ -201,7 +201,7 @@ static void xlat_tables_print_internal(xlat_ctx_t *ctx, uintptr_t table_base_va,
+ 			} else {
+ 				printf("%sVA:0x%lx PA:0x%llx size:0x%zx ",
+ 				       level_spacers[level], table_idx_va,
+-				       (uint64_t)(desc & TABLE_ADDR_MASK),
++				       (unsigned long long)(desc & TABLE_ADDR_MASK),
+ 				       level_size);
+ 				xlat_desc_print(ctx, desc);
+ 				printf("\n");

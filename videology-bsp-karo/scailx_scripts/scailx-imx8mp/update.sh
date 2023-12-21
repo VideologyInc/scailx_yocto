@@ -63,8 +63,15 @@ if [ $1 == "preinst" ]; then
     mount /dev/disk/by-label/storage /tmp/storage || (umount -f /tmp/storage; mount /dev/disk/by-label/storage /tmp/storage)
     rm -rf /tmp/storage/bsp/$UPDATE_SLOT/*
     mkdir -p /tmp/storage/bsp/$UPDATE_SLOT/mounts
-    [ -d /tmp/storage/overlay/upper/etc/ssh ] && (mkdir -p /tmp/storage/config/persist/etc/; cp -fr -t /tmp/storage/config/persist/etc/ /tmp/storage/overlay/upper/etc/ssh)
-    rm -rf /tmp/storage/overlay/*
+    [ -d /tmp/storage/overlay/upper/etc ] && (mkdir -p /tmp/storage/config/persist/; cp -fr -t /tmp/storage/config/persist/ /tmp/storage/overlay/upper/etc)
+    rm -rf /tmp/storage/overlay/backup*
+    mv -f /tmp/storage/overlay/upper /tmp/storage/overlay/backup
+    rm -rf /tmp/storage/overlay/work
+    # remove files in upper that are already in persist
+    persist_files=$(find /tmp/storage/config/persist/ -type f | sed -r 's/\/tmp\/storage\/config\/persist\///')
+    for f in $persist_files; do rm -f /tmp/storage/overlay/backup/$f; done
+    # tarzip files in upper relative to upper
+    # tar -C /tmp/storage/overlay/upper -czf /tmp/storage/backup.tgz .
 
     mkdir -p /tmp/update_boot
     mount /dev/disk/by-label/boot /tmp/update_boot || (umount -f /dev/disk/by-label/boot; mount /dev/disk/by-label/boot /tmp/update_boot)

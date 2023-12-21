@@ -1,11 +1,11 @@
 DESCRIPTION = "Scailx swupdate container image"
 
 inherit scailx-swupdate-image
+inherit kernel_devel
 
 DEFAULT_DTB = "scailx_karo_cameras.dtb"
 
 IMAGE_FEATURES += " \
-    debug-tweaks \
     tools-profile \
     ssh-server-openssh \
     hwcodecs \
@@ -21,7 +21,6 @@ CONFLICT_DISTRO_FEATURES = "directfb"
 OPENCV_PKGS       ?= ""
 OPENCV_PKGS:imxgpu = " \
     opencv-apps \
-    opencv-samples \
     python3-opencv \
 "
 
@@ -49,6 +48,7 @@ IMAGE_INSTALL += " \
     python3-pyserial \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \
+    kernel-module-gs-ar0234 \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \

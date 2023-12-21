@@ -1,15 +1,15 @@
 header:
-  version: 11
+  version: 14
 
 repos:
   meta-lts-mixins-go:
     url: https://git.yoctoproject.org/git/meta-lts-mixins
-    # refspec: kirkstone/go
-    refspec: 6e9008a6765d7059414494b794c503ddc0965ef0
+    # commit: kirkstone/go
+    commit: 6e9008a6765d7059414494b794c503ddc0965ef0
   meta-lts-mixins-rust:
     url: https://git.yoctoproject.org/git/meta-lts-mixins
-    # refspec: kirkstone/rust-1.68
-    refspec: feed1bb0eb4aefb701d582156d7defb0c1fc0473
+    # commit: kirkstone/rust-1.68
+    commit: feed1bb0eb4aefb701d582156d7defb0c1fc0473
 
 local_conf_header:
   mixins: |

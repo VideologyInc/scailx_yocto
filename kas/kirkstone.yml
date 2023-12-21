@@ -1,9 +1,9 @@
 header:
-  version: 11
+  version: 14
 
 defaults:
   repos:
-    refspec: kirkstone
+    commit: kirkstone
 
 local_conf_header:
   standard: |

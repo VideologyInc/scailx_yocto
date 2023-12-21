@@ -23,6 +23,7 @@
 		reg = <0x3c>;
 		csi_id = <0>;
 		reset-gpios = <&gpio_expander 9 GPIO_ACTIVE_LOW>;
+		powerdown-gpios = <&gpio_expander 10 GPIO_ACTIVE_HIGH>;
 		clocks = <&clk IMX8MP_CLK_IPP_DO_CLKO2>;
 		clock-names = "xclk";
 		assigned-clocks = <&clk IMX8MP_CLK_IPP_DO_CLKO2>;

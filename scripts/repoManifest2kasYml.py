@@ -20,10 +20,14 @@ def parseManifestXML(xmlfile):
     for rem in remotes:
         rems[rem.getAttribute("name")] = rem.getAttribute("fetch")
 
-    defnode = default.pop()
-    defname = defnode.getAttribute("remote")
+    try:
+        defnode = default.pop()
+        defname = defnode.getAttribute("remote")
+        defrev = defnode.getAttribute("revision")
+    except IndexError:
+        defname = None
+        defrev = None
     defrem = rems[defname] if defname else ''
-    defrev = defnode.getAttribute("revision")
 
     data = {}
     for proj in projects:
@@ -47,14 +51,14 @@ def parseManifestXML(xmlfile):
             pname = name
         # FIXME
         if pname != "meta-openembedded":
-            data[pname]= {"url":remote+name, "refspec":revision, "path":path}
+            data[pname]= {"url":remote+name, "branch":upstream, "commit":revision, "path":path}
         else:
-            data[pname]= {"url":remote+name, "refspec":revision, "path":path, "layers":{"meta-filesystems":"", "meta-multimedia":"", "meta-networking":""}}
+            data[pname]= {"url":remote+name, "branch":upstream, "commit":revision, "path":path, "layers":{"meta-filesystems":"", "meta-multimedia":"", "meta-networking":""}}
     return data
 
 
 def saveHeader(outf):
-    header = """header:\n    version: 3\n\n"""
+    header = """header:\n    version: 14\n\n"""
 
     lfile="./auto.conf"
     if os.path.exists(lfile):

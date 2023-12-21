@@ -1,0 +1,99 @@
+# Generate overall repo manifest:
+#   $ mkdir test && cd test
+#   $ repo init -u https://github.com/nxp-imx/imx-manifest -b imx-linux-mickledore -m imx-6.1.22-2.0.0_desktop.xml
+#   $ repo sync
+#   $ repo manifest -o ../pinned-manifest.xml
+#   $ ../scripts/repoManifest2kasYml.py ../pinned-manifest.xml
+
+header:
+    version: 14
+
+# target: core-image-minimal
+repos:
+  # fsl-community-bsp-base:
+  #   branch: master
+  #   commit: 60f79f7af60537146298560079ae603260f0bd14
+  #   path: base
+  #   url: https://github.com/Freescale/fsl-community-bsp-base
+  meta-arm:
+    branch: mickledore
+    commit: 0b5724266a8e559cac1724350c1ff2f9e6580326
+    path: meta-arm
+    layers:
+      meta-arm-toolchain: ''
+      meta-arm: ''
+    url: https://git.yoctoproject.org/meta-arm
+  meta-browser:
+    branch: ''
+    commit: e232c2e21b96dc092d9af8bea4b3a528e7a46dd6
+    path: meta-browser
+    url: https://github.com/OSSystems/meta-browser
+  meta-clang:
+    branch: mickledore
+    commit: 1e0af2f5bb797d7bb639c2ac03c1248cc8d00bc9
+    path: meta-clang
+    url: https://github.com/kraj/meta-clang
+  meta-freescale:
+    branch: master
+    commit: 39d8f0d5ee44aae9932923e9fe95b7f2838563af
+    path: meta-freescale
+    url: https://github.com/Freescale/meta-freescale
+  meta-freescale-3rdparty:
+    branch: master
+    commit: 48cc5dd42007d09295677bc8bc0377fe96b5b270
+    path: meta-freescale-3rdparty
+    url: https://github.com/Freescale/meta-freescale-3rdparty
+  meta-freescale-distro:
+    branch: master
+    commit: a4efa17a9f6b25d8d9290dfee8275059d40b83df
+    path: meta-freescale-distro
+    url: https://github.com/Freescale/meta-freescale-distro
+  meta-imx:
+    branch: mickledore-6.1.22-2.0.0
+    commit: refs/tags/rel_imx_6.1.22_2.0.0
+    path: meta-imx
+    url: https://github.com/nxp-imx/meta-imx
+  # meta-nxp-demo-experience:
+  #   branch: mickledore-6.1.22-2.0.0
+  #   commit: ec9d5592dc6369622dc027ad456cadb844451226
+  #   path: meta-nxp-demo-experience
+  #   url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
+  # meta-nxp-desktop:
+  #   branch: lf-6.1.22-2.0.0-mickledore
+  #   commit: refs/tags/rel_lf_6.1.22_2.0.0_ldp
+  #   path: meta-nxp-desktop
+  #   url: https://github.com/nxp-imx/meta-nxp-desktop
+  meta-openembedded:
+    branch: mickledore
+    commit: 54b177f4acb3048d21a68f180fc183d0fdf47a94
+    layers:
+      meta-filesystems: ''
+      meta-multimedia: ''
+      meta-networking: ''
+    path: meta-openembedded
+    url: https://github.com/openembedded/meta-openembedded
+  # meta-qt6:
+  #   branch: '6.5'
+  #   commit: 1406d0a85525a71fe5d7892d7f915404290a78ad
+  #   path: meta-qt6
+  #   url: https://code.qt.io/yocto/meta-qt6
+  meta-security:
+    branch: mickledore
+    commit: d7db0a3bd1a8639df7570483f003ce00cbe274a2
+    path: meta-security
+    url: https://git.yoctoproject.org/meta-security
+  # meta-timesys:
+  #   branch: langdale
+  #   commit: 33a45eb06bead2509f1bf5bf46a5bbc85d66583b
+  #   path: meta-timesys
+  #   url: https://github.com/TimesysGit/meta-timesys
+  meta-virtualization:
+    branch: mickledore
+    commit: 2bb4071ad372d4b5a092c872c0d42b261f757681
+    path: meta-virtualization
+    url: https://git.yoctoproject.org/meta-virtualization
+  poky:
+    branch: mickledore
+    commit: ddb298ce894482467d82699d223c5555baad6591
+    path: poky
+    url: https://git.yoctoproject.org/poky

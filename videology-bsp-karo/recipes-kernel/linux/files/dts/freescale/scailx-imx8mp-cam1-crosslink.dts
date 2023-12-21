@@ -17,11 +17,12 @@
 };
 
 &csi1_i2c {
+	clock-frequency = <1000000>;
 	crosslink_1: crosslink_mipi_1@1c {
 		compatible = "scailx,crosslink";
 		reg = <0x1c>;
 		csi_id = <1>;
-		reset-gpios = <&gpio_expander 1 GPIO_ACTIVE_LOW>;
+		// reset-gpios = <&gpio_expander 1 GPIO_ACTIVE_LOW>;
 		status = "okay";
 		mipi_csi;
 

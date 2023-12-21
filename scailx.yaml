@@ -9,9 +9,9 @@ header:
   version: 11
   includes:
     - nxp-imx.yaml
-    - kas/kirkstone.yml
-    - kas/kirkstone-lts-mixins.yml
-    - lf-5.15.71-2.2.0-kirkstone.yaml
+    # - nxp-desktop.yaml
+    - kas/mickledore.yml
+    - lf-6.1.22-2.0.0-mickledore.yaml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
 

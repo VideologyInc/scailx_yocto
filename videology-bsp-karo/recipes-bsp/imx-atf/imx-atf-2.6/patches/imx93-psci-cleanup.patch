@@ -1,0 +1,231 @@
+Index: git/plat/imx/imx93/imx93_psci.c
+===================================================================
+--- git.orig/plat/imx/imx93/imx93_psci.c
++++ git/plat/imx/imx93/imx93_psci.c
+@@ -19,104 +19,104 @@
+ #include <trdc.h>
+ #include <plat_imx8.h>
+ 
+-#define BLK_CTRL_S_BASE                0x444F0000
+-#define M33_CFG_OFF            	0x60
+-#define CA55_CPUWAIT           0x118
+-#define CA55_RVBADDR0_L                0x11c
+-#define CA55_RVBADDR0_H                0x120
+-#define HW_LP_HANDHSK		0x110
+-#define HW_LP_HANDHSK2		0x114
+-#define HW_S401_RESET_REQ_MASK  0x130
+-#define M33_CPU_WAIT_MASK      BIT(2)
++#define BLK_CTRL_S_BASE			0x444F0000
++#define M33_CFG_OFF			0x60
++#define CA55_CPUWAIT			0x118
++#define CA55_RVBADDR0_L			0x11c
++#define CA55_RVBADDR0_H			0x120
++#define HW_LP_HANDHSK			0x110
++#define HW_LP_HANDHSK2			0x114
++#define HW_S401_RESET_REQ_MASK		0x130
++#define M33_CPU_WAIT_MASK		BIT(2)
+ 
+-#define IMX_SRC_BASE		0x44460000
+-#define IMX_GPC_BASE		0x44470000
++#define IMX_SRC_BASE			0x44460000
++#define IMX_GPC_BASE			0x44470000
+ 
+ /* SRC */
+-#define MIX_AUTHEN_CTRL 	0x4
+-#define LPM_SETTING_1		0x14
+-#define LPM_SETTING_2		0x18
+-#define A55C0_MEM		0x5c00
+-
+-#define MEM_CTRL		0x4
+-#define MEM_LP_EN		BIT(2)
+-#define MEM_LP_RETENTION	BIT(1)
++#define MIX_AUTHEN_CTRL			0x4
++#define LPM_SETTING_1			0x14
++#define LPM_SETTING_2			0x18
++#define A55C0_MEM			0x5c00
++
++#define MEM_CTRL			0x4
++#define MEM_LP_EN			BIT(2)
++#define MEM_LP_RETENTION		BIT(1)
+ 
+ /* GPC */
+-#define GPC_CMCx(i)	(IMX_GPC_BASE + 0x800 * (i))
+-#define CM_IMR0		U(0x100)
+-#define A55C0_CMC_OFFSET	0x800
+-#define CM_MISC		0xc
+-#define IRQ_MUX		BIT(5)
+-#define SW_WAKEUP	BIT(6)
+-
+-#define IMR_NUM		U(8)
+-
+-#define CM_MODE_CTRL		0x10
+-#define CM_IRQ_WAKEUP_MASK0	0x100
+-#define CM_SYS_SLEEP_CTRL	0x380
+-
+-#define SS_WAIT		BIT(0)
+-#define SS_STOP		BIT(1)
+-#define SS_SUSPEND	BIT(2)
+-
+-#define IMX_SRC_A55C0_OFFSET   0x2c00
+-#define SLICE_SW_CTRL          0x20
+-#define SLICE_SW_CTRL_PDN_SOFT BIT(31)
+-
+-#define CM_MODE_RUN	0x0
+-#define CM_MODE_WAIT	0x1
+-#define CM_MODE_STOP	0x2
+-#define CM_MODE_SUSPEND	0x3
+-
+-#define GPC_DOMAIN	0x10
+-#define GPC_DOMAIN_SEL	0x18
+-#define GPC_MASTER	0x1c
+-#define GPC_SYS_SLEEP	0x40
+-#define PMIC_CTRL	0x100
+-#define GPC_RCOSC_CTRL	0x200
+-
+-#define GPC_GLOBAL_OFFSET	0x4000
+-
+-#define BBNSM_BASE	U(0x44440000)
+-#define BBNSM_CTRL	U(0x8)
+-#define BBNSM_DP_EN	BIT(24)
+-#define BBNSM_TOSP	BIT(25)
+-
+-#define LPM_DOMAINx(n)	(1 << ((n) * 4))
+-
+-#define ARM_PLL		U(0x44481000)
+-#define SYS_PLL		U(0x44481100)
+-#define SYS_PLL_DFS_0	U(SYS_PLL + 0x70)
+-#define SYS_PLL_DFS_1	U(SYS_PLL + 0x90)
+-#define SYS_PLL_DFS_2	U(SYS_PLL + 0xb0)
+-#define OSCPLL_CHAN(x)	(0x44455000 + (x) * 0x40)
+-#define OSCPLL_NUM	U(12)
+-#define OSCPLL_LPM0	U(0x10)
+-#define OSCPLL_LPM_DOMAIN_MODE(x, d) ((x) << (d * 4))
+-#define OSCPLL_LPM_AUTH	U(0x30)
+-#define PLL_HW_CTRL_EN	BIT(16)
+-#define LPCG(x) 	(0x44458000 + (x) * 0x40)
+-#define LPCG_AUTH	U(0x30)
+-#define LPCG_CUR	U(0x1c)
+-#define CPU_LPM_EN	BIT(2)
+-#define CCM_ROOT_SLICE(x)	(0x44450000 + (x) * 0x80)
+-#define ROOT_MUX_MASK	GENMASK_32(9, 8)
+-#define ROOT_CLK_OFF	BIT(24)
+-
+-#define S400_MU_RSR	(S400_MU_BASE + 0x12c)
+-#define S400_MU_TRx(i)	(S400_MU_BASE + 0x200 + (i) * 4)
+-#define S400_MU_RRx(i)	(S400_MU_BASE + 0x280 + (i) * 4)
+-#define ELE_POWER_DOWN_REQ	U(0x17d10306)
+-
+-#define MU1B_BASE	(0x44230000)
+-#define MU1B_GIER	(MU1B_BASE + 0x110)
+-#define MU1B_GSR	(MU1B_BASE + 0x118)
+-#define MU_GPI1		BIT(1)
+-
+-#define CORE_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL0])
+-#define CLUSTER_PWR_STATE(state) ((state)->pwr_domain_state[MPIDR_AFFLVL1])
+-#define SYSTEM_PWR_STATE(state) ((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
++#define GPC_CMCx(i)			(IMX_GPC_BASE + 0x800 * (i))
++#define CM_IMR0				U(0x100)
++#define A55C0_CMC_OFFSET		0x800
++#define CM_MISC				0xc
++#define IRQ_MUX				BIT(5)
++#define SW_WAKEUP			BIT(6)
++
++#define IMR_NUM				U(8)
++
++#define CM_MODE_CTRL			0x10
++#define CM_IRQ_WAKEUP_MASK0		0x100
++#define CM_SYS_SLEEP_CTRL		0x380
++
++#define SS_WAIT				BIT(0)
++#define SS_STOP				BIT(1)
++#define SS_SUSPEND			BIT(2)
++
++#define IMX_SRC_A55C0_OFFSET		0x2c00
++#define SLICE_SW_CTRL			0x20
++#define SLICE_SW_CTRL_PDN_SOFT		BIT(31)
++
++#define CM_MODE_RUN			0x0
++#define CM_MODE_WAIT			0x1
++#define CM_MODE_STOP			0x2
++#define CM_MODE_SUSPEND			0x3
++
++#define GPC_DOMAIN			0x10
++#define GPC_DOMAIN_SEL			0x18
++#define GPC_MASTER			0x1c
++#define GPC_SYS_SLEEP			0x40
++#define PMIC_CTRL			0x100
++#define GPC_RCOSC_CTRL			0x200
++
++#define GPC_GLOBAL_OFFSET		0x4000
++
++#define BBNSM_BASE			U(0x44440000)
++#define BBNSM_CTRL			U(0x8)
++#define BBNSM_DP_EN			BIT(24)
++#define BBNSM_TOSP			BIT(25)
++
++#define LPM_DOMAINx(n)			(1 << ((n) * 4))
++
++#define ARM_PLL				U(0x44481000)
++#define SYS_PLL				U(0x44481100)
++#define SYS_PLL_DFS_0			U(SYS_PLL + 0x70)
++#define SYS_PLL_DFS_1			U(SYS_PLL + 0x90)
++#define SYS_PLL_DFS_2			U(SYS_PLL + 0xb0)
++#define OSCPLL_CHAN(x)			(0x44455000 + (x) * 0x40)
++#define OSCPLL_NUM			U(12)
++#define OSCPLL_LPM0			U(0x10)
++#define OSCPLL_LPM_DOMAIN_MODE(x, d)	((x) << ((d) * 4))
++#define OSCPLL_LPM_AUTH			U(0x30)
++#define PLL_HW_CTRL_EN			BIT(16)
++#define LPCG(x)				(0x44458000 + (x) * 0x40)
++#define LPCG_AUTH			U(0x30)
++#define LPCG_CUR			U(0x1c)
++#define CPU_LPM_EN			BIT(2)
++#define CCM_ROOT_SLICE(x)		(0x44450000 + (x) * 0x80)
++#define ROOT_MUX_MASK			GENMASK_32(9, 8)
++#define ROOT_CLK_OFF			BIT(24)
++
++#define S400_MU_RSR			(S400_MU_BASE + 0x12c)
++#define S400_MU_TRx(i)			(S400_MU_BASE + 0x200 + (i) * 4)
++#define S400_MU_RRx(i)			(S400_MU_BASE + 0x280 + (i) * 4)
++#define ELE_POWER_DOWN_REQ		U(0x17d10306)
++
++#define MU1B_BASE			(0x44230000)
++#define MU1B_GIER			(MU1B_BASE + 0x110)
++#define MU1B_GSR			(MU1B_BASE + 0x118)
++#define MU_GPI1				BIT(1)
++
++#define CORE_PWR_STATE(state)		((state)->pwr_domain_state[MPIDR_AFFLVL0])
++#define CLUSTER_PWR_STATE(state)	((state)->pwr_domain_state[MPIDR_AFFLVL1])
++#define SYSTEM_PWR_STATE(state)		((state)->pwr_domain_state[PLAT_MAX_PWR_LVL])
+ 
+ #define GPIO_CTRL_REG_NUM		U(8)
+ #define GPIO_PIN_MAX_NUM		U(32)
+@@ -191,14 +191,16 @@ static struct gpio_ctx wakeupmix_gpio_ct
+ 
+ static uint32_t clock_root[4];
+ /*
+- * Empty implementation of these hooks avoid setting the GICR_WAKER.Sleep bit
++ * Empty implementation of these hooks avoids setting the GICR_WAKER.Sleep bit
+  * on ARM GICv3 implementations without LPI support.
+  */
+ void arm_gicv3_distif_pre_save(unsigned int rdist_proc_num)
+-{}
++{
++}
+ 
+ void arm_gicv3_distif_post_restore(unsigned int rdist_proc_num)
+-{}
++{
++}
+ 
+ void gpc_src_init(void)
+ {
+@@ -696,7 +698,7 @@ void imx_pwr_domain_on_finish(const psci
+ 	/* switch to GIC wakeup source */
+ 	mmio_setbits_32(IMX_GPC_BASE + A55C0_CMC_OFFSET + 0x800 * core_id + CM_MISC, IRQ_MUX);
+ 
+-	if (boot_stage) { 
++	if (boot_stage) {
+ 		/* SRC MIX & MEM slice config for cores */
+ 		/* MEM LPM */
+ 		mmio_setbits_32(IMX_SRC_BASE + A55C0_MEM + 0x400 * core_id + 0x4, MEM_LP_EN);
