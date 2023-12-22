@@ -77,9 +77,9 @@ i2cdetect_run() {
             if i2cget -y "$i2c_name" "$addr" 0x00 > /dev/null 2>&1; then
                 echo "Found camera $i on i2c bus $i2c_name at address $addr"
                 # load the overlay
-                mkdir -p "/sys/kernel/config/device-tree/overlays/${overlay%.*}"
-                cat "/boot/bsp${CURRENT_SLOT}/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${overlay%.*}/dtbo" || \
-                cat "/boot/bsp${CURRENT_SLOT}/devicetree/*cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${overlay%.*}/dtbo"
+                mkdir -p "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}"
+                cat "/boot/bsp${CURRENT_SLOT}/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo" || \
+                cat "/boot/bsp${CURRENT_SLOT}/devicetree/*cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo"
             fi
         done
     done
