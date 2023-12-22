@@ -8,13 +8,18 @@
 port="/dev/ttymxc3"
 
 log=/home/root/lvds2mipi_log.txt
+has_i2c_serial=""
 
 function write_check() {
     for l in {0..20}; do
-        res=$(serial-xfer 9600 "$port" "$1")
+        if [[ -n "${has_i2c_serial}" ]]; then
+            res=$(crosslink-i2c-serial.py xfer "$1")
+        else
+            res=$(serial-xfer 9600 "$port" "$1")
+        fi
         echo $res >> $log
         sleep 0.1
-	[[ "$res" == *"9041FF"* ]] && break
+        [[ "$res" == *"9041FF"* ]] && break
     done
 }
 
@@ -68,8 +73,19 @@ function ZoomBlock() {
     fi
 }
 
+# check if this board has i2c-serial
+crosslink_uart_status=$(i2cget -y -f 1 0x1c 0x9)
+if (( $crosslink_uart_status >= 0x40 )); then
+    has_i2c_serial="crosslink_has_Serial"
+fi
+
 # check if Sony or Not
-res=$(serial-xfer 9600 "$port" "81090002FF")
+if [[ -n "${has_i2c_serial}" ]]; then
+    res=$(crosslink-i2c-serial.py xfer "81090002FF")
+else
+    res=$(serial-xfer 9600 "$port" "81090002FF")
+fi
+
 # clear log
 echo $res > $log
 if [[ "$res" == *"0711"* ]]; then
