@@ -652,14 +652,14 @@ static int crosslink_probe(struct i2c_client *client)
 	ret = regmap_read(sensor->regmap, CROSSLINK_REG_ID, &id_code);
 	if (ret)
 		dev_dbg(dev, "Could not read device-id. trying again\n");
-	if (id_code != FIRMWARE_VERSION) {
+	// if (id_code != FIRMWARE_VERSION) {
 		dev_info(dev, "Loading current Firmware: %02x\n", FIRMWARE_VERSION);
 		ret = request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT, FIRWARE_NAME, dev, GFP_KERNEL, sensor, crosslink_fw_handler);
 		if (ret) {
 			dev_err(dev, "Failed request_firmware_nowait err %d\n", ret);
 			goto entity_cleanup;
 		}
-	}
+	// }
 
 	v4l2_i2c_subdev_init(&sensor->sd, client, &crosslink_subdev_ops);
 
