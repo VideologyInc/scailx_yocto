@@ -35,7 +35,7 @@ repos:
 
   meta-imx:
     url: https://github.com/nxp-imx/meta-imx
-    branch: mickledore-6.1.22-2.0.0
+    branch: mickledore-6.1.55-2.2.0
     layers:
       meta-bsp: ''
       meta-ml: ''
