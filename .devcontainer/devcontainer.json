@@ -20,7 +20,7 @@
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
-		"extensions": ["microhobby.bitbake2", "mhutchie.git-graph"]
+		"extensions": ["yocto-project.yocto-bitbake", "mhutchie.git-graph"]
 		}
 	},
 

@@ -10,13 +10,6 @@
             "icon": "terminal-bash"
         }
     },
-    {
-        "bitbake.machine": "scailx-imx8mp",
-        "bitbake.distro": "scailx",
-        "bitbake.oeInitBuildEnvPath": "${workspaceFolder}/poky/oe-init-build-env",
-        "bitbake.bitbakePath": "${workspaceFolder}/poky/bitbake/bin/bitbake/",
-        "bitbake.buildPath": "${workspaceFolder}/build",
-    },
     "terminal.integrated.defaultProfile.linux": "kas",
     "search.exclude": {
         "**/.repo": true,
@@ -35,6 +28,9 @@
     "C_Cpp.files.exclude": {
         "build/**": true,
     },
+    "python.analysis.exclude": [
+        "**/build/**"
+    ],
     "search.followSymlinks": false,
     "git-blame.gitWebUrl": "",
     "files.watcherExclude": {
@@ -47,5 +43,32 @@
         "**/target": true,
         "**/sstate-cache/**": true
     },
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/poky/bitbake/lib",
+        "${workspaceFolder}/poky/meta/lib"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/poky/bitbake/lib",
+        "${workspaceFolder}/poky/meta/lib"
+    ],
+    "[python]": {
+        "diffEditor.ignoreTrimWhitespace": false,
+        "copilotcontext.commentSymbol": "#",
+        "copilotcontext.languageFileExtension": ".py",
+        "editor.formatOnType": true,
+        "editor.wordBasedSuggestions": "off",
+        "files.trimTrailingWhitespace": false
+    },
+    "[shellscript]": {
+        "files.eol": "\n",
+        "files.trimTrailingWhitespace": false
+    },
+    "bitbake.commandWrapper": "kas shell -c",
+    "bitbake.pathToBuildFolder": "${workspaceFolder}/build",
+    "bitbake.pathToEnvScript": "${workspaceFolder}/poky/oe-init-build-env",
+    "bitbake.pathToBitbakeFolder": "${workspaceFolder}/poky/bitbake",
+    "bitbake.sdkImage": "scailx-image-swupdate-ml",
+    "task.saveBeforeRun": "always",
+    "bitbake.sshTarget": "root@scailx-thin.local",
     "search.useIgnoreFiles": false
 }
