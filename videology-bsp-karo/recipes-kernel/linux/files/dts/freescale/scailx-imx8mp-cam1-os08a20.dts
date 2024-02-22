@@ -16,7 +16,7 @@
 	};
 };
 
-&csi0_i2c {
+&csi1_i2c {
 	os08a20_1: os08a20_mipi_0@36 {
 		compatible = "ovti,os08a20";
 		reg = <0x36>;
