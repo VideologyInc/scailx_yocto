@@ -1,0 +1,24 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2023 VideologyInc
+ *
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+		target = <&pcie>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+    fragment@1 {
+		target = <&pcie_phy>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+};

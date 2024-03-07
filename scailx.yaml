@@ -14,6 +14,8 @@ header:
     - lf-6.1.22-2.0.0-mickledore.yaml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
+    - kas/layers/meta-hailo.yml
+    - kas/layers/meta-aws.yml
 
 repos:
   scailx:

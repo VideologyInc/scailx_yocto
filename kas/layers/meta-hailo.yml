@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 14
+
+repos:
+  meta-hailo:
+    url: https://github.com/hailo-ai/meta-hailo.git
+    layers:
+      meta-hailo-accelerator:
+      meta-hailo-libhailort:

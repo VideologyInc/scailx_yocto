@@ -219,7 +219,7 @@ gpio_b_usb_phy: &usb3_phy0{};
 	assigned-clock-parents = <&clk IMX8MP_SYS_PLL2_500M>,
 				 <&clk IMX8MP_SYS_PLL2_50M>;
 	l1ss-disabled;
-	status = "disabled";
+	status = "okay";
 
 	wifi_wake_host {
 		compatible = "nxp,wifi-wake-host";
@@ -231,7 +231,7 @@ gpio_b_usb_phy: &usb3_phy0{};
 
 &pcie_phy {
 	ext_osc = <1>;
-	status = "disabled";
+	status = "okay";
 };
 
 &reg_vdd_soc {

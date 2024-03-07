@@ -40,6 +40,10 @@ IMAGE_INSTALL += " \
     dtc \
     lsof \
     i2c-tools \
+    hailo-pci \
+    hailo-firmware \
+    pyhailort \
+    amazon-kvs-webrtc-sdk \
     v4l-utils \
     v4l2loopback \
     v4l2loopback-utils \
