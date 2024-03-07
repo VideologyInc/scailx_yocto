@@ -43,6 +43,9 @@
         "**/target": true,
         "**/sstate-cache/**": true
     },
+    "C_Cpp.files.exclude": {
+        "build/**": true
+    },
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}/poky/bitbake/lib",
         "${workspaceFolder}/poky/meta/lib"
@@ -63,12 +66,12 @@
         "files.eol": "\n",
         "files.trimTrailingWhitespace": false
     },
-    "bitbake.commandWrapper": "kas shell -c",
+    "bitbake.commandWrapper": "",
     "bitbake.pathToBuildFolder": "${workspaceFolder}/build",
-    "bitbake.pathToEnvScript": "${workspaceFolder}/poky/oe-init-build-env",
+    "bitbake.pathToEnvScript": "${workspaceFolder}/scripts/host_native_env.sh",
     "bitbake.pathToBitbakeFolder": "${workspaceFolder}/poky/bitbake",
     "bitbake.sdkImage": "scailx-image-swupdate-ml",
     "task.saveBeforeRun": "always",
-    "bitbake.sshTarget": "root@scailx-thin.local",
+    "bitbake.sshTarget": "root@zoomblock-test.local",
     "search.useIgnoreFiles": false
 }
