@@ -43,7 +43,7 @@ IMAGE_INSTALL += " \
     hailo-pci \
     hailo-firmware \
     pyhailort \
-    amazon-kvs-webrtc-sdk \
+    amazon-kvs-producer-sdk-cpp \
     v4l-utils \
     v4l2loopback \
     v4l2loopback-utils \
