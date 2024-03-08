@@ -13,11 +13,11 @@ archurl:x86_64     = "x86_64"
 
 PV = "3.0.84"
 SRC_URI = "https://download.sclbl.net/sclbl-${archurl}${special}.tgz;name=${archurl}${special};downloadfilename=${PN}-${PV}.tar.gz"
-SRC_URI[aarch64.sha256sum] = "143c2d162e39f2ae8024cb7171f61b6cbfbf831e0615e6d1ca070ff4fc332935"
-SRC_URI[aarch64_videology.sha256sum] = "143c2d162e39f2ae8024cb7171f61b6cbfbf831e0615e6d1ca070ff4fc332935"
+SRC_URI[aarch64.sha256sum] = "5f075657f460a63ebe0f10161a5d6cfb3256e8311a8ca5c109abc5c623e2f2f4"
+SRC_URI[aarch64_videology.sha256sum] = "5f075657f460a63ebe0f10161a5d6cfb3256e8311a8ca5c109abc5c623e2f2f4"
 
-SRC_URI += "https://github.com/scailable/sclbl-tutorials/raw/f788e4c399e3fd6cb669d498a6f9fc75968377a1/terms/license-agreement-03112021.pdf;name=lic"
-SRC_URI[lic.sha256sum] = "470016616c4cee9ee922efa6ad58e46f7fe3c244b93bce1ac789bbfc08343da8"
+SRC_URI += "https://github.com/dazzysakb/sclbl-tutorials/raw/a9634d9fb7a9cbbc854ebcb23d7e207ee0112807/terms/sclbl-beta-terms-02062020.pdf;name=lic"
+SRC_URI[lic.sha256sum] = "3bfe312ddb0e78352d38064590bd743c8062c051bbdaef295da57aa77da4f087"
 
 # SRC_URI += "file://defaults"
 
