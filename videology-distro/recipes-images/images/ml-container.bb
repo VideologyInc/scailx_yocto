@@ -14,11 +14,14 @@ IMAGE_FEATURES = ""
 IMAGE_LINGUAS = ""
 NO_RECOMMENDATIONS = "1"
 
+RM_WORK_EXCLUDE += " ${PN}"
+
+OVERLAYFS_QA_SKIP[storage] = "mount-configured"
+
 IMAGE_INSTALL = " \
         base-files \
         base-passwd \
         netbase \
-        packagegroup-imx-ml \
         ${CONTAINER_SHELL} \
 "
 
