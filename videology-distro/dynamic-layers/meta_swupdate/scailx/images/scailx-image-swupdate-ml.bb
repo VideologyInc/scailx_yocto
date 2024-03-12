@@ -53,6 +53,7 @@ IMAGE_INSTALL += " \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \
     kernel-module-gs-ar0234 \
+    python3-ar0234 \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
