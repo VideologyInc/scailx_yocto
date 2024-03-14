@@ -41,30 +41,37 @@ load_kernel_module() {
 # Prints information
 msg() {
     echo "$@" >/dev/console
+    echo "[log_mssg] " "$@" >> /var/log/initrd_log
 }
 
 # Prints information if verbose bootparam is used
 info() {
     [ -n "$bootparam_verbose" ] && echo "$@" >/dev/console
+    echo "[log_info] " "$@" >> /var/log/initrd_log
 }
 
 # Prints information if debug bootparam is used
 debug() {
     [ -n "$bootparam_debug" ] && echo "DEBUG: $@" >/dev/console
+    echo "[log_dbug] " "$@" >> /var/log/initrd_log
 }
 
 # Prints a message and start a endless loop
 fatal() {
     echo $1 >/dev/console
     echo >/dev/console
-
+    echo "[log_errs] " "$@" >> /var/log/initrd_log
     if [ -n "$bootparam_init_fatal_sh" ]; then
+        echo "[log_errs] switching to recovery console" >> /var/log/initrd_log
+        cp -f /var/log/initrd_log /storage/initrd_log_fatal
         sh
     else
         # use swupdate as an error fallback
         . /init.d/*swupdate
         echo "yes" > /tmp/swupdate_enabled
         echo "err" > /tmp/initrd_error
+        echo "[log_errs] switching to swupdate recovery" >> /var/log/initrd_log
+        cp -f /var/log/initrd_log /storage/initrd_log_fatal || echo "counldn't save log"
         eval "swupdate_run"
     fi
 }
