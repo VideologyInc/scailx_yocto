@@ -92,7 +92,7 @@ mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t tmpfs tmpfs /tmp
 mount -t tmpfs tmpfs /run
-mkdir -p /run/lock /var/lock
+mkdir -p /run/lock /var/lock /var/log
 
 if [ -d $EFI_DIR ];then
     mount -t efivarfs none /sys/firmware/efi/efivars
