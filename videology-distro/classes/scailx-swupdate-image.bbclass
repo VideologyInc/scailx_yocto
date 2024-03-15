@@ -68,6 +68,23 @@ do_fetch:append() {
 inherit extrausers
 EXTRA_USERS_PARAMS += "usermod -a -G docker rootscailx; passwd-expire scailx; usermod -p '' root; passwd-expire root; "
 
+do_add_scailx_ssh_keys () {
+	# to allow vscode-remote
+	sed -i -e '/AllowTcpForwarding/c\AllowTcpForwarding yes' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+	sed -i -e '/AllowAgentForwarding/c\AllowAgentForwarding yes' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+
+	# disable DNS lookups
+	sed -i -e '/UseDNS/c\UseDNS no' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+
+	# use scailx ssh key-select script
+	sed -i -e '/AuthorizedKeysCommand /c\AuthorizedKeysCommand /etc/ssh/scailx-keys.sh' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+	sed -i -e '/AuthorizedKeysCommandUser /c\AuthorizedKeysCommandUser root' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+
+	# allow more auth tries
+	sed -i -e '/MaxAuthTries/c\MaxAuthTries 20' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+}
+IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_ssh_keys;"
+
 # do_swuimage:append() {
 #     import libconf, io, json
 #     swd = os.path.join(d.getVar('S') ,'sw-description')
