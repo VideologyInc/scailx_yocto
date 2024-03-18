@@ -47,8 +47,6 @@ IMAGE_INSTALL += " \
     v4l-utils \
     v4l2loopback \
     v4l2loopback-utils \
-    avahi-services-ssh \
-    avahi-services-sftp \
     python3-pyserial \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \

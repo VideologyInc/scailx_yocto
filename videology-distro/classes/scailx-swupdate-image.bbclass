@@ -30,6 +30,23 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     scailx-mounts-storage \
 "
 
+IMAGE_INSTALL += " \
+    avahi-services-ssh \
+    avahi-services-sftp \
+"
+
+IMAGE_INSTALL:append:ubuntu = " \
+    swupdate swupdate-www swupdate-config \
+    scailx-ssh-keys \
+    scailx-profile \
+    volatile-binds \
+    scailx-mounts-boot \
+    scailx-mounts-storage \
+    scailx-profile \
+"
+
+APTGET_EXTRA_PACKAGES += " u-boot-tools "
+
 IMAGE_FSTYPES = "squashfs"
 
 do_fetch[depends] += "virtual/bootloader:do_deploy"
