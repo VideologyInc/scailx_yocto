@@ -1,10 +1,8 @@
 #! /bin/sh
 
-function get_slot {
-    for i in `cat /proc/cmdline`; do
-        if [[ $i == bootslot=* ]]; then
-            CURRENT_SLOT="${i: -1}"
-        fi;
+get_slot() {
+    for i in $(cat /proc/cmdline); do
+        case $i in bootslot=*) CURRENT_SLOT="${i#*=}" ;; esac
     done
     # if recovery flag is set, use the other slot
     if [ "$CURRENT_SLOT" = "1" ]; then
@@ -19,7 +17,7 @@ get_slot
 
 #check if 'recovery' in args
 select='stable'
-[[ $@ == *recovery* ]] && select='recovery'
+case "$@" in *recovery*) select='recovery' ;; esac
 
 [ "$CURRENT_SLOT" = "1" ] && selection="-e ${select},slot0"
 [ "$CURRENT_SLOT" = "0" ] && selection="-e ${select},slot1"
