@@ -31,6 +31,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
 "
 
 IMAGE_INSTALL += " \
+    pyvidctrl \
     avahi-services-ssh \
     avahi-services-sftp \
 "
@@ -83,7 +84,7 @@ do_fetch:append() {
 }
 
 inherit extrausers
-EXTRA_USERS_PARAMS += "usermod -a -G docker rootscailx; passwd-expire scailx; usermod -p '' root; passwd-expire root; "
+EXTRA_USERS_PARAMS += "usermod -p '' root; passwd-expire root; "
 
 do_add_scailx_ssh_keys () {
 	# to allow vscode-remote
