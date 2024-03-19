@@ -2,7 +2,6 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI += " file://defconfig"
 SRC_URI += " file://add-devicetree-configfs.patch"
-SRC_URI += " file://fpga-add-simple-userspace-interface-to-trigger-FPGA-.patch"
 
 inherit kernel-initramfs-compress
 
