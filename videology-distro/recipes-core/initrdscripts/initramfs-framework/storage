@@ -36,7 +36,7 @@ storage_overlay_hook() {
     if [ -f /storage/clear_overlay ]; then
         rm -rf /storage/overlay/upper/*
         rm -rf /storage/overlay/work/*
-        rm -f /storage/config/persist/*
+        rm -rf /storage/config/persist/*
     fi
     mkdir -p /storage/overlay/upper
     mkdir -p /storage/overlay/work
