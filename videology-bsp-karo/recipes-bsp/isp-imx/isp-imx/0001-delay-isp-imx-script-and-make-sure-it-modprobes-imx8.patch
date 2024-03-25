@@ -1,0 +1,39 @@
+From 69e0a7a22db8c5aec2c399dc40fc42d020615016 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Mon, 25 Mar 2024 12:05:27 +0100
+Subject: [PATCH] delay isp-imx script and make sure it modprobes
+ imx8_media_dev
+
+---
+ imx/start_isp.sh | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/imx/start_isp.sh b/imx/start_isp.sh
+index d544b4c..b3f26bf 100755
+--- a/imx/start_isp.sh
++++ b/imx/start_isp.sh
+@@ -11,6 +11,14 @@ NR_DEVICE_TREE_BASLER=$(grep basler-camera-vvcam `find /sys/firmware/devicetree/
+ NR_DEVICE_TREE_OV5640=$(grep ov5640 `find /sys/firmware/devicetree/base/soc@0/ -name compatible | grep i2c` -l | wc -l 2> /dev/null)
+ NR_DEVICE_TREE_OS08A20=$(grep os08a20 `find /sys/firmware/devicetree/base/soc@0/ -name compatible | grep i2c` -l | wc -l 2> /dev/null)
+ 
++# get seconds since boot
++SECONDS_UP=$(cat /proc/uptime | cut -d' ' -f1 | cut -d'.' -f1)
++STALLTIME=${STALLTIME:-25}
++# dont run until at least $STALLTIME seconds after boot
++if [ "$SECONDS_UP" -lt "$STALLTIME" ]; then
++	echo "Defering imx8-media drivers a few seconds post boot." >&2
++	exit 6
++fi
+ 
+ # check if the basler device has been enabled in the device tree
+ if [ $NR_DEVICE_TREE_BASLER -eq 1 ]; then
+@@ -72,5 +80,9 @@ elif [ $NR_DEVICE_TREE_OS08A20 -eq 2 ]; then
+ else
+ 	# no device tree found exit with code no device or address
+ 	echo "No device tree found for Basler camera or os08a20, check dtb file!" >&2
++	# load imx8_media_dev if not already laoded. 
++	if [ $(lsmod | grep imx8_media_dev | wc -l) -eq 0 ]; then
++		modprobe imx8_media_dev
++	fi
+ 	exit 6
+ fi
