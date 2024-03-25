@@ -82,6 +82,7 @@ do_fetch:append() {
     s = d.getVar('DEPLOY_DIR_IMAGE')
     output_env_file(d, os.path.join(s,'uboot-env.txt'))
 }
+do_fetch[vardeps] += "SCAILX_UBOOT_ENV"
 
 inherit extrausers
 EXTRA_USERS_PARAMS += "usermod -p '' root; passwd-expire root; "
