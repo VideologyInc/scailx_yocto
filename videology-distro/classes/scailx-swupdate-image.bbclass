@@ -104,6 +104,12 @@ do_add_scailx_ssh_keys () {
 }
 IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_ssh_keys;"
 
+do_blacklist_imx8_media_dev () {
+	# blacklist imx8_media_dev module
+    echo "blacklist imx8_media_dev" > ${IMAGE_ROOTFS}${sysconfdir}/modprobe.d/imx8_media_dev.conf
+}
+IMAGE_PREPROCESS_COMMAND += ";do_blacklist_imx8_media_dev;"
+
 # do_swuimage:append() {
 #     import libconf, io, json
 #     swd = os.path.join(d.getVar('S') ,'sw-description')
