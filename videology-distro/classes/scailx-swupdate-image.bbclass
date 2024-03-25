@@ -34,12 +34,12 @@ IMAGE_INSTALL += " \
     pyvidctrl \
     avahi-services-ssh \
     avahi-services-sftp \
+    scailx-systemd-watchdog \
 "
 
 IMAGE_INSTALL:append:ubuntu = " \
     swupdate swupdate-www swupdate-config \
     scailx-ssh-keys \
-    scailx-profile \
     volatile-binds \
     scailx-mounts-boot \
     scailx-mounts-storage \
