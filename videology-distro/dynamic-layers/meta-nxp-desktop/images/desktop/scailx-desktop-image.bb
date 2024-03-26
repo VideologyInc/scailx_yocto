@@ -19,6 +19,7 @@ RM_WORK_EXCLUDE += "${PN}"
 OVERLAYFS_QA_SKIP[storage] = "mount-configured"
 
 ROOTFS_POSTPROCESS_COMMAND:append = "do_save_cheese; do_rm_opencv_test_and_sample; do_trim_usr_dirs"
+IMAGE_PREPROCESS_COMMAND:append = " do_change_inputrc "
 
 REQUIRED_DISTRO_FEATURES = "wayland"
 
@@ -144,6 +145,19 @@ do_rm_opencv_test_and_sample() {
 	rm -r ${IMAGE_ROOTFS}/usr/share/OpenCV || echo "OpenCV not found"
 
 	set +x
+}
+
+do_change_inputrc() {
+    set -x
+
+    # Change the default inputrc to use vi mode
+    echo '"\e[A": history-search-backward' >> ${IMAGE_ROOTFS}/etc/inputrc
+    echo '"\e[B": history-search-forward' >> ${IMAGE_ROOTFS}/etc/inputrc
+    echo '"\e[C": forward-char' >> ${IMAGE_ROOTFS}/etc/inputrc
+    echo '"\e[D": backward-char' >> ${IMAGE_ROOTFS}/etc/inputrc
+    ln -sf -T /usr/bin/busybox ${IMAGE_ROOTFS}/usr/bin/sh
+
+    set +x
 }
 
 do_trim_usr_dirs() {
