@@ -1,11 +1,20 @@
+# scailx yocto for Videology
+#
+# Authors:
+#   Kobus Goosen
+#
+# SPDX-License-Identifier: MIT
+#
 header:
   version: 14
   includes:
+    - scailx.yaml
     - kas/layers/meta-gnome.yml
 
-distro: imx-desktop-xwayland
-machine: imx8mpevk
-target: imx-image-desktop
+distro: scailx-ubuntu
+target: scailx-desktop-image
+
+machine: scailx-imx8mp-desktop
 
 local_conf_header:
   nxp-desktop: |

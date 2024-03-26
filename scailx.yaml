@@ -9,7 +9,7 @@ header:
   version: 11
   includes:
     - nxp-imx.yaml
-    # - nxp-desktop.yaml
+    - nxp-desktop.yaml
     - kas/mickledore.yml
     - lf-6.1.55-2.2.0-mickledore.yaml
     - kas/layers/meta-swupdate.yml
@@ -22,6 +22,9 @@ repos:
     layers:
       videology-bsp-karo:
       videology-distro:
+  # meta-karo-bsp:
+  #   url: https://github.com/karo-electronics/meta-karo-nxp
+  #   branch: mickledore
 
 bblayers_conf_header:
   standard: |
