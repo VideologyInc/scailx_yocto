@@ -124,6 +124,8 @@ IMAGE_INSTALL:remove:mx8mm-nxp-bsp = " \
     ${ML_NNSTREAMER_PKGS} \
 "
 
+APTGET_EXTRA_PACKAGES_DESKTOP:scailx-imx8mp = ""
+
 fakeroot do_save_cheese() {
 	set -x
 
