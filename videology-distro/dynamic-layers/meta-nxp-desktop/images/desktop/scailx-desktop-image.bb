@@ -29,12 +29,6 @@ ML_NNSTREAMER_PKGS = ""
 # nnstreamer-python3
 # nnstreamer-protobuf
 
-IMAGE_INSTALL += " swupdate swupdate-www \
-    swupdate-config \
-    scailx-ssh-keys \
-    scailx-profile "
-
-
 # This must be added first as it provides the foundation for
 # subsequent modifications to the rootfs
 IMAGE_INSTALL += "\
@@ -144,8 +138,8 @@ fakeroot do_save_cheese() {
 do_rm_opencv_test_and_sample() {
 	set -x
 
-	rm -r ${IMAGE_ROOTFS}/usr/share/opencv4
-	rm -r ${IMAGE_ROOTFS}/usr/share/OpenCV
+	rm -r ${IMAGE_ROOTFS}/usr/share/opencv4 || echo "opencv4 not found"
+	rm -r ${IMAGE_ROOTFS}/usr/share/OpenCV || echo "OpenCV not found"
 
 	set +x
 }
