@@ -10,10 +10,10 @@ for ARGUMENT in "$@"; do
 done
 
 function get_slot {
-    for i in `cat /proc/cmdline`; do
-        if [[ $i == bootslot=* ]]; then
-            CURRENT_SLOT="${i: -1}"
-        fi;
+    for i in $(cat /proc/cmdline); do
+        case $i in
+            bootslot=*) CURRENT_SLOT="${i#*=}" ;;
+        esac
     done
     # if recovery flag is set, use the other slot
     if [ "$CURRENT_SLOT" = "1" ]; then
@@ -28,7 +28,9 @@ function get_slot {
 format_disk() {
     # get the primary disk
     for i in `cat /proc/cmdline`; do
-        [[ $i == primary-disk=* ]] && dev="${i: -1}"
+        case "$i" in
+            primary-disk=*) dev=$(echo "$i" | cut -c -1) ;;
+        esac
     done
     [ -b "$dev" ] || dev=$(findfs LABEL=boot || findfs LABEL=root || findfs LABEL=rootfs); dev=$(echo $dev | sed -r 's/p?[0-9]*$//')
     [ -b "$dev" ] || (echo "not a block device: $dev" && return 1)
@@ -52,7 +54,7 @@ EOF
 	mkfs.ext4 "$(findfs PARTLABEL=storage)" -L storage
 }
 
-if [ $1 == "preinst" ]; then
+if [ $1 = "preinst" ]; then
     # get the current root device
     get_slot
     DISK=$(findfs LABEL=boot | sed -r 's/p?[0-9]*$//')
@@ -84,7 +86,7 @@ if [ $1 == "preinst" ]; then
     sync; umount -f /tmp/storage; umount -f /tmp/update_boot;
 fi
 
-if [ $1 == "postinst" ]; then
+if [ $1 = "postinst" ]; then
     get_slot
     DISK=$(findfs PARTLABEL=boot | sed -r 's/p?[0-9]*$//')
 
@@ -109,6 +111,6 @@ if [ $1 == "postinst" ]; then
     if which mmc; then
         # select the mmcblkXbootY partition based on UPDATE_SLOT
         # mmc bootpart enable <partition_number> <send_ack> </path/to/mmcblkX>
-        mmc bootpart enable $(( $UPDATE_SLOT + 1 )) 1 ${DISK}
+        mmc bootpart enable $(( UPDATE_SLOT + 1 )) 1 ${DISK}
     fi
 fi
