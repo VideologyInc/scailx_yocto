@@ -51,11 +51,24 @@
 		#clock-cells = <0>;
 		clock-frequency = <100000000>;
 	};
-	// scailx_gpio_a: scailxGpioA {
-		// dummy node to give labels for the applicable GPIO devices.
 
-	// };
-
+	scailx_leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_status_led>;
+		scailx_status_led {
+			gpios = <&gpio4 23 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+		CSI0_power {
+			gpios = <&gpio_expander 10 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+		CSI1_power {
+			gpios = <&gpio_expander 13 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
+	};
 };
 
 // create second label for devices to group them to the ascociated port on the SCAILX device.
@@ -179,10 +192,12 @@ gpio_b_usb_phy: &usb3_phy0{};
 		#gpio-cells = <2>;
 		gpio-controller;
 
-		// pinctrl-names = "default";
-		// pinctrl-0 = <&pinctrl_expander_int>;
-		// interrupt-parent = <&gpio4>;
-		// interrupts = <24 IRQ_TYPE_LEVEL_LOW>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_expander_int>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <24 IRQ_TYPE_EDGE_FALLING>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
 
 		gpio-line-names =
 			"PWR-EN_GPIOA",
@@ -340,6 +355,12 @@ gpio_b_usb_phy: &usb3_phy0{};
 	pinctrl_expander_int: expander_int_gpiogrp {
 		fsl,pins = <
 			MX8MP_IOMUXC_SAI2_TXFS__GPIO4_IO24		0x150 /* pull up, fast-slew */
+		>;
+	};
+
+	pinctrl_status_led: status_ledgrp {
+		fsl,pins = <
+			MX8MP_IOMUXC_SAI2_RXD0__GPIO4_IO23		0x80
 		>;
 	};
 

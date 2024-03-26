@@ -34,15 +34,9 @@ function get_slot
 i2cdetect_run() {
     # get named gpios
     GPIOS=$(gpioinfo | awk '{ print $3}' | grep '\"*\"' | tr -d '"')
-
-    # enable the power GPIOs for the cameras and gpio ports
-    for f in $GPIOS; do
-        if [[ "$f" == *PWR-EN* ]]; then
-            pp=$(gpiofind $f)
-            gpioset ${pp}=1
-        fi
-    done
-
+    # enable the power-en GPIOs for the cameras and gpio ports
+    for f in /sys/devices/platform/scailx_leds/leds/*power/brightness; do echo 1 > $f; done
+    
    # enable the power GPIOs for the cameras
     for f in $GPIOS; do
         if [[ "$f" == *RST_CAM* ]]; then
