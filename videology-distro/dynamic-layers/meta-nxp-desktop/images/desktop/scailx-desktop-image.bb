@@ -18,16 +18,22 @@ RM_WORK_EXCLUDE += "${PN}"
 
 OVERLAYFS_QA_SKIP[storage] = "mount-configured"
 
-ROOTFS_POSTPROCESS_COMMAND:append = "do_save_cheese; do_rm_opencv_test_and_sample;"
+ROOTFS_POSTPROCESS_COMMAND:append = "do_save_cheese; do_rm_opencv_test_and_sample; do_trim_usr_dirs"
 
 REQUIRED_DISTRO_FEATURES = "wayland"
 
-ML_NNSTREAMER_PKGS = " \
-    nnstreamer \
-    nnstreamer-tensorflow-lite \
-    nnstreamer-python3 \
-    nnstreamer-protobuf \
-"
+ML_NNSTREAMER_PKGS = ""
+
+# nnstreamer
+# nnstreamer-tensorflow-lite
+# nnstreamer-python3
+# nnstreamer-protobuf
+
+IMAGE_INSTALL += " swupdate swupdate-www \
+    swupdate-config \
+    scailx-ssh-keys \
+    scailx-profile "
+
 
 # This must be added first as it provides the foundation for
 # subsequent modifications to the rootfs
@@ -38,6 +44,8 @@ IMAGE_INSTALL += "\
 	ubuntu-base-doc \
 "
 
+# chromium-ozone-wayland
+
 IMAGE_INSTALL += "\
 	firmwared \
 	systemd-gpuconfig \
@@ -46,7 +54,6 @@ IMAGE_INSTALL += "\
 	clutter-gst-3.0 \
 	cheese \
 	xwayland \
-	chromium-ozone-wayland \
 	gtk+3-gles \
 	tensorflow-lite \
 	tensorflow-lite-vx-delegate \
@@ -57,10 +64,10 @@ IMAGE_INSTALL += "\
 APTGET_EXTRA_PACKAGES += "\
 	ntpdate patchelf \
 	libcairo2 libpixman-1-0 libpango-1.0-0 libpangocairo-1.0-0 \
-	squashfs-tools golang-github-snapcore-snapd-dev golang-github-ubuntu-core-snappy-dev \
-	snap-confine snapd-xdg-open snapd ubuntu-core-launcher ubuntu-core-snapd-units ubuntu-snappy-cli ubuntu-snappy \
-        libqt5gui5-gles libqt5quick5-gles qtwayland5 \
+	squashfs-tools \
 "
+
+# golang-github-snapcore-snapd-dev golang-github-ubuntu-core-snappy-dev snap-confine snapd-xdg-open snapd ubuntu-core-launcher ubuntu-core-snapd-units ubuntu-snappy-cli ubuntu-snappy libqt5gui5-gles libqt5quick5-gles qtwayland5
 
 ##############################################################################
 # NOTE: We cannot install arbitrary Yocto packages as they will
@@ -79,8 +86,8 @@ IMAGE_INSTALL:remove = "kernel-devicetree"
 
 # GPU driver
 G2D_SAMPLES                 = ""
-G2D_SAMPLES:imxgpu2d        = "imx-g2d-samples"
-G2D_SAMPLES:imxdpu          = "imx-g2d-samples"
+# G2D_SAMPLES:imxgpu2d        = "imx-g2d-samples"
+# G2D_SAMPLES:imxdpu          = "imx-g2d-samples"
 
 IMAGE_INSTALL += " \
     wayland-protocols \
@@ -139,6 +146,15 @@ do_rm_opencv_test_and_sample() {
 
 	rm -r ${IMAGE_ROOTFS}/usr/share/opencv4
 	rm -r ${IMAGE_ROOTFS}/usr/share/OpenCV
+
+	set +x
+}
+
+do_trim_usr_dirs() {
+	set -x
+
+	rm -r ${IMAGE_ROOTFS}/usr/share/backgrounds
+	rm -r ${IMAGE_ROOTFS}/usr/share/doc
 
 	set +x
 }
