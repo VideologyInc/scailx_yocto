@@ -35,6 +35,7 @@ IMAGE_INSTALL += " \
     avahi-services-ssh \
     avahi-services-sftp \
     scailx-systemd-watchdog \
+    scailx-monitor \
 "
 
 IMAGE_INSTALL:append:ubuntu = " \
