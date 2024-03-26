@@ -26,7 +26,6 @@ IMAGE_FEATURES += " \
     tools-sdk \
     debug-tweaks \
     tools-profile \
-    package-management \
     splash \
     nfs-server \
     tools-debug \
@@ -44,7 +43,7 @@ APTGET_EXTRA_PACKAGES_SERVICES_DISABLED += "\
 
 APTGET_EXTRA_PACKAGES += "\
 	console-setup locales \
-	apt vim \
+	apt \
 	ethtool wget ftp iputils-ping \
 	net-tools \
 	nfs-common \

@@ -10,6 +10,7 @@ SRC_URI += "file://scailx-keys.sh"
 S = "${WORKDIR}"
 
 RDEPENDS:${PN} = "openssh bash"
+RDEPENDS:${PN}:ubuntu = "ubuntu-base"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
