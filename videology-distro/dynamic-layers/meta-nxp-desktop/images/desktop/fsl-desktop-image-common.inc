@@ -18,6 +18,7 @@ IMAGE_PREPROCESS_COMMAND:append = " do_config_systemd_resolved; do_enable_graphi
 # Without the kernel, modules, and firmware we can't really use the Linux
 IMAGE_INSTALL += "\
 	${MACHINE_EXTRA_RRECOMMENDS} \
+	${MACHINE_EXTRA_RDEPENDS} \
 	perf \
 "
 
