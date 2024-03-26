@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 inherit core-image
 RM_WORK_EXCLUDE += "${PN}"
 inherit extra-dirs
-EXTRA_ROOTFS_DIRS += "storage ${nonarch_libdir}/modules"
+EXTRA_ROOTFS_DIRS += "rofs ${nonarch_libdir}/modules"
 inherit scailx-uboot-env
 
 FILESEXTRAPATHS:prepend := "${SCAILX_SCRIPTS_DIRS}:"

@@ -9,11 +9,13 @@ inherit allarch systemd
 
 PACKAGES += "${PN}-boot ${PN}-storage"
 
-FILES:${PN}-boot = "${systemd_system_unitdir}/boot.mount"
-FILES:${PN}-storage = "${systemd_system_unitdir}/storage.mount"
+FILES:${PN}-boot = "${systemd_system_unitdir}/boot.mount /boot"
+FILES:${PN}-storage = "${systemd_system_unitdir}/storage.mount /storage"
 
 do_install() {
     install -d "${D}${systemd_system_unitdir}"
+    install -d "${D}/boot"
+    install -d "${D}/storage"
     install -m 644 "${WORKDIR}/boot.mount" "${D}${systemd_system_unitdir}"
     install -m 644 "${WORKDIR}/storage.mount" "${D}${systemd_system_unitdir}"
 }
