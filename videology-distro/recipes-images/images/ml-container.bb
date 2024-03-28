@@ -17,6 +17,7 @@ NO_RECOMMENDATIONS = "1"
 RM_WORK_EXCLUDE += " ${PN}"
 
 OVERLAYFS_QA_SKIP[storage] = "mount-configured"
+MACHINE_FEATURES = ""
 
 IMAGE_INSTALL = " \
         base-files \
@@ -24,6 +25,9 @@ IMAGE_INSTALL = " \
         netbase \
         ${CONTAINER_SHELL} \
 "
+
+IMAGE_INSTALL = " packagegroup-fsl-gstreamer1.0 "
+
 
 # If the following is configured in local.conf (or the distro):
 #      PACKAGE_EXTRA_ARCHS:append = " container-dummy-provides"
