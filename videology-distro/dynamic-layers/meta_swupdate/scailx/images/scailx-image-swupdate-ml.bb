@@ -43,6 +43,7 @@ IMAGE_INSTALL += " \
     hailo-pci \
     hailo-firmware \
     pyhailort \
+    hailortcli \
     amazon-kvs-producer-sdk-cpp \
     v4l-utils \
     v4l2loopback \

@@ -42,12 +42,14 @@ load_kernel_module() {
 msg() {
     echo "$@" >/dev/console
     echo "[log_mssg] " "$@" >> /run/initrd_log
+    echo "[initrd_mssg] " "$@" >  /dev/kmsg
 }
 
 # Prints information if verbose bootparam is used
 info() {
     [ -n "$bootparam_verbose" ] && echo "$@" >/dev/console
     echo "[log_info] " "$@" >> /run/initrd_log
+    echo "[initrd_info] " "$@" >  /dev/kmsg
 }
 
 # Prints information if debug bootparam is used
@@ -61,6 +63,7 @@ fatal() {
     echo $1 >/dev/console
     echo >/dev/console
     echo "[log_errs] " "$@" >> /run/initrd_log
+    echo "[initrd_errs] " "$@" >  /dev/kmsg
     if [ -n "$bootparam_init_fatal_sh" ]; then
         echo "[log_errs] switching to recovery console" >> /run/initrd_log
         cp -f /run/initrd_log /storage/initrd_log_fatal

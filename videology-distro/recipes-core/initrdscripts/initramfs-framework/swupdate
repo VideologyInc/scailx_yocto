@@ -2,10 +2,17 @@
 
 mkdir -p /tmp
 swupdate_enabled() {
-    [ -f /run/media/*/*.swu ] && mv /run/media/*/*.swu /tmp/ && return 0
+    for file in /run/media/*/*.swu; do
+        if [ -f "$file" ]; then
+            info "swupdate file found: $file"
+            return 0
+        fi
+    done
     if [ -f /tmp/swupdate_enabled ]; then
+        info "swupdate enabled from previous boot"
         return 0
     elif [ -n "$bootparam_swupdate" ]; then
+        info "swupdate enabled from bootparam"
         return 0
     else
         # swupdate not enabled. Set variable so its enabled in the final slot.
@@ -37,15 +44,22 @@ run_swupd() {
     umount -f /dev/disk/by-label/storage; umount -f /dev/disk/by-partlabel/storage; umount -f /dev/disk/by-label/boot; umount -f /dev/disk/by-partlabel/boot;
 
     selection="recovery,slot${UPDATE_SLOT}"
-    [ -f /tmp/*.swu ] && swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -i /tmp/*.swu -p 'sync; echo b >/proc/sysrq-trigger'
+    info "Running swupdate with selection: $selection"
+    for file in /run/media/*/*.swu; do
+        if [ -f "$file" ]; then
+            info "Found swu file $file. Running swupdate"
+            swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -i $file -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from media file failed"
+        fi
+        break # only run the first swu file
+    done
     dl_url="https://github.com/VideologyInc/scailx_yocto/releases/latest/download/scailx-image-swupdate-${hardware}.swu"
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger'
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -w ""              -p 'sync; echo b >/proc/sysrq-trigger'
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from URL failed"
+    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -w ""              -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from web failed"
 }
 
 swupdate_run() {
     # if we're in an error condition, format the disk
-    [ -f "/tmp/initrd_error" ] && echo "boot error. Updating"
+    [ -f "/tmp/initrd_error" ] && echo "boot error. Updating" > /dev/kmsg
 
     # get dhcp lease
     udhcpc || udhcpc -i end0

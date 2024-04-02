@@ -60,7 +60,7 @@ i2cdetect_run() {
     fi
 
     # Itterate over the camera devices
-    echo "Loading camera overlays"
+    info "Loading camera overlays"
     [ -f "/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays" ] && CAM_OVERLAYS="/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays"
     cat $CAM_OVERLAYS | while read -r line || [[ -n "$line" ]]; do
         addr=$(echo $line | awk '{ print $1 }')
@@ -69,7 +69,7 @@ i2cdetect_run() {
         for i in 0 1 2 3 4 5; do
             i2c_name=$(strings "/dev/i2c_names/csi${i}_i2c" 2> /dev/null) || continue
             if i2cget -y "$i2c_name" "$addr" 0x00 > /dev/null 2>&1; then
-                echo "Found camera $i on i2c bus $i2c_name at address $addr"
+                info "Found camera $i on i2c bus $i2c_name at address $addr"
                 # load the overlay
                 mkdir -p "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}"
                 cat "/boot/bsp${CURRENT_SLOT}/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo" || \

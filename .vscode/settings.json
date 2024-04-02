@@ -19,7 +19,7 @@
     },
     "files.exclude": {
         "build/cache/**": true,
-        "build/tmp/**": true,
+        "build/tmp/**": false,
         "build/sstate-cache/**": true,
         "downloads/**": true,
         "*ctags*":  true,

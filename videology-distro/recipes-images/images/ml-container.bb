@@ -26,7 +26,11 @@ IMAGE_INSTALL = " \
         ${CONTAINER_SHELL} \
 "
 
-IMAGE_INSTALL = " packagegroup-fsl-gstreamer1.0 "
+IMAGE_INSTALL = " \
+    packagegroup-fsl-gstreamer1.0 \
+    packagegroup-ml-demoless \
+    packagegroup-fsl-opencv-imx \
+"
 
 
 # If the following is configured in local.conf (or the distro):
