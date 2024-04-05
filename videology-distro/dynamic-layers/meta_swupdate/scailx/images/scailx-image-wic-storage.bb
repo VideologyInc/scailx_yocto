@@ -20,7 +20,9 @@ IMAGE_INSTALL += " \
     imx-test \
     firmwared \
 	openssh-sftp-server \
-	packagegroup-imx-core-tools \
+	avahi-services-ssh \
+    avahi-services-sftp \
+    packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
     ${DOCKER} \
