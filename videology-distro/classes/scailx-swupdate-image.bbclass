@@ -45,6 +45,7 @@ IMAGE_INSTALL:append:ubuntu = " \
     scailx-mounts-boot \
     scailx-mounts-storage \
     scailx-profile \
+   	u-boot-default-env \
 "
 
 APTGET_EXTRA_PACKAGES += " u-boot-tools "
@@ -110,22 +111,6 @@ do_blacklist_imx8_media_dev () {
     echo "blacklist imx8_media_dev" > ${IMAGE_ROOTFS}${sysconfdir}/modprobe.d/imx8_media_dev.conf
 }
 IMAGE_PREPROCESS_COMMAND += ";do_blacklist_imx8_media_dev;"
-do_add_scailx_ssh_keys () {
-	# to allow vscode-remote
-	sed -i -e '/AllowTcpForwarding/c\AllowTcpForwarding yes' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
-	sed -i -e '/AllowAgentForwarding/c\AllowAgentForwarding yes' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
-
-	# disable DNS lookups
-	sed -i -e '/UseDNS/c\UseDNS no' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
-
-	# use scailx ssh key-select script
-	sed -i -e '/AuthorizedKeysCommand /c\AuthorizedKeysCommand /etc/ssh/scailx-keys.sh' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
-	sed -i -e '/AuthorizedKeysCommandUser /c\AuthorizedKeysCommandUser root' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
-
-	# allow more auth tries
-	sed -i -e '/MaxAuthTries/c\MaxAuthTries 20' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
-}
-IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_ssh_keys;"
 
 # do_swuimage:append() {
 #     import libconf, io, json
