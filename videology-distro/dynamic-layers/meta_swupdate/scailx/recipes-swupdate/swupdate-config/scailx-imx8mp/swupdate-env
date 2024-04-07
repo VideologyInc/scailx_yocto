@@ -23,3 +23,8 @@ case "$@" in *recovery*) select='recovery' ;; esac
 [ "$CURRENT_SLOT" = "0" ] && selection="-e ${select},slot1"
 
 echo SWUPDATE_EXTRA_ARGS="${selection}" > /tmp/swupdate.env
+
+# check if 'post' in args
+case "$@" in *post*) 
+    mv "/boot/update_booted$CURRENT_SLOT" "/boot/running$CURRENT_SLOT" || echo "no boot flag file" ;; 
+esac

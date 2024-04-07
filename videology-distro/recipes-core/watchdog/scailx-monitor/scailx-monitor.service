@@ -3,13 +3,12 @@ Description=Scailx Monitor Service
 After=network.target
 
 [Service]
-ExecStart=scailx-monitor-d
-WatchdogSec=1600ms
-RestartSec=1s
+ExecStart=/usr/bin/scailx-monitor-d
+WatchdogSec=2500ms
 Restart=on-failure
-StartLimitInterval=1min
+StartLimitInterval=40s
 StartLimitBurst=4
-StartLimitAction=reboot-force
+# StartLimitAction=reboot-force
 
 [Install]
 WantedBy=multi-user.target

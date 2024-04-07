@@ -22,7 +22,4 @@ do_install() {
 }
 
 SYSTEMD_SERVICE:${PN} = "scailx-monitor.service"
-RDEPENDS:${PN} = "python3-sdnotify python3-daemon"
 FILES:${PN} = "${systemd_system_unitdir}/ ${bindir}"
-
-
