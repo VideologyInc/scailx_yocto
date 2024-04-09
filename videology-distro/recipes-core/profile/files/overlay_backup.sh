@@ -1,6 +1,4 @@
-#! /usr/bin/env bash
-
-if [[ $- == *i* ]]; then
+case $- in *i*)
     if [ -d "/storage/overlay/backup" ] && [ ! -f "/storage/overlay/backup_ignore" ]; then
         echo " ~~ Update has removed User modified files from overlay ~~"
         echo "    Files moved to \"/storage/overlay/backup\". Review backup files, and copy them if necessary."
@@ -13,5 +11,6 @@ if [[ $- == *i* ]]; then
             l|L ) find /storage/overlay/backup -type f ;;
             * ) echo "ignore" > "/storage/overlay/backup_ignore" ;;
         esac
-    fi
-fi
+    fi ;;
+esac
+
