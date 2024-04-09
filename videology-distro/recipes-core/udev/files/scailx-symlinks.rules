@@ -1,5 +1,6 @@
 # vim: ft=udevrules
 
+SUBSYSTEM!="i2c-dev|tty|spidev", GOTO="scailx_symlinks_end"
 # allow declaring a symlink for a device in DT using symlink = "mylink" property.
 ATTR{device/of_node/symlink}!="", ENV{DEVNAME}!="", ENV{OF_SYMLINK}+="%s{device/of_node/symlink}", SYMLINK+="%s{device/of_node/symlink}", TAG+="systemd"
 
@@ -23,3 +24,4 @@ SUBSYSTEM=="i2c-dev", ENV{OF_SYMLINK}!="", RUN+="/bin/sh -c '       \
         echo $attr{name} > /dev/i2c_names/$$(basename $$f);         \
     done;                                                           \
 '"
+LABEL="scailx_symlinks_end"
