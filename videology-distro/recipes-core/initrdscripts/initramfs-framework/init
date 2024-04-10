@@ -48,14 +48,14 @@ msg() {
 # Prints information if verbose bootparam is used
 info() {
     [ -n "$bootparam_verbose" ] && echo "$@" >/dev/console
-    echo "[log_info] " "$@" >> /run/initrd_log
-    echo "[initrd_info] " "$@" >  /dev/kmsg
+    echo "[log_info] $@" >> /run/initrd_log
+    echo "[initrd_info] $@" >  /dev/kmsg
 }
 
 # Prints information if debug bootparam is used
 debug() {
     [ -n "$bootparam_debug" ] && echo "DEBUG: $@" >/dev/console
-    echo "[log_dbug] " "$@" >> /run/initrd_log
+    echo "[log_dbug] $@" >> /run/initrd_log
 }
 
 # Prints a message and start a endless loop
