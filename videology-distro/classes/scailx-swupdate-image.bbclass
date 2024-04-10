@@ -36,6 +36,7 @@ IMAGE_INSTALL += " \
     avahi-services-sftp \
     scailx-systemd-watchdog \
     scailx-monitor \
+    scailx-i2c-overlay \
 "
 
 IMAGE_INSTALL:append:ubuntu = " \
