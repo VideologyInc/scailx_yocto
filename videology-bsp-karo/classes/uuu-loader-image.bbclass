@@ -15,7 +15,7 @@ inherit image_types
 CARD_ONDISK = "mmcblk"
 ZIP_FOLDER = "${WORKDIR}/uuuimg"
 
-do_image_uuuimg[depends] += "parted-native:do_populate_sysroot zip-native:do_populate_sysroot ${IMAGE_BOOTLOADER}:do_deploy"
+do_image_uuuimg[depends] += "parted-native:do_populate_sysroot zip-native:do_populate_sysroot ${IMAGE_BOOTLOADER}:do_deploy virtual/kernel:do_build"
 # u-boot-imx-uuu:do_deploy u-boot-imx:do_deploy "
 
 UUU_VERSION = "1.2.91"
