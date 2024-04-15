@@ -1,0 +1,11 @@
+[Unit]
+Description=Scailx I2C camera probe Service
+Requires=sys-kernel-config.mount
+After=sys-kernel-config.mount
+
+[Service]
+ExecStart=/usr/bin/scailx-i2c-overlay.sh
+Type=oneshot
+
+[Install]
+WantedBy=sysinit.target

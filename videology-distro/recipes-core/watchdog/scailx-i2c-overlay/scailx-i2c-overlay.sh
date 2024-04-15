@@ -1,0 +1,59 @@
+#! /usr/bin/env bash
+
+OVERLAYS_FILE="/storage/config/overlays"
+I2C_OVERLAYS="/storage/config/i2c-overlays"
+# get machine from swudpate-config
+. "/etc/default/swupdate"
+MACHINE=$hardware
+
+function get_slot
+{
+    for i in `cat /proc/cmdline`; do
+        if [[ $i == bootslot=* ]]; then
+            CURRENT_SLOT="${i: -1}"
+        fi;
+    done
+    [ "$CURRENT_SLOT" = "1" ] || CURRENT_SLOT="0";
+}
+
+# use i2cread only for addresses 0x30-0x37 and 0x50-0x5F, else use i2cquick
+
+i2cdetect_run() {
+    get_slot
+
+    # Itterate over the camera devices    
+    if [ -f "/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays" ]; then
+        CAM_OVERLAYS="/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays"
+        echo "Loading camera overlays"
+        # prime the I2C busses for any slaves that need a few clock pulses
+        for i2c in /dev/i2c_names/csi*i2c; do i2cget -a -y "$(cat $i2c)" 0x7f; done
+            
+        # i2cdetect -y 2 >> /run/initrd_log
+        cat $CAM_OVERLAYS | while read -r line || [[ -n "$line" ]]; do
+            local addr=$(echo $line | awk '{ print $1 }')
+            local overlay=$(echo $line | awk '{ print $2 }')
+
+            for i2c in /dev/i2c_names/csi*i2c; do
+                if ((addr >= 0x30 && addr <= 0x37)) || ((addr >= 0x50 && addr <= 0x5F)); then
+                    cmd="i2cget -y $(cat $i2c) $addr 0x00"
+                else
+                    cmd="i2ctransfer -y $(cat $i2c) w1@$addr 0 r1"
+                fi
+                if $cmd > /dev/null 2>&1; then
+                    # load the overlay
+                    mkdir -p "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}"
+                    cat "/boot/bsp${CURRENT_SLOT}/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo" || \
+                    cat "/boot/bsp${CURRENT_SLOT}/devicetree/*cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo"
+                    echo "Found camera $i on i2c bus $i2c at address $addr"
+                else
+                    echo "No camera ${overlay} $i found on i2c bus $i2c at address $addr"
+                fi
+            done
+        done
+    else
+        echo "No camera overlays file found"
+        return 1
+    fi
+}
+
+i2cdetect_run
