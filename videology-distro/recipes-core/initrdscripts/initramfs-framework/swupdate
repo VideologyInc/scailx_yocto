@@ -41,17 +41,22 @@ run_swupd() {
     . /etc/default/swupdate
     get_slot
 
+    for file in /run/media/storage/*.swu; do
+        rm -rf "/tmp/$(basename $file)" && cp -f $file "/tmp/$(basename $file)"
+        file="/tmp/$(basename $file)"
+    done
+    for file in /run/media/*/*.swu; do
+        if [ -f "$file" ]; then info "Found swu file $file. Running swupdate"; fi
+    done
+
     umount -f /dev/disk/by-label/storage; umount -f /dev/disk/by-partlabel/storage; umount -f /dev/disk/by-label/boot; umount -f /dev/disk/by-partlabel/boot;
 
     selection="recovery,slot${UPDATE_SLOT}"
     info "Running swupdate with selection: $selection"
-    for file in /run/media/*/*.swu; do
-        if [ -f "$file" ]; then
-            info "Found swu file $file. Running swupdate"
-            swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -i $file -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from media file failed"
-        fi
-        break # only run the first swu file
-    done
+    if [ -f "$file" ]; then
+        info "Found swu file $file. Running swupdate"
+        swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -i $file -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from media file failed"
+    fi
     dl_url="https://github.com/VideologyInc/scailx_yocto/releases/latest/download/scailx-image-swupdate-${hardware}.swu"
     swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from URL failed"
     swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -w ""              -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from web failed"
