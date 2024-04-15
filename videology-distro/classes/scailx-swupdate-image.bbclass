@@ -86,7 +86,7 @@ do_fetch:append() {
 do_fetch[vardeps] += "SCAILX_UBOOT_ENV"
 
 inherit extrausers
-EXTRA_USERS_PARAMS += "usermod -p '' root; passwd-expire root; "
+EXTRA_USERS_PARAMS += "usermod -p '' --shell /bin/bash root; passwd-expire root; "
 
 do_add_scailx_ssh_keys () {
 	# to allow vscode-remote
