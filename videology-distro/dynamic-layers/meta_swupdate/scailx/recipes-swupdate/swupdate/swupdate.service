@@ -10,6 +10,11 @@ Environment=LC_CTYPE="en_US.utf8"
 EnvironmentFile=-/etc/default/swupdate
 EnvironmentFile=-/tmp/swupdate.env
 ExecStart=/usr/bin/swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg $SWUPDATE_EXTRA_ARGS -w "" -p 'reboot'
+Restart=on-failure
+ExecStartPost=/usr/bin/swupdate-env 'post'
+StartLimitInterval=40s
+StartLimitBurst=4
+# StartLimitAction=reboot-force
 
 [Install]
 WantedBy=multi-user.target

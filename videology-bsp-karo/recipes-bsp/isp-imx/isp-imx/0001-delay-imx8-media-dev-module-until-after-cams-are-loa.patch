@@ -1,0 +1,72 @@
+From 80737e6d5974e957218e334333a9e955b5cd1b64 Mon Sep 17 00:00:00 2001
+From: kobus <kobus@git.com>
+Date: Wed, 3 Apr 2024 00:38:12 +0200
+Subject: [PATCH] delay imx8-media-dev module until after cams are loaded.
+
+---
+ imx/imx8-isp.service | 4 +++-
+ imx/run.sh           | 4 ++--
+ imx/start_isp.sh     | 4 +++-
+ 3 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/imx/imx8-isp.service b/imx/imx8-isp.service
+index 5fd6835..3263962 100644
+--- a/imx/imx8-isp.service
++++ b/imx/imx8-isp.service
+@@ -9,9 +9,11 @@ StartLimitBurst=40
+ [Service]
+ Restart=on-failure
+ RestartSec=5s
+-# ENXIO            
++# ENXIO
+ #RestartPreventExitStatus=6
+ ExecStart=/opt/imx8-isp/bin/start_isp.sh
++ExecStartPost=/bin/sleep 17
++ExecStartPost=/sbin/modprobe imx8-media-dev
+ 
+ [Install]
+ WantedBy=multi-user.target
+diff --git a/imx/run.sh b/imx/run.sh
+index a9506d0..29f1957 100755
+--- a/imx/run.sh
++++ b/imx/run.sh
+@@ -15,7 +15,7 @@ LOCAL_RUN="0" # search modules in /lib/modules and libraries in /usr/lib
+ RUN_OPTION=""
+ LOCAL_RUN="0"
+ # an array with the modules to load, insertion order
+-declare -a MODULES=("imx8-media-dev" "vvcam-dwe" "vvcam-isp" "vvcam-video")
++declare -a MODULES=("vvcam-dwe" "vvcam-isp" "vvcam-video")
+ 
+ USAGE="Usage:\n"
+ USAGE+="run.sh -c <isp_config> &\n"
+@@ -194,7 +194,7 @@ load_modules () {
+ write_default_mode_files
+ 
+ echo "Trying configuration \"$ISP_CONFIG\"..."
+-MODULES_TO_REMOVE=("basler-camera-driver-vvcam" "os08a20" "ov2775" "${MODULES[@]}")
++MODULES_TO_REMOVE=("basler-camera-driver-vvcam" "os08a20" "ov2775" "imx8-media-dev" "${MODULES[@]}")
+ case "$ISP_CONFIG" in
+ 		basler_4k )
+ 			MODULES=("basler-camera-driver-vvcam" "${MODULES[@]}")
+diff --git a/imx/start_isp.sh b/imx/start_isp.sh
+index d544b4c..bfc7cc1 100755
+--- a/imx/start_isp.sh
++++ b/imx/start_isp.sh
+@@ -10,7 +10,7 @@ RUNTIME_DIR="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+ NR_DEVICE_TREE_BASLER=$(grep basler-camera-vvcam `find /sys/firmware/devicetree/base/soc@0/ -name compatible | grep i2c` -l | wc -l 2> /dev/null)
+ NR_DEVICE_TREE_OV5640=$(grep ov5640 `find /sys/firmware/devicetree/base/soc@0/ -name compatible | grep i2c` -l | wc -l 2> /dev/null)
+ NR_DEVICE_TREE_OS08A20=$(grep os08a20 `find /sys/firmware/devicetree/base/soc@0/ -name compatible | grep i2c` -l | wc -l 2> /dev/null)
+-
++NR_SCAILX_CAMS=$(find /proc/device-tree/chosen/overlays/cam* | wc -l 2> /dev/null)
+ 
+ # check if the basler device has been enabled in the device tree
+ if [ $NR_DEVICE_TREE_BASLER -eq 1 ]; then
+@@ -69,6 +69,8 @@ elif [ $NR_DEVICE_TREE_OS08A20 -eq 2 ]; then
+ 	# Available configurations: dual_Os08a20_1080p60, dual_Os08a20_1080p30hdr
+ 	exec ./run.sh -c dual_os08a20_1080p60 -lm
+ 
++elif [ $NR_SCAILX_CAMS -gt 0 ]; then
++	echo "Starting imx8_media_dev for SCAILX cameras"
+ else
+ 	# no device tree found exit with code no device or address
+ 	echo "No device tree found for Basler camera or os08a20, check dtb file!" >&2

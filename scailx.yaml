@@ -11,9 +11,12 @@ header:
     - nxp-imx.yaml
     # - nxp-desktop.yaml
     - kas/mickledore.yml
+    # - lf-6.1.55-2.2.0-mickledore.yaml
     - lf-6.1.22-2.0.0-mickledore.yaml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
+    - kas/layers/meta-hailo.yml
+    - kas/layers/meta-aws.yml
 
 repos:
   scailx:

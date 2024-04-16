@@ -19,7 +19,7 @@
     },
     "files.exclude": {
         "build/cache/**": true,
-        "build/tmp/**": true,
+        "build/tmp/**": false,
         "build/sstate-cache/**": true,
         "downloads/**": true,
         "*ctags*":  true,
@@ -66,6 +66,7 @@
         "files.eol": "\n",
         "files.trimTrailingWhitespace": false
     },
+    "bitbake.parseOnSave": false,
     "bitbake.commandWrapper": "",
     "bitbake.pathToBuildFolder": "${workspaceFolder}/build",
     "bitbake.pathToEnvScript": "${workspaceFolder}/scripts/host_native_env.sh",

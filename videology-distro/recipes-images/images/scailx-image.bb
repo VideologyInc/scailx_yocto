@@ -73,8 +73,6 @@ IMAGE_INSTALL += " \
     fuse-exfat \
     v4l2loopback \
     v4l2loopback-utils \
-    avahi-services-ssh \
-    avahi-services-sftp \
     python3-pyserial \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \

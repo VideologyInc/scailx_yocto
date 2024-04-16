@@ -62,8 +62,11 @@ if [ $1 == "preinst" ]; then
     mkdir -p /tmp/storage
     mount /dev/disk/by-label/storage /tmp/storage || (umount -f /tmp/storage; mount /dev/disk/by-label/storage /tmp/storage)
     rm -rf /tmp/storage/bsp/$UPDATE_SLOT/*
+    mv -f /tmp/storage/initrd_log_fatal /tmp/storage/old_initrd_log_fatal || echo "no initrd fatal log to save"
     mkdir -p /tmp/storage/bsp/$UPDATE_SLOT/mounts
     [ -d /tmp/storage/overlay/upper/etc ] && (mkdir -p /tmp/storage/config/persist/; cp -fr -t /tmp/storage/config/persist/ /tmp/storage/overlay/upper/etc)
+    # [ -d /tmp/storage/overlay/upper/etc/ssh ] && (mkdir -p /tmp/storage/config/persist/etc/; cp -fr -t /tmp/storage/config/persist/etc/ /tmp/storage/overlay/upper/etc/ssh)
+    # [ -f /tmp/storage/overlay/upper/etc/hostname ] && (mkdir -p /tmp/storage/config/persist/etc/; cp -fr -t /tmp/storage/config/persist/etc/ /tmp/storage/overlay/upper/etc/hostname)
     rm -rf /tmp/storage/overlay/backup*
     mv -f /tmp/storage/overlay/upper /tmp/storage/overlay/backup
     rm -rf /tmp/storage/overlay/work
@@ -93,6 +96,7 @@ if [ $1 == "postinst" ]; then
     mount /dev/disk/by-partlabel/boot /tmp/update_boot
     rm -f /tmp/update_boot/slot*
     echo "$UPDATE_SLOT" > /tmp/update_boot/slot$UPDATE_SLOT
+    echo "$UPDATE_SLOT" > /tmp/update_boot/updated$UPDATE_SLOT
     if which fw_setenv; then
         fw_setenv bootslot $UPDATE_SLOT
         fw_setenv fdt_file default.dtb

@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 inherit core-image
 RM_WORK_EXCLUDE += "${PN}"
 inherit extra-dirs
-EXTRA_ROOTFS_DIRS += "storage ${nonarch_libdir}/modules"
+EXTRA_ROOTFS_DIRS += "rofs ${nonarch_libdir}/modules"
 inherit scailx-uboot-env
 
 FILESEXTRAPATHS:prepend := "${SCAILX_SCRIPTS_DIRS}:"
@@ -29,6 +29,25 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     scailx-mounts-boot \
     scailx-mounts-storage \
 "
+
+IMAGE_INSTALL += " \
+    pyvidctrl \
+    avahi-services-ssh \
+    avahi-services-sftp \
+    scailx-systemd-watchdog \
+    scailx-monitor \
+"
+
+IMAGE_INSTALL:append:ubuntu = " \
+    swupdate swupdate-www swupdate-config \
+    scailx-ssh-keys \
+    volatile-binds \
+    scailx-mounts-boot \
+    scailx-mounts-storage \
+    scailx-profile \
+"
+
+APTGET_EXTRA_PACKAGES += " u-boot-tools "
 
 IMAGE_FSTYPES = "squashfs"
 
@@ -64,9 +83,33 @@ do_fetch:append() {
     s = d.getVar('DEPLOY_DIR_IMAGE')
     output_env_file(d, os.path.join(s,'uboot-env.txt'))
 }
+do_fetch[vardeps] += "SCAILX_UBOOT_ENV"
 
 inherit extrausers
-EXTRA_USERS_PARAMS += "usermod -a -G docker rootscailx; passwd-expire scailx; usermod -p '' root; passwd-expire root; "
+EXTRA_USERS_PARAMS += "usermod -p '' --shell /bin/bash root; passwd-expire root; "
+
+do_add_scailx_ssh_keys () {
+	# to allow vscode-remote
+	sed -i -e '/AllowTcpForwarding/c\AllowTcpForwarding yes' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+	sed -i -e '/AllowAgentForwarding/c\AllowAgentForwarding yes' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+
+	# disable DNS lookups
+	sed -i -e '/UseDNS/c\UseDNS no' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+
+	# use scailx ssh key-select script
+	sed -i -e '/AuthorizedKeysCommand /c\AuthorizedKeysCommand /etc/ssh/scailx-keys.sh' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+	sed -i -e '/AuthorizedKeysCommandUser /c\AuthorizedKeysCommandUser root' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+
+	# allow more auth tries
+	sed -i -e '/MaxAuthTries/c\MaxAuthTries 20' ${IMAGE_ROOTFS}${sysconfdir}/ssh/sshd_config
+}
+IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_ssh_keys;"
+
+do_blacklist_imx8_media_dev () {
+	# blacklist imx8_media_dev module
+    echo "blacklist imx8_media_dev" > ${IMAGE_ROOTFS}${sysconfdir}/modprobe.d/imx8_media_dev.conf
+}
+IMAGE_PREPROCESS_COMMAND += ";do_blacklist_imx8_media_dev;"
 
 # do_swuimage:append() {
 #     import libconf, io, json

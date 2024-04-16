@@ -34,15 +34,9 @@ function get_slot
 i2cdetect_run() {
     # get named gpios
     GPIOS=$(gpioinfo | awk '{ print $3}' | grep '\"*\"' | tr -d '"')
-
-    # enable the power GPIOs for the cameras and gpio ports
-    for f in $GPIOS; do
-        if [[ "$f" == *PWR-EN* ]]; then
-            pp=$(gpiofind $f)
-            gpioset ${pp}=1
-        fi
-    done
-
+    # enable the power-en GPIOs for the cameras and gpio ports
+    for f in /sys/devices/platform/scailx_leds/leds/*power/brightness; do echo 1 > $f; done
+    
    # enable the power GPIOs for the cameras
     for f in $GPIOS; do
         if [[ "$f" == *RST_CAM* ]]; then
@@ -53,7 +47,7 @@ i2cdetect_run() {
 
     # mount configfs so we can dynamically load DTB overlays
     mount -t configfs configfs /sys/kernel/config/
-    sleep 1
+    sleep 2.5
 
     get_slot
     # add everything from the overlays file:
@@ -66,8 +60,12 @@ i2cdetect_run() {
     fi
 
     # Itterate over the camera devices
-    echo "Loading camera overlays"
+    info "Loading camera overlays"
     [ -f "/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays" ] && CAM_OVERLAYS="/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays"
+ 
+    # prime the I2C busses for any slaves that need a few clock pulses
+    for i2c in /dev/i2c_names/csi*i2c; do i2cget -a -y "$(cat $i2c)" 0x7f; done
+    
     cat $CAM_OVERLAYS | while read -r line || [[ -n "$line" ]]; do
         addr=$(echo $line | awk '{ print $1 }')
         overlay=$(echo $line | awk '{ print $2 }')
@@ -75,11 +73,13 @@ i2cdetect_run() {
         for i in 0 1 2 3 4 5; do
             i2c_name=$(strings "/dev/i2c_names/csi${i}_i2c" 2> /dev/null) || continue
             if i2cget -y "$i2c_name" "$addr" 0x00 > /dev/null 2>&1; then
-                echo "Found camera $i on i2c bus $i2c_name at address $addr"
+                info "Found camera $i on i2c bus $i2c_name at address $addr. loading overlay $overlay"
                 # load the overlay
                 mkdir -p "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}"
                 cat "/boot/bsp${CURRENT_SLOT}/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo" || \
                 cat "/boot/bsp${CURRENT_SLOT}/devicetree/*cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo"
+            else
+                debug "No camera ${overlay} $i found on i2c bus $i2c_name at address $addr"
             fi
         done
     done

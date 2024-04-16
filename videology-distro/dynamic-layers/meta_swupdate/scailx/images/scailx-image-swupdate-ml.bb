@@ -7,6 +7,7 @@ DEFAULT_DTB = "scailx_karo_cameras.dtb"
 
 IMAGE_FEATURES += " \
     tools-profile \
+    bash-completion-pkgs \
     ssh-server-openssh \
     hwcodecs \
     ${@bb.utils.contains('DISTRO_FEATURES', 'wayland', 'weston', bb.utils.contains('DISTRO_FEATURES', 'x11', 'x11-base x11-sato', '', d), d)} \
@@ -40,15 +41,19 @@ IMAGE_INSTALL += " \
     dtc \
     lsof \
     i2c-tools \
+    hailo-pci \
+    hailo-firmware \
+    pyhailort \
+    hailortcli \
+    amazon-kvs-producer-sdk-cpp \
     v4l-utils \
     v4l2loopback \
     v4l2loopback-utils \
-    avahi-services-ssh \
-    avahi-services-sftp \
     python3-pyserial \
     gst-variable-rtsp-server \
     kernel-module-crosslink-lvds2mipi \
     kernel-module-gs-ar0234 \
+    python3-ar0234 \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \

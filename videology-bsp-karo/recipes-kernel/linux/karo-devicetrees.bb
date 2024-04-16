@@ -20,6 +20,8 @@ SRC_URI = " \
 	file://dts/freescale/scailx_karo_gpio_b_spi_overlay.dts \
 	file://dts/freescale/scailx-imx8mp-cam0-vid_isp_ar0234.dts \
 	file://dts/freescale/scailx-imx8mp-cam1-vid_isp_ar0234.dts \
+	file://dts/freescale/scailx-imx8mp-pcie.dts \
+	file://dts/freescale/scailx-imx8mp-vpu_v4l2.dts \
 	file://cam-overlays \
 "
 
