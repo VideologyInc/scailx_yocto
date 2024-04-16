@@ -19,6 +19,7 @@
 #include <linux/delay.h>
 #include <linux/string.h>
 #include <linux/slab.h>
+#include "crosslink.h"
 
 #define CROSSLINKPLUS_IDCODE	0x43002F01
 #define CROSSLINK_IDCODE		0x43002C01
