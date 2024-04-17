@@ -66,7 +66,7 @@ fatal() {
     echo "[initrd_errs] " "$@" >  /dev/kmsg
     if [ -n "$bootparam_init_fatal_sh" ]; then
         echo "[log_errs] switching to recovery console" >> /run/initrd_log
-        cp -f /run/initrd_log /storage/initrd_log_fatal
+        cp -f /run/initrd_log /storage/initrd_log_fatal || echo "counldn't save log"
         sh
     else
         # use swupdate as an error fallback

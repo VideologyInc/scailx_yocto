@@ -39,6 +39,7 @@ storage_overlay_hook() {
         rm -rf /storage/overlay/work/*
         rm -rf /storage/config/pre-clear-persist || debug "No pre-clear-persist to remove"
         mv -f /storage/config/persist /storage/config/pre-clear-persist
+        rm -rf /storage/clear_overlay
     fi
     mkdir -p /storage/overlay/upper
     mkdir -p /storage/overlay/work
