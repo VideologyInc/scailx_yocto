@@ -38,10 +38,14 @@
     </nav>
     <!-- Use Bootstrap Grid Container -->
     <div class="container">
-        <!-- Header -->
         <div class="jumbotron my-3">
             <p class="lead">Software updater</p>
             <p>Upload a .swu software image below.</p>
+            <p></p>
+            <p class="text-danger">Warning: Modifications to <mark>/etc/</mark> files will be <u>re-applied</u> after update. This preserves hostname changes, SSH auth, and user started services.</p>
+            <p>If this is not wanted, either run <code>touch /storage/clear_overlay</code> to factory-reset all filesystem changes on the next boot, or manually delete unwanted files in <mark>/storage/overlay/upper</mark>.</p>
+            <p>Any Other filesystem changes or user files will be saved in a backup folder. For example, if you created <mark>/home/root/myfile.txt</mark> it will be saved as <mark>/storage/overlay/backup/home/root/myfile.txt</mark>, and <mark>/home/root/<mark> will be clear after update.</p>
+            <p>You will be prompted to restore or ignore the backup when logging in, or you can copy them manually later.</p>
         </div>
         <div class="row my-3">
             <div class="col">
