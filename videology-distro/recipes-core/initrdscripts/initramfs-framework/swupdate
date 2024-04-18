@@ -42,18 +42,17 @@ run_swupd() {
     get_slot
 
     for file in /run/media/storage/*.swu; do
-        rm -rf "/tmp/$(basename $file)" && cp -f $file "/tmp/$(basename $file)"
-        file="/tmp/$(basename $file)"
+        rm -rf "/tmp/$(basename $file)"
+        mv -f $file "/tmp/$(basename $file)" && file="/tmp/$(basename $file)"
     done
     for file in /run/media/*/*.swu; do
         if [ -f "$file" ]; then info "Found swu file $file. Running swupdate"; fi
     done
-
     umount -f /dev/disk/by-label/storage; umount -f /dev/disk/by-partlabel/storage; umount -f /dev/disk/by-label/boot; umount -f /dev/disk/by-partlabel/boot;
 
     selection="recovery,slot${UPDATE_SLOT}"
     info "Running swupdate with selection: $selection"
-    if [ -f "$file" ]; then
+    if [ -f "$file" ] && [ -f /tmp/swupdate_enabled ]; then
         info "Found swu file $file. Running swupdate"
         swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -i $file -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from media file failed"
     fi
