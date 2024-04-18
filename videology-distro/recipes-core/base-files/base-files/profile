@@ -30,7 +30,12 @@ fi
 # /dev/tty[A-z]), otherwise we confuse e.g. the eclipse launcher which tries do
 # use ssh
 case $(tty 2>/dev/null) in
-	/dev/tty[A-z]*) [ -x @BINDIR@/resize ] && @BINDIR@/resize >/dev/null;;
+	/dev/tty[A-z]*) 
+		[ -x @BINDIR@/resize ] && @BINDIR@/resize >/dev/null;;
+	/dev/pts/*) 
+		# We're on SSH, so forward important kernel messages to the terminal for the user to see.  
+		dmesg --kernel --level alert,crit,err,warn --follow-new &
+		;;
 esac
 
 export PATH PS1 OPIEDIR QPEDIR QTDIR EDITOR TERM
