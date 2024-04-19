@@ -45,6 +45,7 @@ IMAGE_INSTALL:append:ubuntu = " \
     scailx-mounts-boot \
     scailx-mounts-storage \
     scailx-profile \
+   	u-boot-default-env \
 "
 
 APTGET_EXTRA_PACKAGES += " u-boot-tools "
