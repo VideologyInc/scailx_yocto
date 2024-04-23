@@ -24,26 +24,13 @@
 #define PAD_SOURCE			1
 #define NUM_PADS			1
 
-#define FIRMWARE_VERSION	0xAA
-#define FIRWARE_NAME		"crosslink_lvds_AA.bit"
+#define FIRMWARE_VERSION	0xB1
+#define FIRWARE_NAME		"crosslink_lvds_B1.bit"
 struct resolution {
 	u16 width;
 	u16 height;
 	u16 framerate;
 	u16 reg_val;
-};
-
-static struct resolution sensor_res_list[] = {
-	// HD-SDI Single LVDS channel
-	{.width = 1280, .height = 720,  .framerate = 25, .reg_val = 0x03 },    // 720p25
-	{.width = 1280, .height = 720,  .framerate = 30, .reg_val = 0x02 },    // 720p30
-	{.width = 1280, .height = 720,  .framerate = 50, .reg_val = 0x01 },    // 720p50
-	{.width = 1280, .height = 720,  .framerate = 60, .reg_val = 0x00 },    // 720p60
-	{.width = 1920, .height = 1080, .framerate = 25, .reg_val = 0x13 },    // 1080p25
-	{.width = 1920, .height = 1080, .framerate = 30, .reg_val = 0x12 },    // 1080p30
-	// 3G-SDI Double LVDS channels
-	{.width = 1920, .height = 1080, .framerate = 50, .reg_val = 0x93 },    // 1080p50
-	{.width = 1920, .height = 1080, .framerate = 60, .reg_val = 0x92 },    // 1080p60
 };
 
 struct crosslink_dev {
@@ -56,13 +43,15 @@ struct crosslink_dev {
 	struct gpio_desc *reset_gpio;
 	struct mutex lock;
 	struct v4l2_mbus_framefmt fmt;
-	struct resolution *mode;
 	struct resolution current_res_fr;
 	struct tty_port port;
-	struct tty_driver *crosslink_tty_driver;
+	struct device *tty_port_dev;
 	struct delayed_work tty_work;
+	struct delayed_work mipi_work;
 	char of_name[32];
 	int framerate;
+	int csi_id;
+	int has_serial;
 	int state;
 	int firmware_loaded;
 };
@@ -81,11 +70,34 @@ enum crosslink_regs {
 	CROSSLINK_REG_SERIAL = 0x80,	// RW:XX:  Any bytes read/written above 0x80 are read from or written to the UART RX/TX fifos. Fifos are 32 bytes deep.
 };
 
+enum crosslink_state {
+	CRSLK_STATE_NONE = 0,
+	CRSLK_STATE_PROBED,
+	CRSLK_STATE_FW_LOADED,
+	CRSLK_STATE_IDLE,
+	CRSLK_STATE_STREAMING,
+	CRSLK_STATE_POWERDOWN,
+};
+
+struct crosslink_ioctl_serial {
+	u32 len;
+	u8 data[64];
+};
+
+enum crosslink_ioctl_cmds {
+	CROSSLINK_CMD_SERIAL_SEND_TX   	= 0x7601,
+	CROSSLINK_CMD_SERIAL_RECV_RX	= 0x7602,
+	CROSSLINK_CMD_SERIAL_RX_CNT		= 0x7603,
+	CROSSLINK_CMD_SERIAL_BAUD 		= 0x7604,
+};
+
 /* function protoypes */
 extern int crosslink_tty_probe(struct crosslink_dev *sensor);
 extern int crosslink_fpga_ops_write_init(struct gpio_desc *reset, struct i2c_client *client);
 extern int crosslink_fpga_ops_write(struct i2c_client *client, const char *buf, size_t count);
 extern int crosslink_fpga_ops_write_complete(struct i2c_client *client);
 extern void crosslink_tty_remove(struct crosslink_dev *sensor);
+extern int crosslink_tty_init(void);
+extern void crosslink_tty_exit(void);
 
 #endif

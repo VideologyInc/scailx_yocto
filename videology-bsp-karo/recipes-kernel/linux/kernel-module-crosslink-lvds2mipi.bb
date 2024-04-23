@@ -8,18 +8,17 @@ SRC_URI += "file://crosslink-i2c.c;subdir=${S}"
 SRC_URI += "file://crosslink-tty.c;subdir=${S}"
 SRC_URI += "file://crosslink.h;subdir=${S}"
 SRC_URI += "file://Makefile;subdir=${S}"
-SRC_URI += "file://crosslink_cs1_res.sh"
-SRC_URI += "file://crosslink_lvds_AA.bit"
-SRC_URI += "file://crosslink-i2c-serial.py"
+SRC_URI += "file://crosslink_lvds_B1.bit"
+SRC_URI += "file://crosslink-serial.py"
 
 inherit module
 
 do_install:append(){
     install -d ${D}${base_bindir}/
     install -m 0755 "${WORKDIR}/crosslink_cs1_res.sh" "${D}${base_bindir}/crosslink_cs1_res.sh"
-    install -m 0755 "${WORKDIR}/crosslink-i2c-serial.py" "${D}${base_bindir}/crosslink-i2c-serial.py"
+    install -m 0755 "${WORKDIR}/crosslink-serial.py" "${D}${base_bindir}/crosslink-serial.py"
     install -d ${D}/lib/firmware
-    install -m 0644 "${WORKDIR}/crosslink_lvds_AA.bit" "${D}/lib/firmware/crosslink_lvds_AA.bit"
+    install -m 0644 "${WORKDIR}/crosslink_lvds_B1.bit" "${D}/lib/firmware/crosslink_lvds_B1.bit"
 }
 
 FILES:${PN} += "${base_bindir}/"

@@ -27,6 +27,16 @@
 #include <media/v4l2-subdev.h>
 #include "crosslink.h"
 
+static bool __read_mostly powerdown_enable = 0;
+module_param(powerdown_enable, bool, 0644);
+
+static int __read_mostly powerdown_timeout_ms=30000;
+module_param(powerdown_timeout_ms, int, 0644);
+
+static int __read_mostly powerup_wait_ms=2500;
+module_param(powerup_wait_ms, int, 0644);
+
+
 static inline struct crosslink_dev *to_crosslink_dev(struct v4l2_subdev *sd)
 {
 	return container_of(sd, struct crosslink_dev, sd);
@@ -38,37 +48,58 @@ static int crosslink_s_power(struct v4l2_subdev *sd, int on)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	int ret;
-
-	mutex_lock(&sensor->lock);
+	dev_dbg(sensor->dev, "powering LVDS and UART %s\n", on ? "on" : "off");
 	if (on)
 		pm_runtime_get_sync(sensor->dev);
 	ret = regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, on ? 0xFE : 0xFE);
-	dev_dbg(sensor->dev, "powering %s LVDS and UART %s\n", on ? "on" : "off");
-	// msleep(45);
+	msleep(5);
 	// regcache_mark_dirty(sensor->regmap);
 	dev_dbg(sensor->dev, "powering finished %s\n", on ? "on" : "off");
 	if (!on)
 		pm_runtime_put_autosuspend(sensor->dev);
-	mutex_unlock(&sensor->lock);
+	pm_runtime_mark_last_busy(sensor->dev);
 	return ret;
 }
 
 static long crosslink_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 {
 	long ret = 0;
-	unsigned int fw_rev;
+	unsigned int baud;
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	struct crosslink_ioctl_serial *serial;
 
-	mutex_lock(&sensor->lock);
-	pm_runtime_get_sync(sensor->dev);
 	switch (cmd) {
+		case CROSSLINK_CMD_SERIAL_SEND_TX:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_SERIAL_TX\n", __func__);
+			serial = (struct crosslink_ioctl_serial *)arg;
+			ret = regmap_bulk_write(sensor->regmap, CROSSLINK_REG_SERIAL, serial->data, serial->len);
+			break;
+		case CROSSLINK_CMD_SERIAL_RECV_RX:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_SERIAL_RX\n", __func__);
+			serial = (struct crosslink_ioctl_serial *)arg;
+			if (serial->len == 0)
+				ret = regmap_read(sensor->regmap, CROSSLINK_REG_UART_RX_CNT, &serial->len);
+			ret = regmap_bulk_read(sensor->regmap, CROSSLINK_REG_SERIAL, serial->data, serial->len);
+			break;
+		case CROSSLINK_CMD_SERIAL_RX_CNT:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_SERIAL_RX_WAITING\n", __func__);
+			serial = (struct crosslink_ioctl_serial *)arg;
+			ret = regmap_read(sensor->regmap, CROSSLINK_REG_UART_RX_CNT, &serial->len);
+			break;
+		case CROSSLINK_CMD_SERIAL_BAUD:
+			dev_dbg_ratelimited(sensor->dev, "%s: CROSSLINK_CMD_SERIAL_BAUD\n", __func__);
+			serial = (struct crosslink_ioctl_serial *)arg;
+			if(serial->len) {
+				baud = DIV_ROUND_CLOSEST(24000000, serial->len);
+				regmap_raw_write(sensor->regmap, CROSSLINK_REG_UART_PRESCL, &baud, 2);
+			} else {
+				regmap_raw_read(sensor->regmap, CROSSLINK_REG_UART_PRESCL, &baud, 2);
+				serial->len = DIV_ROUND_CLOSEST(24000000, baud);
+			}
+			break;
 		default:
 			ret = -EINVAL;
 	}
-
-	pm_runtime_put_autosuspend(sensor->dev);
-	mutex_unlock(&sensor->lock);
 
 	return 0;
 }
@@ -97,13 +128,12 @@ static int crosslink_ops_get_fmt(struct v4l2_subdev *sub_dev, struct v4l2_subdev
 
 
 		// get frame height/width
-		mutex_lock(&sensor->lock);
 		pm_runtime_get_sync(sensor->dev);
 		ret  = regmap_raw_read(sensor->regmap, CROSSLINK_REG_COLM_COUNT, &format->format.width, 2);
 		ret |= regmap_raw_read(sensor->regmap, CROSSLINK_REG_LINE_COUNT, &format->format.height, 2);
 		ret |= regmap_read(sensor->regmap, CROSSLINK_REG_STATUS, &status);
 		pm_runtime_put_autosuspend(sensor->dev);
-		mutex_unlock(&sensor->lock);
+
 		if(ret || format->format.width == 0 || format->format.height == 0)
 			return ret;
 		else{
@@ -120,7 +150,6 @@ static int crosslink_ops_get_fmt(struct v4l2_subdev *sub_dev, struct v4l2_subdev
 static int crosslink_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_format *format)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
-	const struct resolution *new_mode = NULL;
 	struct v4l2_mbus_framefmt *fmt;
 	u32 status;
 	int ret=0;
@@ -130,36 +159,25 @@ static int crosslink_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_state *s
 	if (format->pad >= NUM_PADS)
 		return -EINVAL;
 
-	format->format.code = &sensor->fmt.code;
+	format->format.code = sensor->fmt.code;
 
 	pr_debug("%s: requested:height =%d\n", __func__, format->format.height);
 	pr_debug("%s: requested:width  =%d\n", __func__, format->format.width);
-
-	mutex_lock(&sensor->lock);
 	pm_runtime_get_sync(sensor->dev);
 	// check if the resolution matches the current value
 	ret  = regmap_raw_read(sensor->regmap, CROSSLINK_REG_COLM_COUNT, &sensor->current_res_fr.width, 2);
 	ret |= regmap_raw_read(sensor->regmap, CROSSLINK_REG_LINE_COUNT, &sensor->current_res_fr.height, 2);
 	ret |= regmap_read(sensor->regmap, CROSSLINK_REG_STATUS, &status);
 	pm_runtime_put_autosuspend(sensor->dev);
-	mutex_unlock(&sensor->lock);
 
 	if (format->format.width == sensor->current_res_fr.width && format->format.height == sensor->current_res_fr.height) {
 		dev_dbg(sd->dev, "requested resolution matches current.\n");
 	} else {
-		dev_warn(sd->dev, "requested resolution does NOT match current.\n");
+		dev_warn(sd->dev, "requested resolution (%dx%d) does NOT match current (%dx%d).\n",format->format.width, format->format.height, sensor->current_res_fr.width, sensor->current_res_fr.height );
 		format->format.width = sensor->current_res_fr.width;
 		format->format.height = sensor->current_res_fr.height;
-		// sensor->current_res_fr.width = format->format.width;
-		//  sensor->current_res_fr.height = format->format.height;
-
-		// return -EINVAL;
 	}
-	// if ((new_mode != sensor->mode) && (format->which != V4L2_SUBDEV_FORMAT_TRY)) {
-	// ret |= crosslink_resolution_upcall(sensor, new_mode->reg_val);
 
-	pr_debug("%s: sensor->ep.bus_type =%d\n", __func__, sensor->ep.bus_type);
-	pr_debug("%s: sensor->ep.bus      =%p\n", __func__, &sensor->ep.bus);
 	pr_debug("%s: sensor->fmt->height =%d\n", __func__, format->format.height);
 	pr_debug("%s: sensor->fmt->width  =%d\n", __func__, format->format.width);
 	pr_debug("%s: get_status  =%x\n", __func__, status);
@@ -183,15 +201,15 @@ static int ops_enum_frame_size(struct v4l2_subdev *sub_dev, struct v4l2_subdev_s
 	}
 
 	if (fse->index == 0) {
-		mutex_lock(&sensor->lock);
 		pm_runtime_get_sync(sensor->dev);
 		ret  = regmap_raw_read(sensor->regmap, CROSSLINK_REG_COLM_COUNT, &res.width, 2);
 		ret |= regmap_raw_read(sensor->regmap, CROSSLINK_REG_LINE_COUNT, &res.height, 2);
 		pm_runtime_put_autosuspend(sensor->dev);
-		mutex_unlock(&sensor->lock);
 		if(ret == 0 && res.width != 0 && res.height != 0) {
 			pr_debug("%s: offer height =%d\n", __func__, res.height);
 			pr_debug("%s: offer width  =%d\n", __func__, res.width);
+			sensor->current_res_fr.width = res.width;
+			sensor->current_res_fr.height = res.height;
 			fse->min_width  = fse->max_width  = res.width;
 			fse->min_height = fse->max_height = res.height;
 			ret = 0;
@@ -219,11 +237,9 @@ static int ops_enum_frame_interval(struct v4l2_subdev *sub_dev, struct v4l2_subd
 	}
 
 	if (fie->index == 0) {
-		mutex_lock(&sensor->lock);
 		pm_runtime_get_sync(sensor->dev);
 		ret  = regmap_raw_read(sensor->regmap, CROSSLINK_REG_FRAME_PERIOD, &period, 2);
 		pm_runtime_put_autosuspend(sensor->dev);
-		mutex_unlock(&sensor->lock);
 		if(ret || period==0 || period==U16_MAX)
 			return ret;
 		else {
@@ -247,17 +263,15 @@ static int ops_get_frame_interval(struct v4l2_subdev *sub_dev, struct v4l2_subde
 
 	if (fi->pad >= NUM_PADS)
 		return -EINVAL;
-
-	mutex_lock(&sensor->lock);
 	pm_runtime_get_sync(sensor->dev);
 	ret = regmap_raw_read(sensor->regmap, CROSSLINK_REG_FRAME_PERIOD, &period, 2);
 	pm_runtime_put_autosuspend(sensor->dev);
-	mutex_unlock(&sensor->lock);
 	if(ret || period==0 || period==U16_MAX)
 		return ret;
 	else {
 		dev_dbg(sub_dev->dev, "period: %d\n", period);
 		framerate = DIV_ROUND_CLOSEST(1000000, period);
+		sensor->current_res_fr.framerate = framerate;
 		dev_dbg(sub_dev->dev, "%s, framerate: %d\n", __func__, framerate);
 		// fi->interval.numerator = period;
 		// fi->interval.denominator = 1000000;
@@ -267,23 +281,6 @@ static int ops_get_frame_interval(struct v4l2_subdev *sub_dev, struct v4l2_subde
 		return 0;
 	}
 }
-
-// static int ops_set_frame_interval(struct v4l2_subdev *sub_dev, struct v4l2_subdev_frame_interval *fi)
-// {
-// 	int i;
-// 	struct crosslink_dev *sensor = to_crosslink_dev(sub_dev);
-
-// 	dev_dbg(sub_dev->dev, "%s(setting interval = %d/%d)\n", __func__, fi->interval.numerator, fi->interval.denominator);
-// 	for(i=0; i < ARRAY_SIZE(sensor_res_list); i++) {
-// 		if(sensor_res_list[i].framerate == fi->interval.denominator) {
-// 			sensor->framerate = fi->interval.denominator;
-// 			return 0;
-// 		}
-// 	}
-
-// 	dev_err(sensor->dev, "unsupported framerate: %d\n", fi->interval.denominator);
-// 	return -EINVAL;
-// }
 
 static int crosslink_enum_mbus_code(struct v4l2_subdev *sub_dev, struct v4l2_subdev_state *sd_state, struct v4l2_subdev_mbus_code_enum *code)
 {
@@ -295,6 +292,12 @@ static int crosslink_enum_mbus_code(struct v4l2_subdev *sub_dev, struct v4l2_sub
 	return 0;
 }
 
+static void crosslink_mipi_handler(struct work_struct *work) {
+	struct crosslink_dev *sensor = container_of(to_delayed_work(work), struct crosslink_dev, mipi_work);
+	regmap_write(sensor->regmap, 0x2, (sensor->state == CRSLK_STATE_STREAMING) ? 0xFF : 0xFE);
+	dev_dbg(sensor->dev, "%s: %s\n", __func__, (sensor->state == CRSLK_STATE_STREAMING) ? "re-enable mipi" : "disable mipi");
+}
+
 static int crosslink_s_stream(struct v4l2_subdev *sd, int enable)
 {
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
@@ -304,40 +307,35 @@ static int crosslink_s_stream(struct v4l2_subdev *sd, int enable)
 		dev_err(sensor->dev, "endpoint bus_type not supported: %d\n", sensor->ep.bus_type);
 		return -EINVAL;
 	}
-
-
-	mutex_lock(&sensor->lock);
-	if (enable)
+	if (enable) {
 		pm_runtime_get_sync(sensor->dev);
-	ret  = regmap_write(sensor->regmap, 0x3, sensor->mode->reg_val);
-	ret |= regmap_write(sensor->regmap, 0x2, 0xFE);
-	if (enable)
-		msleep(50);
-	ret |= regmap_write(sensor->regmap, 0x2, enable ? 0xFF : 0xFE);
-	if (!enable)
+		sensor->state = CRSLK_STATE_STREAMING;
+		ret |= regmap_write(sensor->regmap, 0x2, 0xFE);
+		INIT_DELAYED_WORK(&sensor->mipi_work, crosslink_mipi_handler);
+		schedule_delayed_work(&sensor->mipi_work, HZ/15);  // at least one frame delay. lowest framerate is 25 Hz
+		pr_debug("%s: Starting stream at WxH@fps=%dx%d@%d\n", __func__, 12, 13, 14);
+	} else {
+		ret |= regmap_write(sensor->regmap, 0x2, 0xFE);
+		sensor->state = CRSLK_STATE_IDLE;
+		pm_runtime_mark_last_busy(sensor->dev);
 		pm_runtime_put_autosuspend(sensor->dev);
-	mutex_unlock(&sensor->lock);
-	if (enable)
-		pr_debug("%s: Starting stream at WxH@fps=%dx%d@%d\n", __func__, sensor->mode->width, sensor->mode->height, sensor->mode->framerate);
-	else
 		pr_debug("%s: Stopping stream \n", __func__);
+	}
 
 	return ret;
 }
-
 
 static void crosslink_remove(struct i2c_client *client);
 
 static void crosslink_fw_handler(const struct firmware *fw, void *context)
 {
-	int ret;
+	int ret, uart_stat;
 	struct crosslink_dev *sensor = (struct crosslink_dev *)context;
 
 	if (!fw)
 		return;
 
 	mutex_lock(&sensor->lock);
-	pm_runtime_get_sync(sensor->dev);
 	ret = crosslink_fpga_ops_write_init(sensor->reset_gpio, sensor->i2c_client);
 	if (ret < 0)
 		goto exit;
@@ -349,28 +347,22 @@ static void crosslink_fw_handler(const struct firmware *fw, void *context)
 		goto exit;
 
 	sensor->firmware_loaded = 1;
+	sensor->state = CRSLK_STATE_FW_LOADED;
 exit:
 	release_firmware(fw);
-	pm_runtime_put_autosuspend(sensor->dev);
 	mutex_unlock(&sensor->lock);
+	regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, 0xFE);
 	if (ret < 0) {
 		dev_err(sensor->dev, "Failed to load firmware: %d\n", ret);
 		crosslink_remove(sensor->i2c_client);
+	} else {
+		msleep(2);
+		ret = regmap_read(sensor->regmap, CROSSLINK_REG_UART_STAT, &uart_stat);
+		if (ret == 0)
+			sensor->has_serial = uart_stat & 0b11000000;
+		if (sensor->has_serial)
+			crosslink_tty_probe(sensor);
 	}
-}
-
-int crosslink_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh){
-	dev_dbg(sd->dev, "%s: \n", __func__);
-	struct crosslink_dev *sensor = to_crosslink_dev(sd);
-	mutex_lock(&sensor->lock);
-	pm_runtime_get_sync(sd->dev);
-	mutex_unlock(&sensor->lock);
-	return 0;
-}
-int crosslink_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh){
-	dev_dbg(sd->dev, "%s: \n", __func__);
-	pm_runtime_put_autosuspend(sd->dev);
-	return 0;
 }
 
 static const struct v4l2_subdev_core_ops crosslink_core_ops = {
@@ -381,14 +373,8 @@ static const struct v4l2_subdev_core_ops crosslink_core_ops = {
 	.ioctl = crosslink_ioctl,
 };
 
-static const struct v4l2_subdev_internal_ops crosslink_internal_ops = {
-	.open = crosslink_open,
-	.close = crosslink_close,
-};
-
 static const struct v4l2_subdev_video_ops crosslink_video_ops = {
 	.g_frame_interval = ops_get_frame_interval,
-	// .s_frame_interval = ops_set_frame_interval,
 	.s_stream = crosslink_s_stream,
 };
 
@@ -418,16 +404,17 @@ static const struct media_entity_operations crosslink_sd_media_ops = {
 static int __maybe_unused crosslink_suspend(struct device *dev)
 {
 	int ret = 0;
-	u32 status;
 	struct i2c_client *client = to_i2c_client(dev);
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	dev_dbg(dev, "%s: \n", __func__);
 
-	// mutex_lock(&sensor->lock);
-	ret = regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, 0xFE);
+	if (powerdown_enable)
+		ret = regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, 0x07);
+	else
+		ret = regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, 0xFE);
 	regcache_mark_dirty(sensor->regmap);
-	// mutex_unlock(&sensor->lock);
+	sensor->state = CRSLK_STATE_POWERDOWN;
 	return 0;
 }
 
@@ -440,24 +427,41 @@ static int __maybe_unused crosslink_resume(struct device *dev)
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 	dev_dbg(dev, "%s: \n", __func__);
 
-	// mutex_lock(&sensor->lock);
-	ret  = regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, 0xFE);
-	if (ret == 0) {
-		msleep(500);
-		ret |= regmap_read_poll_timeout(sensor->regmap, CROSSLINK_REG_STATUS, status, (status & 0x1F == 0x1F), 10000, 5000000); // wait for LVDS pll-locked
-		if (ret)
-		 	dev_info(sensor->dev, "timeout waiting for LVDS PLL lock: %d\n", status);
-	} else {
-		dev_dbg(sensor->dev, "failed to disable sensor: %d\n", ret);
+	if (sensor->firmware_loaded) {
+		ret  = regmap_read(sensor->regmap, CROSSLINK_REG_ENABLE, &status);
+		ret |= regmap_write(sensor->regmap, CROSSLINK_REG_ENABLE, 0xFE);
+		if (ret == 0) {
+			if ((status & 0x08) == 0){
+				dev_info(sensor->dev, "powering up camera...\n");
+				msleep(powerup_wait_ms);
+			}
+			msleep(10);
+			ret |= regmap_read_poll_timeout(sensor->regmap, CROSSLINK_REG_STATUS, status, ((status & 0x1F) == 0x1F), 10000, 4000000); // wait for LVDS pll-locked
+			if (ret)
+				dev_info(sensor->dev, "timeout waiting for LVDS PLL lock: %d\n", status);
+			sensor->state = CRSLK_STATE_IDLE;
+		} else {
+			dev_err(sensor->dev, "failed to power on %d\n", ret);
+		}
 	}
-	// mutex_unlock(&sensor->lock);
 	return 0;
 }
 
-static const struct regmap_config sensor_regmap_config = {
+static void crosslink_lock_mutex(void *p) {
+	mutex_lock(&((struct crosslink_dev *)p)->lock);
+}
+static void crosslink_unlock_mutex(void *p) {
+	mutex_unlock(&((struct crosslink_dev *)p)->lock);
+}
+
+static struct regmap_config sensor_regmap_config = {
 	.reg_bits = 8,
 	.val_bits = 8,
+	.reg_format_endian = REGMAP_ENDIAN_LITTLE,
+	.val_format_endian = REGMAP_ENDIAN_LITTLE,
 	.cache_type = REGCACHE_NONE,
+	.lock = crosslink_lock_mutex,
+	.unlock = crosslink_unlock_mutex,
 };
 
 static int crosslink_probe(struct i2c_client *client)
@@ -467,8 +471,6 @@ static int crosslink_probe(struct i2c_client *client)
 	struct crosslink_dev *sensor;
 	struct v4l2_mbus_framefmt *fmt;
 	int ret;
-	unsigned int id_code=0;
-	unsigned int uart_stat;
 
 	pr_debug("-->%s crosslink Probe start\n",__func__);
 
@@ -488,11 +490,10 @@ static int crosslink_probe(struct i2c_client *client)
 	fmt->ycbcr_enc = V4L2_MAP_YCBCR_ENC_DEFAULT(fmt->colorspace);
 	fmt->quantization = V4L2_QUANTIZATION_FULL_RANGE;
 	fmt->xfer_func = V4L2_MAP_XFER_FUNC_DEFAULT(fmt->colorspace);
-	fmt->width = 1280;
-	fmt->height = 720;
+	fmt->width = 1920;
+	fmt->height = 1080;
 	fmt->field = V4L2_FIELD_NONE;
 	sensor->framerate = 30;
-	sensor->mode = &sensor_res_list[0];
 
 	/* request reset pin */
 	sensor->reset_gpio = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
@@ -502,6 +503,8 @@ static int crosslink_probe(struct i2c_client *client)
 			dev_warn(dev, "Cannot get reset GPIO (%d)", ret);
 		// return ret;
 	}
+
+	of_property_read_u32(dev->of_node, "csi_id", &sensor->csi_id);
 
 	// get name
 	snprintf(sensor->of_name, 31, "VD_%s_%d", client->name, client->addr);
@@ -527,31 +530,27 @@ static int crosslink_probe(struct i2c_client *client)
 		return -EINVAL;
 	}
 
+	mutex_init(&sensor->lock);
+	sensor_regmap_config.lock_arg = sensor;
 	sensor->regmap = devm_regmap_init_i2c(client, &sensor_regmap_config);
 	if (IS_ERR(sensor->regmap)) {
 		dev_err(dev, "regmap init failed\n");
 		return PTR_ERR(sensor->regmap);
 	}
 
-	mutex_init(&sensor->lock);
 	mutex_lock(&sensor->lock);
-	ret = regmap_read(sensor->regmap, CROSSLINK_REG_ID, &id_code);
-	if (ret)
-		dev_dbg(dev, "Could not read device-id. trying again\n");
-	// if (id_code != FIRMWARE_VERSION) {
-		dev_info(dev, "Loading current Firmware: %02x\n", FIRMWARE_VERSION);
-		ret = request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT, FIRWARE_NAME, dev, GFP_KERNEL, sensor, crosslink_fw_handler);
-		if (ret) {
-			dev_err(dev, "Failed request_firmware_nowait err %d\n", ret);
-			goto entity_cleanup;
-		}
-	// }
+	dev_info(dev, "Loading Firmware: %02x\n", FIRMWARE_VERSION);
+	ret = request_firmware_nowait(THIS_MODULE, FW_ACTION_UEVENT, FIRWARE_NAME, dev, GFP_KERNEL, sensor, crosslink_fw_handler);
+	if (ret) {
+		dev_err(dev, "Failed request_firmware_nowait err %d\n", ret);
+		goto entity_cleanup;
+	}
 
 	v4l2_i2c_subdev_init(&sensor->sd, client, &crosslink_subdev_ops);
 
 	sensor->sd.flags |= V4L2_SUBDEV_FL_HAS_EVENTS | V4L2_SUBDEV_FL_HAS_DEVNODE;
 	sensor->sd.dev = &client->dev;
-	sensor->sd.internal_ops = &crosslink_internal_ops;
+	// sensor->sd.internal_ops = &crosslink_internal_ops;
 	sensor->pad.flags = MEDIA_PAD_FL_SOURCE;
 	sensor->sd.entity.ops = &crosslink_sd_media_ops;
 	sensor->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
@@ -584,21 +583,19 @@ static int crosslink_probe(struct i2c_client *client)
 		goto err_pm_runtime;
 	}
 
-	pm_runtime_set_autosuspend_delay(&client->dev, 5000);
+	pm_runtime_set_autosuspend_delay(&client->dev, powerdown_timeout_ms);
 	pm_runtime_use_autosuspend(&client->dev);
 	pm_runtime_put_autosuspend(&client->dev);
 
-	pr_debug("<--%s crosslink Probe end successful, return\n",__func__);
+	// ret = crosslink_tty_probe(sensor);
 	mutex_unlock(&sensor->lock);
-
-	return crosslink_tty_probe(sensor);
-	// return 0;
+	pr_debug("<--%s crosslink Probe end successful, return\n",__func__);
+	sensor->state = CRSLK_STATE_PROBED;
+	return 0;
 
 err_pm_runtime:
 	pm_runtime_disable(&client->dev);
 	pm_runtime_put_noidle(&client->dev);
-err_powerdown:
-	crosslink_suspend(&client->dev);
 
 entity_cleanup:
 	pr_debug("---%s crosslink ERR entity_cleanup\n",__func__);
@@ -613,20 +610,25 @@ static void crosslink_remove(struct i2c_client *client)
 	struct v4l2_subdev *sd = i2c_get_clientdata(client);
 	struct crosslink_dev *sensor = to_crosslink_dev(sd);
 
-	v4l2_async_unregister_subdev(&sensor->sd);
-	media_entity_cleanup(&sensor->sd.entity);
+	// wait in case Firmware is busy
+	if (!mutex_trylock(&sensor->lock)){
+		mutex_lock(&sensor->lock);
+		msleep(100);
+	}
+	mutex_unlock(&sensor->lock);
 
 	crosslink_tty_remove(sensor);
 
+	/* Barrier after the sysfs remove */
+	pm_runtime_barrier(&client->dev);
+	if (!pm_runtime_suspended(&client->dev))
+		pr_debug("%s: runtime not suspended\n", __func__);
 
-	/*
-	 * Disable runtime PM. In case runtime PM is disabled in the kernel,
-	 * make sure to turn power off manually.
-	 */
 	pm_runtime_disable(&client->dev);
-	if (!pm_runtime_status_suspended(&client->dev))
-		crosslink_suspend(&client->dev);
 	pm_runtime_set_suspended(&client->dev);
+
+	v4l2_async_unregister_subdev(&sensor->sd);
+	media_entity_cleanup(&sensor->sd.entity);
 
 	mutex_destroy(&sensor->lock);
 }
@@ -658,7 +660,20 @@ static struct i2c_driver crosslink_i2c_driver = {
 	.remove   = crosslink_remove,
 };
 
-module_i2c_driver(crosslink_i2c_driver);
+static int __init crosslink_init(void)
+{
+	crosslink_tty_init();
+	return i2c_add_driver(&crosslink_i2c_driver);
+}
+
+static void __exit crosslink_exit(void)
+{
+	i2c_del_driver(&crosslink_i2c_driver);
+	crosslink_tty_exit();
+}
+
+module_init(crosslink_init);
+module_exit(crosslink_exit);
 
 MODULE_DESCRIPTION("crosslink MIPI Camera Subdev Driver");
 MODULE_LICENSE("GPL");
