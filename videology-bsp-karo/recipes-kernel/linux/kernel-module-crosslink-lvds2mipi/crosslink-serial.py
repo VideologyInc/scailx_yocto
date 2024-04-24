@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 from periphery import Serial
 from time import sleep, time_ns
 import argparse

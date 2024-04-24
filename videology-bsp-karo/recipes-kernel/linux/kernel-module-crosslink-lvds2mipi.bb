@@ -15,7 +15,6 @@ inherit module
 
 do_install:append(){
     install -d ${D}${base_bindir}/
-    install -m 0755 "${WORKDIR}/crosslink_cs1_res.sh" "${D}${base_bindir}/crosslink_cs1_res.sh"
     install -m 0755 "${WORKDIR}/crosslink-serial.py" "${D}${base_bindir}/crosslink-serial.py"
     install -d ${D}/lib/firmware
     install -m 0644 "${WORKDIR}/crosslink_lvds_B1.bit" "${D}/lib/firmware/crosslink_lvds_B1.bit"
