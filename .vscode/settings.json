@@ -74,5 +74,13 @@
     "bitbake.sdkImage": "scailx-image-swupdate-ml",
     "task.saveBeforeRun": "always",
     "bitbake.sshTarget": "root@zoomblock-test.local",
-    "search.useIgnoreFiles": false
+    "search.useIgnoreFiles": false,
+    "files.associations": {
+        ".config": "makefile",
+        "*defconfig": "Makefile",
+        "sw-description": "libconfig",
+        "defconfig": "makefile",
+        "*.conf": "bitbake",
+        "*.inc": "bitbake"
+    }
 }
