@@ -6,7 +6,9 @@ inherit module
 RRECOMMENDS:${PN} += "python3-ar0234"
 
 FILES:${PN} += "${nonarch_base_libdir}/firmware"
+FILES:${PN} += "${sysconfdir}/modprobe.d"
 
 do_install:append(){
-    install -m 0644 ${S}/modprobe/* ${D}${sysconfdir}/modprobe.d
+    install -d ${D}${sysconfdir}/modprobe.d/
+    install -m 0644 ${S}/modprobe/* ${D}${sysconfdir}/modprobe.d/
 }

@@ -16,12 +16,12 @@ inherit module
 do_install:append(){
     install -d ${D}${base_bindir}/
     install -m 0755 "${WORKDIR}/crosslink-serial.py" "${D}${base_bindir}/crosslink-serial.py"
-    install -d ${D}/lib/firmware
-    install -m 0644 "${WORKDIR}/crosslink_lvds_B1.bit" "${D}/lib/firmware/crosslink_lvds_B1.bit"
+    install -d ${D}${nonarch_base_libdir}/firmware/
+    install -m 0644 "${WORKDIR}/crosslink_lvds_B1.bit" "${D}${nonarch_base_libdir}/firmware/crosslink_lvds_B1.bit"
 }
 
 FILES:${PN} += "${base_bindir}/"
-FILES:${PN} += "/lib/firmware/"
+FILES:${PN} += "${nonarch_base_libdir}/firmware/"
 
 # KERNEL_MODULE_AUTOLOAD = "crosslink_lvds2mipi"
 
