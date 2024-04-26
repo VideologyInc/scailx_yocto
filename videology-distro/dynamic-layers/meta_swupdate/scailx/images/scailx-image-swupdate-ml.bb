@@ -58,6 +58,8 @@ IMAGE_INSTALL += " \
     packagegroup-imx-security \
     curl \
     git \
+    go2rtc \
+    mediamtx \
     python3-pycairo \
     python3-pip \
     python3-periphery \

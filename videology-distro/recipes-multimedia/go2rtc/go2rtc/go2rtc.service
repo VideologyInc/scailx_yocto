@@ -1,0 +1,11 @@
+[Unit]
+Description=go2rtc service
+After=network.target
+
+[Service]
+Restart=on-failure
+ExecStart=/usr/bin/go2rtc -config /etc/default/go2rtc.yaml
+RestartPreventExitStatus=255
+
+[Install]
+WantedBy=multi-user.target
