@@ -2,11 +2,17 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
 	"name": "kas",
-
 	"build": { "dockerfile": "Dockerfile" },
 	// "image": "ghcr.io/siemens/kas/kas:next",
 	"features": {
-		"ghcr.io/devcontainers/features/conda:1": {}
+		"ghcr.io/devcontainers/features/conda:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"moby": true,
+			"installDockerBuildx": true,
+			"installDockerComposeSwitch": true,
+			"version": "latest",
+			"dockerDashComposeVersion": "latest"
+		}
 	},
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
