@@ -60,6 +60,7 @@ IMAGE_INSTALL += " \
     git \
     go2rtc \
     mediamtx \
+    ffmpeg \
     python3-pycairo \
     python3-pip \
     python3-periphery \
