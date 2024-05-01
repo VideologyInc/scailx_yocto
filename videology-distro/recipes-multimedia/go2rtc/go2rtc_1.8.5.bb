@@ -52,6 +52,8 @@ do_install:append(){
 
     install -d ${D}${sysconfdir}/default
     install -m 0644 ${WORKDIR}/go2rtc.yaml ${D}${sysconfdir}/default/
+
+    rm -rf ${D}${bindir}/go2rtc_*
 }
 
 FILES:${PN} += "${bindir}/go2rtc ${systemd_system_unitdir}/system ${confdir}"

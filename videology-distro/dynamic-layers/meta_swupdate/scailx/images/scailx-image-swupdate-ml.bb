@@ -59,7 +59,7 @@ IMAGE_INSTALL += " \
     curl \
     git \
     go2rtc \
-    mediamtx \
+    ser2net \
     ffmpeg \
     python3-pycairo \
     python3-pip \
