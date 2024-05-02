@@ -10,8 +10,3 @@ RUN sudo pip3 install --no-input kas
 # the 'sh' alias to 'bash' instead of 'dash'.
 RUN rm /bin/sh && ln -s bash /bin/sh
 
-# add bash indexed search
-RUN echo '"\e[A": history-search-backward' >> .inputrc && \
-	echo '"\e[B": history-search-forward'  >> .inputrc && \
-	echo '"\e[C": forward-char'            >> .inputrc && \
-	echo '"\e[D": backward-char'           >> .inputrc
