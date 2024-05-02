@@ -25,6 +25,7 @@ fedora=$(grep -q 'fedora.39' /etc/os-release && echo yes)
 export KAS_WORK_DIR
 
 source .venv/bin/activate && echo "using python $(python --version)" || echo "No virtualenv found. using local"
+renice +19 $$
 
 kas checkout "$KASFILE"
 if [ "$?" -ne 0 ]; then

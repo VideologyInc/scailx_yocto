@@ -36,6 +36,7 @@ RM_WORK_EXCLUDE += "${PN}"
 
 SRC_URI += "file://go2rtc.yaml"
 SRC_URI += "file://go2rtc.service"
+SRC_URI += "file://go2rtc-create-cams-config.py"
 
 inherit systemd
 
@@ -53,9 +54,11 @@ do_install:append(){
     install -d ${D}${sysconfdir}/default
     install -m 0644 ${WORKDIR}/go2rtc.yaml ${D}${sysconfdir}/default/
 
+    install -m 0755 ${WORKDIR}/go2rtc-create-cams-config.py ${D}${bindir}/
     rm -rf ${D}${bindir}/go2rtc_*
 }
 
+RDEPENDS:${PN} += "python3"
 FILES:${PN} += "${bindir}/go2rtc ${systemd_system_unitdir}/system ${confdir}"
 INSANE_SKIP:${PN} += "already-stripped"
 INHIBIT_PACKAGE_STRIP = "1"
