@@ -8,12 +8,12 @@
 header:
   version: 11
   includes:
-    - nxp-imx-nanbield.yaml
-    - kas/nanbield.yml
-    - lf-6.6.3_1.0.0-nanbield.yaml
-    # - nxp-imx-mickledore.yaml
-    # - nxp-desktop.yaml
-    # - lf-6.1.55-2.2.1-mickledore.yaml
+    # - nxp-imx-nanbield.yaml
+    # - kas/nanbield.yml
+    # - lf-6.6.3_1.0.0-nanbield.yaml
+    - nxp-imx-mickledore.yaml
+    - nxp-desktop.yaml
+    - lf-6.1.55-2.2.1-mickledore.yaml
     # - lf-6.1.22-2.0.0-mickledore.yaml
     - kas/go-lts-mixins.yml
     - kas/layers/meta-swupdate.yml
@@ -26,6 +26,9 @@ repos:
     layers:
       videology-bsp-karo:
       videology-distro:
+  # meta-karo-bsp:
+  #   url: https://github.com/karo-electronics/meta-karo-nxp
+  #   branch: mickledore
 
 bblayers_conf_header:
   standard: |

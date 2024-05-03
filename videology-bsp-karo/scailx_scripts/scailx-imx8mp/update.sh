@@ -9,7 +9,7 @@ for ARGUMENT in "$@"; do
    export "$KEY"="$VALUE"
 done
 
-function get_slot {
+get_slot() {
     for i in `cat /proc/cmdline`; do
         if [[ $i == bootslot=* ]]; then
             CURRENT_SLOT="${i: -1}"
