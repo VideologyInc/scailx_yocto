@@ -60,7 +60,7 @@ APTGET_EXTRA_PACKAGES += "\
 	ntpdate patchelf \
 	libcairo2 libpixman-1-0 libpango-1.0-0 libpangocairo-1.0-0 \
 	squashfs-tools \
-	nano v4l-utils python3-periphery i2c-tools swupdate \
+	nano v4l-utils python3-periphery i2c-tools libarchive13 libconfig9 libev4 libfdisk1 libjson-c5 liblua5.3-0 librsync2 libswupdate0.1 liburiparser1 libuv1 libwebsockets16 \
 "
 # v4l-utils    python3-pyserial    python3-periphery    i2ctools
 # golang-github-snapcore-snapd-dev golang-github-ubuntu-core-snappy-dev snap-confine snapd-xdg-open snapd ubuntu-core-launcher ubuntu-core-snapd-units ubuntu-snappy-cli ubuntu-snappy libqt5gui5-gles libqt5quick5-gles qtwayland5
