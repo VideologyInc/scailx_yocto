@@ -1,22 +1,25 @@
+# scailx yocto for Videology
+#
+# Authors:
+#   Kobus Goosen
+#
+# SPDX-License-Identifier: MIT
+#
 header:
   version: 14
   includes:
+    - scailx.yaml
     - kas/layers/meta-gnome.yml
-    # - kas/layers/meta-xfce.yml
-    - kas/layers/meta-qt6.yml
 
-distro: imx-desktop-xwayland
-machine: imx8mpevk
-target: imx-image-desktop
+distro: scailx-ubuntu
+target: scailx-desktop-image
+
+machine: scailx-imx8mp-desktop
 
 local_conf_header:
   nxp-desktop: |
     # Switch to rpm packaging to avoid rootfs build break
     PACKAGE_CLASSES = "package_rpm"
-    # Save lots of disk space
-    INHERIT += "rm_work"
-    # Set your proxy if necessary
-    #ENV_HOST_PROXIES = "http_proxy="
     # Set user account and password
     #APTGET_ADD_USERS = "user:password:shell"
     #  format 'name:password:shell'.
@@ -29,4 +32,5 @@ local_conf_header:
 repos:
   meta-nxp-desktop:
     url: https://github.com/nxp-imx/meta-nxp-desktop
-
+    branch: lf-6.1.55-2.2.0-mickledore
+    commit: refs/tags/rel_lf_6.1.55_2.2.0_ldp

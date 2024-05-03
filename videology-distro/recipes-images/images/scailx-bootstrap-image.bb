@@ -16,6 +16,10 @@ EXTRA_IMAGEDEPENDS = ""
 
 inherit core-image nopackages
 
+IMAGE_INSTALL += " \
+    busybox \
+"
+
 IMAGE_ROOTFS_SIZE = "8192"
 
 # Users will often ask for extra space in their rootfs by setting this

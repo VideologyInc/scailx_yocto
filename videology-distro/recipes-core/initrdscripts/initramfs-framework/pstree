@@ -1,4 +1,4 @@
-#!/bin/busybox ash
+#!/bin/sh
 #
 # Script to show process tree.
 # Accepts one optional argument:

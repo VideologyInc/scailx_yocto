@@ -9,6 +9,9 @@ inherit scailx-uboot-env
 
 FILESEXTRAPATHS:prepend := "${SCAILX_SCRIPTS_DIRS}:"
 SRC_URI += "file://update.sh"
+SRC_URI += "file://update.sh"
+SRC_URI += "file://swu_cert.cert.pem"
+SRC_URI += "file://swu_cert.key.pem"
 
 IMAGE_FEATURES += " \
 "
@@ -34,17 +37,28 @@ IMAGE_INSTALL += " \
     pyvidctrl \
     avahi-services-ssh \
     avahi-services-sftp \
-    scailx-systemd-watchdog \
-    scailx-monitor \
+    hailo-pci \
+    hailo-firmware \
+    v4l2loopback \
+    v4l2loopback-utils \
+    gst-variable-rtsp-server \
+    kernel-module-crosslink-lvds2mipi \
+    kernel-module-gs-ar0234 \
+    python3-ar0234 \
 "
 
+# scailx-systemd-watchdog
+# scailx-monitor
+
+
 IMAGE_INSTALL:append:ubuntu = " \
-    swupdate swupdate-www swupdate-config \
+    swupdate libcurl swupdate-www swupdate-config \
     scailx-ssh-keys \
     volatile-binds \
     scailx-mounts-boot \
     scailx-mounts-storage \
     scailx-profile \
+   	u-boot-default-env \
 "
 
 APTGET_EXTRA_PACKAGES += " u-boot-tools "
@@ -136,3 +150,6 @@ do_swuimage[stamp-extra-info] = "${IMAGE_LINK_NAME}"
 # SWUPDATE_CMS_KEY : this is the file with the private key used in signing process using CMS mechanism. It is available if SWUPDATE_SIGNING is set to CMS.
 # SWUPDATE_CMS_CERT : this is the file with the certificate used in signing process using CMS method. It is available if SWUPDATE_SIGNING is set to CMS.
 # SWUPDATE_AES_FILE : this is the file with the AES password to encrypt artifact. A new fstype is supported by the class (type: enc). SWUPDATE_AES_FILE is generated as output from openssl to create a new key with
+SWUPDATE_SIGNING = "CMS"
+SWUPDATE_CMS_KEY = "${WORKDIR}/swu_cert.key.pem"
+SWUPDATE_CMS_CERT = "${WORKDIR}/swu_cert.cert.pem"
