@@ -111,6 +111,11 @@ do_blacklist_imx8_media_dev () {
 }
 IMAGE_PREPROCESS_COMMAND += ";do_blacklist_imx8_media_dev;"
 
+do_add_scailx_version () {
+    echo "${SCAILX_VERSION}" > ${IMAGE_ROOTFS}${sysconfdir}/scailx-version
+}
+IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_version;"
+
 # do_swuimage:append() {
 #     import libconf, io, json
 #     swd = os.path.join(d.getVar('S') ,'sw-description')
