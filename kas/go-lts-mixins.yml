@@ -1,0 +1,12 @@
+header:
+  version: 14
+
+repos:
+  meta-lts-mixins-go:
+    url: https://github.com/lmp-mirrors/meta-lts-mixins
+    branch: kirkstone/go
+    commit: 0dea41cd1a8eec04257a97214545c1afd1fe2aeb
+    patches:
+      patch0:
+        path: kas/go-mixins-add-mickledore-to-layer-compat.patch
+        repo: scailx

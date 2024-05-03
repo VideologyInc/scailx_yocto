@@ -1,0 +1,28 @@
+# streams:
+#   cam0_720p:  exec:gst-launch-1.0 -q v4l2src device=/dev/video0 ! video/x-raw,width=1280,height=720,framerate=60/1 !  vpuenc_h264 bitrate=16000 ! fdsink
+#   cam0_1080p: exec:gst-launch-1.0 -q v4l2src device=/dev/video0 ! video/x-raw,width=1920,height=1080,framerate=60/1 ! vpuenc_h264 bitrate=32000 ! fdsink
+#   cam1_720p:  exec:gst-launch-1.0 -q v4l2src device=/dev/video1 ! video/x-raw,width=1280,height=720,framerate=60/1 !  vpuenc_h264 bitrate=16000 ! fdsink
+#   cam1_1080p: exec:gst-launch-1.0 -q v4l2src device=/dev/video1 ! video/x-raw,width=1920,height=1080,framerate=60/1 ! vpuenc_h264 bitrate=32000 ! fdsink
+
+log:
+  format: ""
+  level: "info"
+
+ngrok:
+  command: ""
+
+rtsp:
+  listen: ":8554"
+  username: ""
+  password: ""
+
+srtp:
+  listen: ":8443"
+
+webrtc:
+  listen: ":8555"
+  candidates: []
+  ice_servers:
+    - urls: [ "stun:stun.l.google.com:19302" ]
+      username: ""
+      credential: ""

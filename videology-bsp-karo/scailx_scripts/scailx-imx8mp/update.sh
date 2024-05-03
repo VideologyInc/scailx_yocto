@@ -79,6 +79,8 @@ if [ $1 == "preinst" ]; then
     mkdir -p /tmp/update_boot
     mount /dev/disk/by-label/boot /tmp/update_boot || (umount -f /dev/disk/by-label/boot; mount /dev/disk/by-label/boot /tmp/update_boot)
     rm -rf /tmp/update_boot/bsp${UPDATE_SLOT}/*
+    rm -rf /tmp/update_boot/updated$UPDATE_SLOT
+    rm -rf /tmp/update_boot/running$UPDATE_SLOT
     # enable write on emmc boot partitions
     echo 0 > "/sys/block/mmcblk0boot${UPDATE_SLOT}/force_ro"
     sync; umount -f /tmp/storage; umount -f /tmp/update_boot;

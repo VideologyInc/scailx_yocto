@@ -58,6 +58,9 @@ IMAGE_INSTALL += " \
     packagegroup-imx-security \
     curl \
     git \
+    go2rtc \
+    ser2net \
+    ffmpeg \
     python3-pycairo \
     python3-pip \
     python3-periphery \

@@ -1,0 +1,25 @@
+From 451ecb4189e6bcb26bbc2d5af87e3e58428caebf Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Tue, 30 Apr 2024 15:25:28 +0200
+Subject: [PATCH] add mickledore to layer compat
+
+---
+ conf/layer.conf | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/conf/layer.conf b/conf/layer.conf
+index aadd227..2d71fe9 100644
+--- a/conf/layer.conf
++++ b/conf/layer.conf
+@@ -8,7 +8,7 @@ BBFILE_COLLECTIONS += "lts-go-mixin"
+ BBFILE_PATTERN_lts-go-mixin := "^${LAYERDIR}/"
+ BBFILE_PRIORITY_lts-go-mixin = "6"
+ 
+-LAYERSERIES_COMPAT_lts-go-mixin = "kirkstone"
++LAYERSERIES_COMPAT_lts-go-mixin = "kirkstone mickledore"
+ 
+ LAYERDEPENDS_lts-go-mixin = " \
+     core \
+-- 
+2.34.1
+
