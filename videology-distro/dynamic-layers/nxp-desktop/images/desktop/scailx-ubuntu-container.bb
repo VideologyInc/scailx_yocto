@@ -12,8 +12,7 @@ IMAGE_FSTYPES = "tar.gz"
 # This must be added first as it provides the foundation for
 # subsequent modifications to the rootfs
 IMAGE_INSTALL += "\
-	ubuntu-base \
-	ubuntu-base-dev \
+	scailx-ubuntu-base \
 "
 
 ##############################################################################

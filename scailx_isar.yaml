@@ -1,0 +1,53 @@
+# scailx yocto for Videology
+#
+# Authors:
+#   Kobus Goosen
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 14
+  # includes:
+    # - kas/mickledore.yml
+    # - kas/layers/meta-swupdate.yml
+
+repos:
+  scailx:
+    layers:
+      videology-bsp-karo:
+      # videology-distro:
+  # meta-karo-bsp:
+  #   url: https://github.com/karo-electronics/meta-karo-nxp
+  #   branch: mickledore
+
+bblayers_conf_header:
+  standard: |
+    # BBPATH = "${TOPDIR}"
+    # BBFILES ?= ""
+
+machine: scailx-imx8mp
+
+build_system: isar
+
+distro: debian-bookworm
+target: isar-image-base
+
+machine: scailx-imx8mp-desktop
+
+local_conf_header:
+  folders: |
+    BB_GENERATE_MIRROR_TARBALLS = "1"
+    DEPLOY_DIR = "${TOPDIR}/deploy"
+
+  rmwork: |
+    INHERIT += "rm_work"
+    DISTRO_ARCH ??= "armhf"
+
+repos:
+  isar:
+    url: https://github.com/ilbers/isar
+    branch: master
+    commit: 30471bb3f787fb0aa822d15e141ecce2f3b99860
+    layers:
+      meta:
+      meta-isar:

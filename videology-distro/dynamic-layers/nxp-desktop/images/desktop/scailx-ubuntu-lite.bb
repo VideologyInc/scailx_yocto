@@ -17,10 +17,6 @@ IMAGE_INSTALL += "\
 	ubuntu-main \
 "
 
-IMAGE_INSTALL:append = " \
-	iperf2 \
-"
-
 SOC_DEFAULT_IMAGE_FSTYPES:append = " tar.gz"
 SOC_DEFAULT_IMAGE_FSTYPES:remove = " tar.bz2"
 
