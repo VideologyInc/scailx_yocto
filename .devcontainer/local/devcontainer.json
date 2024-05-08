@@ -18,6 +18,6 @@
 		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
         "source=/etc/inputrc,target=/etc/inputrc,type=bind"
 	],
-	"workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+	"workspaceMount": "source=${localWorkspaceFolder}/../,target=${localWorkspaceFolder}/../,type=bind",
 	"workspaceFolder": "${localWorkspaceFolder}"
 }
