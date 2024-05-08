@@ -45,7 +45,11 @@ IMAGE_INSTALL += "\
 	firmwared \
 	systemd-gpuconfig \
 	alsa-state \
-	libcogl \
+    kernel-dev      \
+    kernel-modules  \
+    kernel-devsrc   \
+    go2rtc \
+    libcogl \
 	clutter-gst-3.0 \
 	cheese \
 	xwayland \
