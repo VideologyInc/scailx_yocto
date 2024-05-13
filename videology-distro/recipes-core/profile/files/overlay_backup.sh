@@ -22,7 +22,7 @@ case $- in *i*)
                 l|L ) find /storage/overlay/backup -type f ;;
                 * ) echo "ignore" > "/storage/overlay/backup_ignore" ;;
             esac
-        fi ;;
-    fi
+        fi
+    fi ;;
 esac
 
