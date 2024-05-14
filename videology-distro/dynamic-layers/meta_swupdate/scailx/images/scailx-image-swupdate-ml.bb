@@ -57,6 +57,7 @@ IMAGE_INSTALL += " \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
+    casaos \
     git \
     go2rtc \
     ser2net \
