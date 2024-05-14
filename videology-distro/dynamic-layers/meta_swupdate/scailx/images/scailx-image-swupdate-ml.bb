@@ -58,6 +58,8 @@ IMAGE_INSTALL += " \
     packagegroup-imx-security \
     curl \
     casaos \
+    nodejs \
+    nodejs-npm \
     git \
     go2rtc \
     ser2net \
