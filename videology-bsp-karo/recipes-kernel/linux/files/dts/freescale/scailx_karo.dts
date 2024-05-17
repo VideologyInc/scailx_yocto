@@ -185,6 +185,11 @@ gpio_b_usb_phy: &usb3_phy0{};
 	status = "okay";
 };
 
+// forum posts mention this helps for GPU memeory issues
+&ldb_phy {
+    status = "okay";
+};
+
 &i2c3 {
 	gpio_expander: gpio@27 {
 		compatible = "nxp,pcal9535";
