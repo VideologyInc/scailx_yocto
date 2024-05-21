@@ -7,6 +7,10 @@ IMAGE_LINGUAS = ""
 IMAGE_INSTALL = ""
 inherit core-image image nativeaptinstall features_check
 export PACKAGE_INSTALL = "${IMAGE_INSTALL}"
+inherit image-oci
+IMGCLASSES += "image-container"
+IMAGE_TYPES_MASKED += "container"
+do_image_tar[depends] += "pbzip2-native:do_populate_sysroot"
 
 APTGET_CHROOT_DIR = "${IMAGE_ROOTFS}"
 APTGET_SKIP_UPGRADE = "1"

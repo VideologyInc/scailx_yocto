@@ -7,7 +7,12 @@ PV = "${@d.getVar('PREFERRED_VERSION_ubuntu-base', True) or '1.0'}"
 
 require ubuntu-image-container.inc
 
-IMAGE_FSTYPES = "tar.gz"
+IMAGE_FSTYPES = "docker-archive.xz"
+
+IMAGE_FEATURES = ""
+IMAGE_LINGUAS = ""
+NO_RECOMMENDATIONS = "1"
+MACHINE_FEATURES = ""
 
 # This must be added first as it provides the foundation for
 # subsequent modifications to the rootfs
@@ -28,7 +33,6 @@ IMAGE_INSTALL += " \
     packagegroup-fsl-gstreamer1.0 \
     packagegroup-fsl-gstreamer1.0-full \
 "
-
 
 # isp
 IMAGE_INSTALL:append:mx8mp-nxp-bsp = " \
