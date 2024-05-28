@@ -53,7 +53,7 @@ SYSTEMD_SERVICE:${PN} = " \
     rclone.service \
 "
 
-RDEPENDS:${PN} = "casaos-ui casaos-appstore rclone"
+RDEPENDS:${PN} = "casaos-ui casaos-appstore rclone smartmontools"
 
 FILES_${PN} += "${sysconfdir}/casaos ${bindir} ${systemd_system_unitdir} ${datadir}/casaos ${datadir}/bash_completion.d"
 
