@@ -8,3 +8,7 @@ repos:
       meta:
       meta-poky: 0
       meta-yocto-bsp: 0
+    patches:
+      patch0:
+        path: kas/layers/poky-py-shebang.patch
+        repo: scailx
