@@ -10,6 +10,8 @@ source ~/.bashrc
 #     export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR"
 # fi
 
+[ -e "/work/share/scailx-ppa-key-pass.txt" ] && export PACKAGE_FEED_GPG_PASSPHRASE_FILE="/work/share/scailx-ppa-key-pass.txt"
+
 KAS_WORK_DIR=`pwd`
 # workdir from input if entered else use current
 if [ "$1" ]; then

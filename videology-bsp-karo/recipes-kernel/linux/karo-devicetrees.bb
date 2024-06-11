@@ -38,3 +38,5 @@ do_deploy:append() {
 	install -m 0644 ${WORKDIR}/cam-overlays ${DEPLOYDIR}/devicetree
 	tar czf ${DEPLOYDIR}/devicetrees.tgz *
 }
+
+DEPENDS += "autoconf-archive-native"
