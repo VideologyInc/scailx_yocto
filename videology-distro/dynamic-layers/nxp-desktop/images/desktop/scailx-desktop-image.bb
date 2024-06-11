@@ -47,7 +47,6 @@ IMAGE_INSTALL += "\
 	alsa-state \
     kernel-dev      \
     kernel-modules  \
-    kernel-devsrc   \
     go2rtc \
     libcogl \
 	clutter-gst-3.0 \
