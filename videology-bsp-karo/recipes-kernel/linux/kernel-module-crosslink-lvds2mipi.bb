@@ -1,23 +1,20 @@
 DESCRIPTION = "Kernel loadable module for Crosslink LVDS-MIPI converter"
 
-LICENSE = "CLOSED"
-LIC_FILES_CHKSUM = ""
+LICENSE = "GPL-2.0-or-later"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
-SRC_URI += "file://crosslink-cam.c;subdir=${S}"
-SRC_URI += "file://crosslink-i2c.c;subdir=${S}"
-SRC_URI += "file://crosslink-tty.c;subdir=${S}"
-SRC_URI += "file://crosslink.h;subdir=${S}"
-SRC_URI += "file://Makefile;subdir=${S}"
-SRC_URI += "file://crosslink_lvds_B1.bit"
-SRC_URI += "file://crosslink-serial.py"
+SRC_URI = "git://github.com/VideologyInc/kernel-module-crosslink.git;branch=master;protocol=https"
+SRCREV = "52df9f1bd9af242d0015b7e4bb88a21ab3f4228b"
+
+S = "${WORKDIR}/git"
 
 inherit module
 
 do_install:append(){
     install -d ${D}${base_bindir}/
-    install -m 0755 "${WORKDIR}/crosslink-serial.py" "${D}${base_bindir}/crosslink-serial.py"
+    install -m 0755 "${S}/crosslink-serial.py" "${D}${base_bindir}/crosslink-serial.py"
     install -d ${D}${nonarch_base_libdir}/firmware/
-    install -m 0644 "${WORKDIR}/crosslink_lvds_B1.bit" "${D}${nonarch_base_libdir}/firmware/crosslink_lvds_B1.bit"
+    install -m 0644 "${S}/crosslink_lvds_B1.bit" "${D}${nonarch_base_libdir}/firmware/crosslink_lvds_B1.bit"
 }
 
 FILES:${PN} += "${base_bindir}/"
