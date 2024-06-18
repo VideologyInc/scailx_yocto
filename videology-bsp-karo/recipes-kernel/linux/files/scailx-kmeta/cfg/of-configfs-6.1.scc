@@ -1,3 +1,0 @@
-define KFEATURE_DESCRIPTION "Kernel features for devicetree-configfs"
-patch lf-6.1/of-configfs.patch
-kconf non-hardware of-configfs.cfg

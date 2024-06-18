@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/linux-${LINUX_VERSION}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 # remove the NXP preocesses that clobber the defconfig.
 deltask copy_defconfig
