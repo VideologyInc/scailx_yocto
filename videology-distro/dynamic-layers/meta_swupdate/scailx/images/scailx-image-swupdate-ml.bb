@@ -54,6 +54,8 @@ IMAGE_INSTALL += " \
     kernel-module-crosslink-lvds2mipi \
     kernel-module-gs-ar0234 \
     python3-ar0234 \
+    imx-gpu-viv-tools \
+    imx-gpu-viv-demos \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
@@ -61,17 +63,22 @@ IMAGE_INSTALL += " \
     nodejs-npm \
     git \
     go2rtc \
+    imx-g2d-samples \
+    gputop \
     ser2net \
     ffmpeg \
     python3-pycairo \
     python3-pip \
     python3-periphery \
+    kernel-module-crosslink-lvds2mipi \
+    scailx-tflite-mobilenet-demo \
     ${DOCKER} \
 "
 
+# casaos
+
 CORE_IMAGE_EXTRA_INSTALL += " \
     packagegroup-core-full-cmdline \
-    packagegroup-self-hosted-sdk \
     packagegroup-imx-isp \
     packagegroup-imx-security \
     packagegroup-fsl-gstreamer1.0 \
