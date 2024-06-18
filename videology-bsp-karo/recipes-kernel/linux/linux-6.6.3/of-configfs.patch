@@ -1,25 +1,69 @@
-From b29bfce9a2df0b1112d9d387b2b2ac2c4dc964c8 Mon Sep 17 00:00:00 2001
+From 228890406ae64eda3f3fde8a5430e246cac07e97 Mon Sep 17 00:00:00 2001
 From: Kobus Goosen <kgoosen@videologyinc.com>
-Date: Wed, 3 May 2023 16:51:26 +0200
-Subject: [PATCH] add devicetree configfs
+Date: Wed, 12 Jun 2024 16:04:15 +0200
+Subject: [PATCH] OF: DT-Overlay configfs interface (v8) Add a runtime
+ interface to using configfs for generic device tree overlay usage. With it
+ its possible to use device tree overlays without having to use a per-platform
+ overlay manager.
 
 ---
- drivers/of/Kconfig    |  11 ++
- drivers/of/Makefile   |   1 +
- drivers/of/configfs.c | 294 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 306 insertions(+)
+ .../devicetree/configfs-overlays.txt          |  31 ++
+ drivers/of/Kconfig                            |  12 +
+ drivers/of/Makefile                           |   1 +
+ drivers/of/configfs.c                         | 294 ++++++++++++++++++
+ drivers/of/overlay.c                          |   3 +
+ 5 files changed, 341 insertions(+)
+ create mode 100644 Documentation/devicetree/configfs-overlays.txt
  create mode 100644 drivers/of/configfs.c
 
+diff --git a/Documentation/devicetree/configfs-overlays.txt b/Documentation/devicetree/configfs-overlays.txt
+new file mode 100644
+index 000000000000..5fa43e064307
+--- /dev/null
++++ b/Documentation/devicetree/configfs-overlays.txt
+@@ -0,0 +1,31 @@
++Howto use the configfs overlay interface.
++
++A device-tree configfs entry is created in /config/device-tree/overlays
++and and it is manipulated using standard file system I/O.
++Note that this is a debug level interface, for use by developers and
++not necessarily something accessed by normal users due to the
++security implications of having direct access to the kernel's device tree.
++
++* To create an overlay you mkdir the directory:
++
++	# mkdir /config/device-tree/overlays/foo
++
++* Either you echo the overlay firmware file to the path property file.
++
++	# echo foo.dtbo >/config/device-tree/overlays/foo/path
++
++* Or you cat the contents of the overlay to the dtbo file
++
++	# cat foo.dtbo >/config/device-tree/overlays/foo/dtbo
++
++The overlay file will be applied, and devices will be created/destroyed
++as required.
++
++To remove it simply rmdir the directory.
++
++	# rmdir /config/device-tree/overlays/foo
++
++The rationalle of the dual interface (firmware & direct copy) is that each is
++better suited to different use patterns. The firmware interface is what's
++intended to be used by hardware managers in the kernel, while the copy interface
++make sense for developers (since it avoids problems with namespaces).
 diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-index 80b5fd44ab1c..17cdc49cc2ea 100644
+index da9826accb1b..0d8cdc266a1a 100644
 --- a/drivers/of/Kconfig
 +++ b/drivers/of/Kconfig
-@@ -94,4 +94,15 @@ config OF_DMA_DEFAULT_COHERENT
- 	# arches should select this if DMA is coherent by default for OF devices
+@@ -102,4 +102,16 @@ config OF_OVERLAY
+ config OF_NUMA
  	bool
- 
+
 +config OF_CONFIGFS
 +	bool "Device Tree Overlay ConfigFS interface"
++	default n
 +	select CONFIGFS_FS
 +	depends on OF_OVERLAY
 +	help
@@ -28,15 +72,15 @@ index 80b5fd44ab1c..17cdc49cc2ea 100644
 +	  Say Y here to include this support.
 +
 +	  If unsure, say N.
-+	  
++
  endif # OF
 diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-index e0360a44306e..90c92ced24e6 100644
+index eff624854575..61bd05f08ca1 100644
 --- a/drivers/of/Makefile
 +++ b/drivers/of/Makefile
 @@ -1,6 +1,7 @@
  # SPDX-License-Identifier: GPL-2.0
- obj-y = base.o device.o platform.o property.o
+ obj-y = base.o cpu.o device.o module.o platform.o property.o
  obj-$(CONFIG_OF_KOBJ) += kobj.o
 +obj-$(CONFIG_OF_CONFIGFS) += configfs.o
  obj-$(CONFIG_OF_DYNAMIC) += dynamic.o
@@ -44,7 +88,7 @@ index e0360a44306e..90c92ced24e6 100644
  obj-$(CONFIG_OF_EARLY_FLATTREE) += fdt_address.o
 diff --git a/drivers/of/configfs.c b/drivers/of/configfs.c
 new file mode 100644
-index 000000000000..6d8f58e5cb5b
+index 000000000000..3839f14dc893
 --- /dev/null
 +++ b/drivers/of/configfs.c
 @@ -0,0 +1,294 @@
@@ -100,7 +144,7 @@ index 000000000000..6d8f58e5cb5b
 +	int err;
 +
 +	/* FIXME */
-+	err = of_overlay_fdt_apply(blob, overlay->dtbo_size, &overlay->ov_id);
++	err = of_overlay_fdt_apply(blob, overlay->dtbo_size, &overlay->ov_id, NULL);
 +	if (err < 0) {
 +		pr_err("%s: Failed to create overlay (err=%d)\n",
 +		       __func__, err);
@@ -342,6 +386,20 @@ index 000000000000..6d8f58e5cb5b
 +	return ret;
 +}
 +late_initcall(of_cfs_init);
--- 
+diff --git a/drivers/of/overlay.c b/drivers/of/overlay.c
+index a9a292d6d59b..aee4c4edd5ee 100644
+--- a/drivers/of/overlay.c
++++ b/drivers/of/overlay.c
+@@ -1245,6 +1245,9 @@ int of_overlay_remove(int *ovcs_id)
+ 		if (!ret)
+ 			ret = ret_tmp;
+
++	/* Wait for completion of call_rcu()'s */
++	rcu_barrier();
++
+ 	free_overlay_changeset(ovcs);
+
+ err_unlock:
+--
 2.34.1
 

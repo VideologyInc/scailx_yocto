@@ -1,15 +1,11 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
-
-SRC_URI += " file://defconfig"
-SRC_URI += " file://add-devicetree-configfs.patch"
-
-inherit kernel-initramfs-compress
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:${THISDIR}/linux-${LINUX_VERSION}:"
 
 # remove the NXP preocesses that clobber the defconfig.
 deltask copy_defconfig
 deltask merge_delta_config
 
+SRC_URI:append = " file://scailx-kmeta;type=kmeta;destsuffix=scailx-kmeta "
 
-# do_compile:append() {
-#     "source/scripts/clang-tools/gen_compile_commands.py" -o "source/compile_commands.json"
-# }
+SRC_URI:append = " file://of-configfs.patch "
+
+PV:scailx = "${LINUX_VERSION}"
