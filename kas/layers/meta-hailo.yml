@@ -6,6 +6,11 @@ header:
 repos:
   meta-hailo:
     url: https://github.com/hailo-ai/meta-hailo.git
+    branch: mickledore
     layers:
       meta-hailo-accelerator:
       meta-hailo-libhailort:
+    patches:
+      patch0:
+        path: kas/layers/hailo-nanbield.patch
+        repo: scailx

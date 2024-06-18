@@ -1,0 +1,77 @@
+header:
+    version: 14
+
+target: core-image-minimal
+repos:
+  # fsl-community-bsp-base:
+  #   branch: master
+  #   commit: 84df0b1ff416c6739472f7f7eadff04fa90d38f6
+  #   url: https://github.com/Freescale/fsl-community-bsp-base
+  meta-arm:
+    branch: master
+    commit: 4d22f982bce8dff6f8c4d11845c47a4d39f961c6
+    url: https://git.yoctoproject.org/meta-arm
+    layers:
+      meta-arm-toolchain: ''
+      meta-arm: ''
+  meta-browser:
+    branch: ''
+    commit: dc31889c0899971def535dc1c040edf18bc16691
+    url: https://github.com/OSSystems/meta-browser
+
+  meta-clang:
+    branch: master
+    commit: 9b08495e6bcef524789aefb6a7cc80fdfd2ff409
+    url: https://github.com/kraj/meta-clang
+  meta-freescale:
+    branch: master
+    commit: 0a73d1bdd7713a6189482e463c98043c9939a2a2
+    url: https://github.com/Freescale/meta-freescale
+  # meta-freescale-3rdparty:
+  #   branch: master
+  #   commit: 7725256e3859b62f1ff201db7f2cf7026c17656d
+  #   url: https://github.com/Freescale/meta-freescale-3rdparty
+  meta-freescale-distro:
+    branch: master
+    commit: 4f1f101ebab5eb054bfbed10b247fc0547b30793
+    url: https://github.com/Freescale/meta-freescale-distro
+  meta-imx:
+    branch: nanbield-6.6.3-1.0.0
+    commit: refs/tags/rel_imx_6.6.3_1.0.0
+    url: https://github.com/nxp-imx/meta-imx
+    patches:
+      patch0:
+        path: kas/layers/meta-imx-chromium_compat.patch
+        repo: scailx
+  # meta-nxp-demo-experience:
+  #   branch: ''
+  #   commit: nanbield-6.6.3-1.0.0
+  #   url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
+  meta-openembedded:
+    branch: nanbield
+    commit: 1750c66ae8e4268c472c0b2b94748a59d6ef866d
+    layers:
+      meta-filesystems: ''
+      meta-multimedia: ''
+      meta-networking: ''
+    url: https://github.com/openembedded/meta-openembedded
+  # meta-qt6:
+  #   branch: 6.5.3
+  #   commit: fd054cf5fc1b50d50cd606384ab338c6d9206437
+  #   url: https://code.qt.io/yocto/meta-qt6
+  meta-security:
+    branch: master
+    commit: 070a1e82cc59424d230a23c0b2a104b01fbaa2ad
+    url: https://git.yoctoproject.org/meta-security
+  # meta-timesys:
+  #   branch: master
+  #   commit: a0c1f045016fd54406888f3750c1355188ffed63
+  #   url: https://github.com/TimesysGit/meta-timesys
+  meta-virtualization:
+    branch: nanbield
+    commit: 9e92984ff47b3ca2106b1d27a93af061b28d1e8a
+    url: https://git.yoctoproject.org/meta-virtualization
+  poky:
+    branch: nanbield
+    commit: 046b70083f3bc9e25f547e8026400032f5c563d9
+    url: https://git.yoctoproject.org/poky

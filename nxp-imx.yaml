@@ -35,11 +35,12 @@ repos:
 
   meta-imx:
     url: https://github.com/nxp-imx/meta-imx
-    branch: mickledore-6.1.55-2.2.0
     layers:
-      meta-bsp: ''
-      meta-ml: ''
-      meta-sdk: ''
+      meta-imx-bsp:
+      meta-imx-cockpit: 0
+      meta-imx-ml:
+      meta-imx-sdk:
+      meta-imx-v2x: 0
 
   meta-virtualization:
     url: https://git.yoctoproject.org/meta-virtualization

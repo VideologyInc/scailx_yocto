@@ -26,7 +26,7 @@ OPENCV_PKGS:imxgpu = " \
 "
 
 # DOCKER ?= "podman podman-compose catatonit fuse-overlayfs podman-tui"
-DOCKER ?= "docker-ce python3-docker-compose fuse-overlayfs "
+DOCKER ?= "docker docker-compose fuse-overlayfs "
 
 # slirp4netns
 
@@ -57,7 +57,6 @@ IMAGE_INSTALL += " \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
-    casaos \
     nodejs \
     nodejs-npm \
     git \

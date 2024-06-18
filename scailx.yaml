@@ -10,9 +10,10 @@ header:
   includes:
     - nxp-imx.yaml
     # - nxp-desktop.yaml
-    - kas/mickledore.yml
+    - kas/nanbield.yml
     # - lf-6.1.55-2.2.0-mickledore.yaml
-    - lf-6.1.22-2.0.0-mickledore.yaml
+    # - lf-6.1.22-2.0.0-mickledore.yaml
+    - lf-6.6.3_1.0.0-nanbield.yaml
     - kas/go-lts-mixins.yml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
