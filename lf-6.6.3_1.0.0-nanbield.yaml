@@ -24,7 +24,7 @@ repos:
     commit: 9b08495e6bcef524789aefb6a7cc80fdfd2ff409
     url: https://github.com/kraj/meta-clang
   meta-freescale:
-    branch: master
+    branch: nanbield
     commit: 0a73d1bdd7713a6189482e463c98043c9939a2a2
     url: https://github.com/Freescale/meta-freescale
   # meta-freescale-3rdparty:

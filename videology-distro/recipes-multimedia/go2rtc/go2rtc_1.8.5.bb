@@ -43,7 +43,7 @@ do_install:append(){
     rm -rf ${D}${bindir}/go2rtc_*
 }
 
-RDEPENDS:${PN} += "python3-core"
+RDEPENDS:${PN} += "python3-core python3-pyyaml"
 FILES:${PN} += "${bindir}/go2rtc ${systemd_system_unitdir}/system ${confdir}"
 INSANE_SKIP:${PN} += "already-stripped"
 INHIBIT_PACKAGE_STRIP = "1"
