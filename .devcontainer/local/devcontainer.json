@@ -4,8 +4,7 @@
 	"name": "local",
 	"build": { "dockerfile": "../Dockerfile" },
 	"features": {
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
-		"ghcr.io/devcontainers-contrib/features/git-lfs:1": {}
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
 
 	// Configure tool-specific properties.
@@ -16,6 +15,7 @@
 	},
 	"mounts": [
 		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
+		"source=${localWorkspaceFolder}/.vscode/.bash_history,target=/home/vscode/.bash_history,type=bind",
         "source=/etc/inputrc,target=/etc/inputrc,type=bind"
 	],
 	"workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
