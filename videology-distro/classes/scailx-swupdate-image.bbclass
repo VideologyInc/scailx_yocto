@@ -54,7 +54,7 @@ IMAGE_INSTALL += " \
 
 
 IMAGE_INSTALL:append:ubuntu = " \
-    swupdate libarchive libcurl swupdate-www swupdate-config \
+    swupdate swupdate-www swupdate-config \
     scailx-ssh-keys \
     volatile-binds \
     scailx-mounts-boot \
@@ -152,6 +152,6 @@ do_swuimage[stamp-extra-info] = "${IMAGE_LINK_NAME}"
 # SWUPDATE_CMS_KEY : this is the file with the private key used in signing process using CMS mechanism. It is available if SWUPDATE_SIGNING is set to CMS.
 # SWUPDATE_CMS_CERT : this is the file with the certificate used in signing process using CMS method. It is available if SWUPDATE_SIGNING is set to CMS.
 # SWUPDATE_AES_FILE : this is the file with the AES password to encrypt artifact. A new fstype is supported by the class (type: enc). SWUPDATE_AES_FILE is generated as output from openssl to create a new key with
-SWUPDATE_SIGNING = "CMS"
-SWUPDATE_CMS_KEY = "${SCAILX_SCRIPTS_DIRS}/swu_cert.key.pem"
-SWUPDATE_CMS_CERT = "${WORKDIR}/swu_cert.cert.pem"
+# SWUPDATE_SIGNING = "CMS"
+# SWUPDATE_CMS_KEY = "${SCAILX_SCRIPTS_DIRS}/swu_cert.key.pem"
+# SWUPDATE_CMS_CERT = "${WORKDIR}/swu_cert.cert.pem"

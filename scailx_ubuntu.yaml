@@ -19,7 +19,7 @@ machine: scailx-imx8mp-desktop
 local_conf_header:
   nxp-desktop: |
     # Switch to rpm packaging to avoid rootfs build break
-    PACKAGE_CLASSES = "package_rpm"
+    PACKAGE_CLASSES = "package_rpm package_deb"
     # Set user account and password
     #APTGET_ADD_USERS = "user:password:shell"
     #  format 'name:password:shell'.

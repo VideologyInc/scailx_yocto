@@ -12,6 +12,12 @@ source ~/.bashrc
 
 [ -e "/work/share/scailx-ppa-key-pass.txt" ] && export PACKAGE_FEED_GPG_PASSPHRASE_FILE="/work/share/scailx-ppa-key-pass.txt"
 
+# if PACKAGE_FEED_GPG_PASSPHRASE in env, create a tmp file with its content
+if [ -n "$SCAILX_PACKAGE_FEED_GPG_PASSPHRASE" ]; then
+    echo "$SCAILX_PACKAGE_FEED_GPG_PASSPHRASE" > /tmp/scailx-ppa-key-pass.txt
+    export PACKAGE_FEED_GPG_PASSPHRASE_FILE="/tmp/scailx-ppa-key-pass.txt"
+fi
+
 KAS_WORK_DIR=`pwd`
 # workdir from input if entered else use current
 if [ "$1" ]; then

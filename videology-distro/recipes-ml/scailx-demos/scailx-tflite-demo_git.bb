@@ -9,7 +9,8 @@ S = "${WORKDIR}/git"
 
 inherit python3native
 
-RDEPENDS:${PN} += "python3-opencv tensorflow-lite gstreamer1.0-python gstreamer1.0-rtsp-server imx-gst1.0-plugin libgstrtspserver-1.0 tensorflow-lite-vx-delegate"
+RDEPENDS:${PN} += " tensorflow-lite  gstreamer1.0-rtsp-server imx-gst1.0-plugin libgstrtspserver-1.0 tensorflow-lite-vx-delegate"
+RRECOMMENDS:${PN} = "python3-opencv gstreamer1.0-python"
 
 RM_WORK_EXCLUDE += "${PN}"
 

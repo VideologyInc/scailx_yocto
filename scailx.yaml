@@ -12,7 +12,7 @@ header:
     # - kas/nanbield.yml
     # - lf-6.6.3_1.0.0-nanbield.yaml
     - nxp-imx-mickledore.yaml
-    - nxp-desktop.yaml
+    - kas/mickledore.yml
     - lf-6.1.55-2.2.1-mickledore.yaml
     # - lf-6.1.22-2.0.0-mickledore.yaml
     - kas/go-lts-mixins.yml

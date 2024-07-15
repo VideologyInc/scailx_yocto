@@ -1,23 +1,26 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
 {
-	"name": "local",
-	"build": { "dockerfile": "../Dockerfile" },
-	"features": {
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
-		"ghcr.io/devcontainers-contrib/features/git-lfs:1": {}
-	},
+    "name": "local",
+    "build": { "dockerfile": "../Dockerfile" },
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/devcontainers-contrib/features/git-lfs:1": {}
+    },
 
-	// Configure tool-specific properties.
-	"customizations": {
-		"vscode": {
-		"extensions": ["yocto-project.yocto-bitbake", "mhutchie.git-graph", "mads-hartmann.bash-ide-vscode", "natqe.reload", "jinsihou.diff-tool", "ms-python.python" ]
-		}
-	},
-	"mounts": [
-		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
+    // Configure tool-specific properties.
+    "customizations": {
+        "vscode": {
+        "extensions": ["yocto-project.yocto-bitbake", "mhutchie.git-graph", "mads-hartmann.bash-ide-vscode", "natqe.reload", "jinsihou.diff-tool", "ms-python.python" ]
+        }
+    },
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
         "source=/etc/inputrc,target=/etc/inputrc,type=bind"
-	],
-	"workspaceMount": "source=${localWorkspaceFolder}/../,target=${localWorkspaceFolder}/../,type=bind",
-	"workspaceFolder": "${localWorkspaceFolder}"
+    ],
+    "containerEnv": {
+        "SCAILX_PACKAGE_FEED_GPG_PASSPHRASE": "${localEnv:SCAILX_PACKAGE_FEED_GPG_PASSPHRASE}"
+    },
+    "workspaceMount": "source=${localWorkspaceFolder}/../,target=${localWorkspaceFolder}/../,type=bind",
+    "workspaceFolder": "${localWorkspaceFolder}"
 }

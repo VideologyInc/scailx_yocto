@@ -14,12 +14,16 @@ IMAGE_LINGUAS = ""
 NO_RECOMMENDATIONS = "1"
 MACHINE_FEATURES = ""
 
+RM_WORK_EXCLUDE += "${PN}"
+
 # This must be added first as it provides the foundation for
 # subsequent modifications to the rootfs
 IMAGE_INSTALL += "\
 	ubuntu-base \
 	ubuntu-base-dev \
 "
+
+IMAGE_INSTALL += "swupdate-src swupdate-dev"
 
 ##############################################################################
 # NOTE: We cannot install arbitrary Yocto packages as they will
@@ -38,3 +42,6 @@ IMAGE_INSTALL += " \
 IMAGE_INSTALL:append:mx8mp-nxp-bsp = " \
     isp-imx \
 "
+
+# AI demo
+IMAGE_INSTALL += " scailx-tflite-demo "
