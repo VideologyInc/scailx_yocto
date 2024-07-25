@@ -34,7 +34,7 @@ IMAGE_INSTALL += " \
     pyvidctrl \
     avahi-services-ssh \
     avahi-services-sftp \
-    scailx-systemd-watchdog \
+    scailx-systemd-config \
     scailx-monitor \
 "
 

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 14
+
+repos:
+  meta-karo-nxp:
+    url: https://github.com/karo-electronics/meta-karo-nxp.git
+    commit: "mickledore"

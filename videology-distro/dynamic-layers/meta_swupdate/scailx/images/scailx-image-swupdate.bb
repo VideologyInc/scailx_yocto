@@ -32,6 +32,6 @@ IMAGE_INSTALL += " \
 #Drivers
 IMAGE_INSTALL += " kernel-module-crosslink-lvds2mipi "
 
-DOCKER ?= "docker-ce python3-docker-compose fuse-overlayfs "
+DOCKER ?= "docker docker-compose fuse-overlayfs "
 # slirp4netns
 

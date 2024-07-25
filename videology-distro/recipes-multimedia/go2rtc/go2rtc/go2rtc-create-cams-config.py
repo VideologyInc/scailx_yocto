@@ -22,7 +22,9 @@ with open('/tmp/cam_config.yaml', 'w') as f:
         #     config['streams'][f'cam{idn}_1080p'] = f"exec:gst-launch-1.0 -q v4l2src device=/dev/video{idn} ! video/x-raw,width=1920,height=1080,framerate=60/1 ! vpuenc_h264 bitrate=32000 ! fdsink"
         #     config['streams'][f'cam{idn}_720p']  = f"exec:gst-launch-1.0 -q v4l2src device=/dev/video{idn} ! video/x-raw,width=1280,height=720,framerate=60/1 ! vpuenc_h264 bitrate=16000 ! fdsink"
         # else:
-        config['streams'][f'{cam}_1080p'] = f"exec:gst-launch-1.0 -q v4l2src device=/dev/video{idn} ! video/x-raw,width=1920,height=1080,framerate=60/1 ! vpuenc_h264 bitrate=32000 ! fdsink"
-        config['streams'][f'{cam}_720p']  = f"exec:gst-launch-1.0 -q v4l2src device=/dev/video{idn} ! video/x-raw,width=1280,height=720,framerate=60/1 ! vpuenc_h264 bitrate=16000 ! fdsink"
+        
+        # VPU quality settings: qp above35 gives a grainy image. Below 20 the bitrate starts getting excessive.
+        config['streams'][f'{cam}_1080p'] = f"exec:gst-launch-1.0 -q v4l2src device=/dev/video{idn} ! video/x-raw,width=1920,height=1080,framerate=60/1 ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink"
+        config['streams'][f'{cam}_720p']  = f"exec:gst-launch-1.0 -q v4l2src device=/dev/video{idn} ! video/x-raw,width=1280,height=720,framerate=60/1  ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink"
 
     yaml.dump(config, f)

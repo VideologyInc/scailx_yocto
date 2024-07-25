@@ -16,6 +16,8 @@ SRC_URI = " \
 	file://dts/freescale/scailx-imx8mp-cam1-os08a20.dts \
 	file://dts/freescale/scailx-imx8mp-cam0-ov5640.dts \
 	file://dts/freescale/scailx-imx8mp-cam1-ov5640.dts \
+	file://dts/freescale/scailx-imx8mp-cam0-none.dts \
+	file://dts/freescale/scailx-imx8mp-cam1-none.dts \
 	file://dts/freescale/scailx_karo_gpio_a_spi_overlay.dts \
 	file://dts/freescale/scailx_karo_gpio_b_spi_overlay.dts \
 	file://dts/freescale/scailx-imx8mp-cam0-vid_isp_ar0234.dts \
@@ -38,3 +40,5 @@ do_deploy:append() {
 	install -m 0644 ${WORKDIR}/cam-overlays ${DEPLOYDIR}/devicetree
 	tar czf ${DEPLOYDIR}/devicetrees.tgz *
 }
+
+DEPENDS += "autoconf-archive-native"

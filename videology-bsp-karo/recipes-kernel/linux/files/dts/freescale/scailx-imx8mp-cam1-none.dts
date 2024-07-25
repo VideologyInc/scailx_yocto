@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+/*
+ * Copyright (C) 2023 VideologyInc
+ *
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/clock/imx8mp-clock.h>
+#include <dt-bindings/gpio/gpio.h>
+
+&mipi_csi_1 {
+	status = "disabled";
+};
+
+&isi_1 {
+	status = "disabled";
+	cap_device {
+		status = "disabled";
+	};
+};
+

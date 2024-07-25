@@ -1,0 +1,5 @@
+deb [trusted=yes] https://scailx-ppa.org/6.1.55/deb/scailx_imx8mp/ ./
+deb [trusted=yes] https://scailx-ppa.org/6.1.55/deb/armv8a-mx8mp/ ./
+deb [trusted=yes] https://scailx-ppa.org/6.1.55/deb/armv8a/ ./
+deb [trusted=yes] https://scailx-ppa.org/6.1.55/deb/all/ ./
+

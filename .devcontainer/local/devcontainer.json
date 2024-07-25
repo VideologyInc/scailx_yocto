@@ -4,14 +4,7 @@
 	"name": "local",
 	"build": { "dockerfile": "../Dockerfile" },
 	"features": {
-		"ghcr.io/devcontainers/features/conda:1": {},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {
-			"moby": true,
-			"installDockerBuildx": true,
-			"installDockerComposeSwitch": true,
-			"version": "latest",
-			"dockerDashComposeVersion": "latest"
-		}
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
 
 	// Configure tool-specific properties.
@@ -22,8 +15,14 @@
 	},
 	"mounts": [
 		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
+		"source=${localWorkspaceFolder}/.vscode/.bash_history,target=/home/vscode/.bash_history,type=bind",
+		"source=${localEnv:HOME}/.gnupg/trustdb.gpg,target=/home/vscode/.gnupg/trustdb.gpg,type=bind",
+		"source=${localEnv:HOME}/.gnupg/public-keys.d,target=/home/vscode/.gnupg/public-keys.d,type=bind",
         "source=/etc/inputrc,target=/etc/inputrc,type=bind"
 	],
+    "containerEnv": {
+        "SCAILX_PACKAGE_FEED_GPG_PASSPHRASE": "${localEnv:SCAILX_PACKAGE_FEED_GPG_PASSPHRASE}"
+    },
 	"workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
 	"workspaceFolder": "${localWorkspaceFolder}"
 }

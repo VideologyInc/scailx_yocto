@@ -1,0 +1,67 @@
+# create release
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [kas]
+    types:
+      - completed
+
+jobs:
+  create_release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifacts (outputs)
+        uses: actions/download-artifact@v4
+        with:
+          name: scailx-images-${{ github.sha }}
+          path: outputs
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          OUTPUTS_NAME=${GITHUB_REPOSITORY##*/}-$GITHUB_REF_NAME-outputs.zip
+          cd outputs && zip -r ../$OUTPUTS_NAME *; cd ..
+          tree || :
+          gh release delete --repo $GITHUB_REPOSITORY $GITHUB_REF_NAME -y || :
+          gh release create --generate-notes --repo $GITHUB_REPOSITORY $GITHUB_REF_NAME $OUTPUTS_NAME
+
+
+    # steps:
+    #   - name: Upload artifacts
+    #     uses: actions/upload-artifact@v2
+    #     with:
+    #       name: release-artifacts
+    #       path: ${{ github.workspace }}/path/to/artifacts
+
+    #   - name: Create release
+    #     id: create_release
+    #     uses: actions/create-release@v1
+    #     env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     with:
+    #       tag_name: ${{ github.ref }}
+    #       release_name: Release ${{ github.ref }}
+    #       body: |
+    #         This is the release for tag ${{ github.ref }}
+    #       draft: false
+    #       prerelease: false
+
+    #   - name: Download artifacts
+    #     uses: actions/download-artifact@v2
+    #     with:
+    #       name: release-artifacts
+    #       path: ${{ github.workspace }}/path/to/download
+
+    #   - name: Publish release
+    #     uses: actions/upload-release-asset@v1
+    #     env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     with:
+    #       upload_url: ${{ steps.create_release.outputs.upload_url }}
+    #       asset_path: ${{ github.workspace }}/path/to/download/*
+    #       asset_name: release-assets.zip
+    #       asset_content_type: application/zip

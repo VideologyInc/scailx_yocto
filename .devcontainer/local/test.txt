@@ -1,0 +1,3 @@
+"source=${localEnv:HOME}/.gnupg/trustdb.gpg,target=/home/vscode/.gnupg/trustdb.gpg,type=bind",
+		"source=${localEnv:XDG_RUNTIME_DIR}/gnupg/S.gpg-agent,target=${containerEnv:XDG_RUNTIME_DIR}/gnupg/S.gpg-agent,type=bind",
+		"source=${localEnv:HOME}/.gnupg/pubring.kbx,target=/home/vscode/.gnupg/pubring.kbx,type=bind",

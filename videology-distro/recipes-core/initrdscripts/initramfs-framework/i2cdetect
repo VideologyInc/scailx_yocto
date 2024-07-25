@@ -31,6 +31,16 @@ function get_slot
     [ "$CURRENT_SLOT" = "1" ] || CURRENT_SLOT="0";
 }
 
+get_cam_overlay() {
+    CAM_OVERLAYS=$1
+    i2c_name=$2
+    cat $CAM_OVERLAYS | while read -r line || [[ -n "$line" ]]; do
+        addr=$(echo $line | awk '{ print $1 }')
+        cam_type=$(echo $line | awk '{ print $2 }')
+        if i2cget -y "$i2c_name" "$addr" 0x00 > /dev/null 2>&1; then echo $cam_type; break; fi
+    done
+}
+
 i2cdetect_run() {
     # get named gpios
     GPIOS=$(gpioinfo | awk '{ print $3}' | grep '\"*\"' | tr -d '"')
@@ -64,24 +74,18 @@ i2cdetect_run() {
     [ -f "/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays" ] && CAM_OVERLAYS="/boot/bsp${CURRENT_SLOT}/devicetree/cam-overlays"
  
     # prime the I2C busses for any slaves that need a few clock pulses
-    for i2c in /dev/i2c_names/csi*i2c; do i2cget -a -y "$(cat $i2c)" 0x7f; done
+    for i2c in /dev/i2c_names/csi*i2c; do i2cget -a -y "$(cat $i2c)" 0x7f 2>/dev/null; done
     
-    cat $CAM_OVERLAYS | while read -r line || [[ -n "$line" ]]; do
-        addr=$(echo $line | awk '{ print $1 }')
-        overlay=$(echo $line | awk '{ print $2 }')
-
-        for i in 0 1 2 3 4 5; do
-            i2c_name=$(strings "/dev/i2c_names/csi${i}_i2c" 2> /dev/null) || continue
-            if i2cget -y "$i2c_name" "$addr" 0x00 > /dev/null 2>&1; then
-                info "Found camera $i on i2c bus $i2c_name at address $addr. loading overlay $overlay"
-                # load the overlay
-                mkdir -p "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}"
-                cat "/boot/bsp${CURRENT_SLOT}/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo" || \
-                cat "/boot/bsp${CURRENT_SLOT}/devicetree/*cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo"
-            else
-                debug "No camera ${overlay} $i found on i2c bus $i2c_name at address $addr"
-            fi
-        done
+    for i in 0 1 2 3 4 5; do
+        i2c_name=$(strings "/dev/i2c_names/csi${i}_i2c" 2> /dev/null) || continue
+        overlay=$(get_cam_overlay $CAM_OVERLAYS $i2c_name)
+        [ -z "$overlay" ] && overlay="none.dtbo"
+        
+        info "Loading camera overlay $overlay for CSI-$i on i2c bus $i2c_name at address $addr"
+        # load the overlay
+        mkdir -p "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}"
+        cat "/boot/bsp${CURRENT_SLOT}/devicetree/${MACHINE}-cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo" || \
+        cat "/boot/bsp${CURRENT_SLOT}/devicetree/*cam${i}-${overlay}" > "/sys/kernel/config/device-tree/overlays/${MACHINE}-cam${i}-${overlay%.*}/dtbo"
     done
 
     # look for i2c devices

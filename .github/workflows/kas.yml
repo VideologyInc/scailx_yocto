@@ -1,0 +1,100 @@
+# ---------------------------------------------------------------------------
+# CI workflows for scailx based on pure kas workflow
+# ---------------------------------------------------------------------------
+#
+# This software is a part of Scailx
+# Copyright (C) 2023 Videology Inc
+#
+# ---------------------------------------------------------------------------
+# SPDX-License-Identifier: MIT
+# ---------------------------------------------------------------------------
+
+name: kas build
+
+on:
+  push:
+
+env:
+  RELEASE: nanbield
+  PACKAGE_FEED_GPG_PASSPHRASE_FILE: /tmp/pkgfeed_password_file
+  BB_GENERATE_MIRROR_TARBALLS: 0
+  BB_ENV_PASSTHROUGH_ADDITIONS: BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE
+
+jobs:
+  kas-ci:
+    name: Build kas/ci targets
+    runs-on: ubuntu-jammy-16c
+    # runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      # - name: Free Disk Space
+      #   uses: ./.github/workflows/free-disk-space
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.PKGFEED_GPG_PRIVATEKEY }}
+          passphrase: ${{ secrets.PKGFEED_GPG_PASSWORD }}
+      - run:
+          mkdir -p `dirname "$PACKAGE_FEED_GPG_PASSPHRASE_FILE"` && echo "${{ secrets.PKGFEED_GPG_PASSWORD }}" > $PACKAGE_FEED_GPG_PASSPHRASE_FILE
+      - name: import ssh key for private repos
+        run: |
+          eval `ssh-agent -s`
+          ssh-add - <<< '${{ secrets.DEPLOY_KEY }}'
+          ssh-add - <<< '${{ secrets.DEPLOY_KEY2 }}'
+      - name: install yocto dependencies
+        run: |
+          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install gawk wget git git-lfs diffstat unzip texinfo gcc build-essential chrpath socat cpio python3-pexpect xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev pylint xterm python3-subunit mesa-common-dev zstd liblz4-tool file
+          sudo pip3 install --no-input kas
+          sudo rm /bin/sh && sudo ln -s bash /bin/sh
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        # env:
+        #   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONFIG }}
+      - name: fetch cache
+        run: |
+          if rclone lsd scailx-storage:actions-cache/$RELEASE/cache; then
+            echo found cache $RELEASE
+            rclone copy scailx-storage:actions-cache/$RELEASE/cache ./cache
+            cat ./cache/c.tar.* | tar xvf - -C ./ || echo untar failed
+            rm -rf ./cache
+          else
+            No cache $RELEASE
+          fi
+      # - name: sync sstate
+      #   run: |
+      #     mkdir -p ./build/sstate-cache
+      #     rclone sync scailx-storage:scailx-jammy/$RELEASE/sstate-cache ./build/sstate-cache --transfers 64
+      - name: Build yocto
+        env:
+            KAS_ALLOW_ROOT: yes
+        run: |
+          kas build --target linux-imx                "scailx_$RELEASE.yaml"    || echo "yocto build failed"
+          kas build --target scailx-image-swuodate-ml "scailx_$RELEASE.yaml"    || echo "yocto build failed"
+          kas build --target package-index            "scailx_$RELEASE.yaml"    || echo "yocto build failed"
+      - name: save sstate
+        run: |
+          rm -rf build/downloads/git2
+          mkdir -p cache
+          tar -cf - build/sstate-cache | split -b 50M - cache/c.tar.
+          rclone sync ./cache/ scailx-storage:actions-cache/$RELEASE/cache2 --transfers 64
+          # rclone sync ./build/sstate-cache scailx-storage:scailx-jammy/$RELEASE/sstate-cache --transfers 64
+      - name: upload packages to ppa
+        run: |
+          rclone copy build/deploy/deb/ scailx-storage:scailx-jammy/$RELEASE/deb
+      - name: List artifacts
+        run: |
+          ls -la ./
+          ls -la build/deploy/images/scailx-imx8mp/
+      - name: Upload images
+        uses: actions/upload-artifact@v4
+        with:
+          name: scailx-images-${{ github.sha }}
+          path: |
+            build/deploy/images/scailx-imx8mp/*uuu.zip
+            build/deploy/images/scailx-imx8mp/*.swu
+            build/deploy/images/scailx-imx8mp/*.docker-archive.xz
+            build/deploy/images/scailx-imx8mp/*.oci.tar
+

@@ -8,3 +8,6 @@ bitbake-cookerdaemon.log
 # meta-*/
 # poky/
 *ctags*
+.vscode/.bash_history
+.secrets
+cache/

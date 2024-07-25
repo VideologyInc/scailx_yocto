@@ -1,0 +1,33 @@
+From a47c1e80c9092b9e3df7f3b9f05ac542c65ccb93 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Mon, 10 Jun 2024 13:39:10 +0200
+Subject: [PATCH] nanbield
+
+---
+ meta-hailo-accelerator/conf/layer.conf | 2 +-
+ meta-hailo-libhailort/conf/layer.conf  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/meta-hailo-accelerator/conf/layer.conf b/meta-hailo-accelerator/conf/layer.conf
+index 3679954..72d346c 100644
+--- a/meta-hailo-accelerator/conf/layer.conf
++++ b/meta-hailo-accelerator/conf/layer.conf
+@@ -10,4 +10,4 @@ BBFILE_PATTERN_meta-hailo-accelerator = "^${LAYERDIR}/"
+ BBFILE_PRIORITY_meta-hailo-accelerator = "8"
+ 
+ LAYERDEPENDS_meta-hailo-accelerator = "core"
+-LAYERSERIES_COMPAT_meta-hailo-accelerator = "mickledore"
++LAYERSERIES_COMPAT_meta-hailo-accelerator = "mickledore nanbield"
+diff --git a/meta-hailo-libhailort/conf/layer.conf b/meta-hailo-libhailort/conf/layer.conf
+index 7a79570..fc0d431 100644
+--- a/meta-hailo-libhailort/conf/layer.conf
++++ b/meta-hailo-libhailort/conf/layer.conf
+@@ -10,4 +10,4 @@ BBFILE_PATTERN_meta-hailo-libhailort = "^${LAYERDIR}/"
+ BBFILE_PRIORITY_meta-hailo-libhailort = "8"
+ 
+ LAYERDEPENDS_meta-hailo-libhailort = "core"
+-LAYERSERIES_COMPAT_meta-hailo-libhailort = "mickledore"
++LAYERSERIES_COMPAT_meta-hailo-libhailort = "mickledore nanbield"
+-- 
+2.34.1
+

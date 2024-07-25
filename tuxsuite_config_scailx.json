@@ -1,11 +1,11 @@
 {
   "container": "ubuntu-22.04",
-  "artifacts": [ "*/deploy/deb", "*/deploy/images" ],
+  "artifacts": ["deploy/images"],
   "sources": {
     "kas": {
       "url": "https://github.com/VideologyInc/scailx_yocto.git",
       "yaml": "scailx.yaml",
-      "branch": "master"
+      "branch": "dev4"
     }
   }
 }

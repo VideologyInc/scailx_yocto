@@ -5,3 +5,5 @@ do_install() {
 }
 
 FILES:${PN} += "${nonarch_base_libdir}/firmware ${nonarch_base_libdir}/firmware/hailo/hailo8_fw*"
+
+LICENSE = "CLOSED"

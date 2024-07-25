@@ -1,0 +1,4 @@
+# vim: ft=udevrules
+
+# SUBSYSTEM=="video4linux", KERNEL=="v4l-subdev*", ATTRS{name}=="gs_ar0234*", SYMLINK+="links/%s{device/of_node/name}"
+SUBSYSTEM=="video4linux", KERNEL=="v4l-subdev*", SYMLINK+="links/%s{device/of_node/name}"

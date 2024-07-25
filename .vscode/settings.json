@@ -56,10 +56,10 @@
     ],
     "[python]": {
         "diffEditor.ignoreTrimWhitespace": false,
-        "copilotcontext.commentSymbol": "#",
-        "copilotcontext.languageFileExtension": ".py",
         "editor.formatOnType": true,
         "editor.wordBasedSuggestions": "off",
+        "copilotcontext.commentSymbol": "#",
+        "copilotcontext.languageFileExtension": ".py",
         "files.trimTrailingWhitespace": false
     },
     "[shellscript]": {

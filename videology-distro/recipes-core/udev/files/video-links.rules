@@ -1,0 +1,13 @@
+# CSI ISI Video Device
+ACTION=="add", SUBSYSTEM=="video4linux", ATTR{name}=="mxc_isi.0.capture", DRIVERS=="mxc-md",      SYMLINK+="video-isi-csi0"
+ACTION=="add", SUBSYSTEM=="video4linux", ATTR{name}=="mxc_isi.1.capture", DRIVERS=="mxc-md",      SYMLINK+="video-isi-csi1"
+
+# CSI ISP Video Device
+ACTION=="add", SUBSYSTEM=="video4linux", ATTR{name}=="viv_v4l20",         DRIVERS=="vvcam-video", SYMLINK+="video-isp-csi0"
+ACTION=="add", SUBSYSTEM=="video4linux", ATTR{name}=="viv_v4l21",         DRIVERS=="vvcam-video", SYMLINK+="video-isp-csi1"
+
+# VPU ENC/DEC M2M Video Device
+# ACTION=="add", SUBSYSTEM=="video4linux", KERNEL=="video*",                DRIVERS=="vsiv4l2",     SYMLINK+="video-vpu-$number"
+ACTION=="add", SUBSYSTEM=="video4linux", KERNEL=="video*",                DRIVERS=="vsiv4l2", \
+    PROGRAM="/bin/sh -c 'v4l2-ctl -d $number --info | grep \"Card type\" | sed -n -e \"s/.*vsi_v4l2//p\"'", ENV{ENCDEC}="%c", \
+    SYMLINK+="video-vpu-%E{ENCDEC}"

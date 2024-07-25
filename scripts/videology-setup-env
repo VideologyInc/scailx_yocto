@@ -7,8 +7,10 @@ source ~/.bashrc
 # 	export DL_DIR="/work/share/downloads"
 #     export SSTATE_DIR="/work/share/sstate-cache"
 #     # export PERSISTENT_DIR="/work/share/yocto_persistent"
-#     export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR"
+#     export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE"
 # fi
+
+[ -e "/work/share/scailx-ppa-key-pass.txt" ] && export PACKAGE_FEED_GPG_PASSPHRASE_FILE="/work/share/scailx-ppa-key-pass.txt"
 
 KAS_WORK_DIR=`pwd`
 # workdir from input if entered else use current

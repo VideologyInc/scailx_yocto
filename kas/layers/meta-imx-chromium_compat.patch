@@ -1,0 +1,24 @@
+From 508081301f39ea5201394ee5e3bc6c72e82d5ee5 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Mon, 10 Jun 2024 15:01:08 +0200
+Subject: [PATCH] chromium_compat
+
+---
+ meta-imx-bsp/conf/layer.conf | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/meta-imx-bsp/conf/layer.conf b/meta-imx-bsp/conf/layer.conf
+index f5f2f6e57f..823d8fe59f 100644
+--- a/meta-imx-bsp/conf/layer.conf
++++ b/meta-imx-bsp/conf/layer.conf
+@@ -14,7 +14,6 @@ LAYERSERIES_COMPAT_fsl-bsp-release = "mickledore nanbield"
+ MIRRORS += "http://sourceforge.net/.* http://www.nxp.com/lgfiles/updates/other"
+ 
+ # FIXME: Drop these lines when the external layers are marked compatible
+-LAYERSERIES_COMPAT_chromium-browser-layer:append = " langdale mickledore"
+ LAYERSERIES_COMPAT_imx-demo:append = " mickledore"
+ 
+ # Define new EULAs and add them to the list defined in meta-freescale.
+-- 
+2.34.1
+

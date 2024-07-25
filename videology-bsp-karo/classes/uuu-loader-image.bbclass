@@ -49,6 +49,7 @@ FB: ucmd env default -a
 FB: ucmd setenv bootdelay 1
 FB: ucmd saveenv
 FB: ucmd mmc partconf \${emmc_dev} \${emmc_boot_ack} 1 0
+FB: ucmd reset
 FB: done
 " > "${ZIP_FOLDER}/uuu.auto"
     zip -r -1 -j "${IMAGE_NAME}-uuu.zip" "${ZIP_FOLDER}"

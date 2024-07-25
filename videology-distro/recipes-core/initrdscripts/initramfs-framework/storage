@@ -37,6 +37,7 @@ storage_overlay_hook() {
         info "Clearing overlay"
         rm -rf /storage/overlay/upper/*
         rm -rf /storage/overlay/work/*
+        rm -rf /storage/containers/*
         rm -rf /storage/config/pre-clear-persist || debug "No pre-clear-persist to remove"
         mv -f /storage/config/persist /storage/config/pre-clear-persist
         rm -rf /storage/clear_overlay

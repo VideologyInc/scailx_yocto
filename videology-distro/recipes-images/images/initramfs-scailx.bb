@@ -64,3 +64,4 @@ IMAGE_OVERHEAD_FACTOR = "1.0"
 RM_WORK_EXCLUDE += "${PN}"
 
 OVERLAYFS_QA_SKIP[storage] = "mount-configured"
+IMAGE_NAME_SUFFIX ?= ""

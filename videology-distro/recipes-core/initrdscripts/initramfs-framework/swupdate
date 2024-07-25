@@ -2,7 +2,7 @@
 
 mkdir -p /tmp
 swupdate_enabled() {
-    for file in /run/media/*/*.swu; do
+    for file in /run/media/storage/*.swu; do
         if [ -f "$file" ]; then
             info "swupdate file found: $file"
             return 0
@@ -56,8 +56,8 @@ run_swupd() {
         info "Found swu file $file. Running swupdate"
         swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -i $file -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from media file failed"
     fi
-    dl_url="https://github.com/VideologyInc/scailx_yocto/releases/latest/download/scailx-image-swupdate-${hardware}.swu"
-    swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from URL failed"
+    # dl_url="https://github.com/VideologyInc/scailx_yocto/releases/latest/download/scailx-image-swupdate-${hardware}.swu"
+    # swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -d "--url $dl_url" -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from URL failed"
     swupdate -v -H ${hardware}:1.0 -f /etc/swupdate.cfg -e "$selection" -w ""              -p 'sync; echo b >/proc/sysrq-trigger' || msg "swupdate from web failed"
 }
 
