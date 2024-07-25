@@ -84,7 +84,7 @@ CORE_IMAGE_EXTRA_INSTALL:remove = " \
     packagegroup-fsl-tools-gpu-external \
 "
 
-TARGET_HOSTNAME ?= "scailx-zb"
+TARGET_HOSTNAME ?= "scailx-ai"
 
 ROOTFS_POSTPROCESS_COMMAND:append = " hostname_change; "
 hostname_change () {

@@ -83,7 +83,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     gstreamer1.0-python \
 "
 
-TARGET_HOSTNAME ?= "scailx-zb"
+TARGET_HOSTNAME ?= "scailx-ai"
 
 # Allow build with or without a specific kernel
 IMAGE_CONTAINER_NO_DUMMY = "1"

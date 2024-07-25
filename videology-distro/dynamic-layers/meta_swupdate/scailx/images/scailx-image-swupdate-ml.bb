@@ -86,7 +86,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'x11 wayland', 'weston-xwayland xterm', '', d)} \
 "
 
-TARGET_HOSTNAME ?= "scailx-zb"
+TARGET_HOSTNAME ?= "scailx-ai"
 
 ROOTFS_POSTPROCESS_COMMAND:append = " hostname_change; "
 hostname_change () {
