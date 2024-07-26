@@ -30,6 +30,10 @@ jobs:
         uses: actions/checkout@v4
       # - name: Free Disk Space
       #   uses: ./.github/workflows/free-disk-space
+      - id: scailx_version
+        run: |
+          SCAILX_VERSION=$(grep 'SCAILX_VERSION' scailx_$RELEASE.yaml | cut -d '=' -f2 | xargs)
+          echo "OUT=$SCAILX_VERSION" >> $GITHUB_OUTPUT
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
         with:
@@ -73,6 +77,7 @@ jobs:
         run: |
           kas build --target linux-imx                "scailx_$RELEASE.yaml"    || echo "yocto build failed"
           kas build --target scailx-image-swuodate-ml "scailx_$RELEASE.yaml"    || echo "yocto build failed"
+          kas build --target scailx-bootstrap-image   "scailx_$RELEASE.yaml"    || echo "yocto build failed"
           kas build --target package-index            "scailx_$RELEASE.yaml"    || echo "yocto build failed"
       - name: save sstate
         run: |
@@ -84,17 +89,10 @@ jobs:
       - name: upload packages to ppa
         run: |
           rclone copy build/deploy/deb/ scailx-storage:scailx-jammy/$RELEASE/deb
-      - name: List artifacts
+      - name: Copy outputs
         run: |
-          ls -la ./
-          ls -la build/deploy/images/scailx-imx8mp/
-      - name: Upload images
-        uses: actions/upload-artifact@v4
-        with:
-          name: scailx-images-${{ github.sha }}
-          path: |
-            build/deploy/images/scailx-imx8mp/*uuu.zip
-            build/deploy/images/scailx-imx8mp/*.swu
-            build/deploy/images/scailx-imx8mp/*.docker-archive.xz
-            build/deploy/images/scailx-imx8mp/*.oci.tar
-
+          mkdir release
+          SCAILX_VERSION=${{ steps.scailx_version.outputs.OUT }}
+          find ./deploy/images/scailx-imx8mp/ -maxdepth 1 -type f -not -type l -exec cp -ft ./release {} + &
+          wait
+          rclone copy ./release/ scailx-storage:scailx-jammy/$RELEASE/$SCAILX_VERSION/
