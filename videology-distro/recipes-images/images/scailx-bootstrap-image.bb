@@ -9,6 +9,8 @@ IMAGE_INSTALL = " karo-devicetrees "
 DEPENDS += "scailx-boot-script "
 export IMAGE_BASENAME = "scailx-bootstrap-image"
 
+IMAGE_NAME_SUFFIX ?= "-${SCAILX_VERSION}"
+
 IMAGE_FSTYPES = "uuuimg wic"
 
 # avoid circular dependencies
