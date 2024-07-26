@@ -71,7 +71,7 @@
     "bitbake.pathToBuildFolder": "${workspaceFolder}/build",
     "bitbake.pathToEnvScript": "${workspaceFolder}/scripts/host_native_env.sh",
     "bitbake.pathToBitbakeFolder": "${workspaceFolder}/poky/bitbake",
-    "bitbake.sdkImage": "scailx-image-swupdate-ml",
+    "bitbake.sdkImage": "scailx-ml",
     "task.saveBeforeRun": "always",
     "bitbake.sshTarget": "root@zoomblock-test.local",
     "search.useIgnoreFiles": false,

@@ -31,7 +31,7 @@ bblayers_conf_header:
 distro: scailx
 machine: scailx-imx8mp
 target:
-  - scailx-image-swupdate-ml
+  - scailx-ml
 
 local_conf_header:
   distro: |
