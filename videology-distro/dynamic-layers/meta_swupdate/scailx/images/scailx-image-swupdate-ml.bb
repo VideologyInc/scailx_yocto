@@ -58,7 +58,6 @@ IMAGE_INSTALL += " \
     packagegroup-imx-security \
     curl \
     go \
-    casaos \
     scailx-gst-plugins \
     scailx-ai-portal \
     nodejs \
