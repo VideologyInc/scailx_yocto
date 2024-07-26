@@ -25,3 +25,4 @@ do_install(){
 FILES:${PN} += "${prefix}/${PN}"
 inherit systemd
 SYSTEMD_SERVICE:${PN} = "scailx-ai-portal.service"
+SYSTEMD_AUTO_ENABLE = "disable"

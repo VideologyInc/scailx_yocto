@@ -59,6 +59,8 @@ IMAGE_INSTALL += " \
     curl \
     go \
     casaos \
+    scailx-gst-plugins \
+    scailx-ai-portal \
     nodejs \
     nodejs-npm \
     git \
