@@ -18,7 +18,7 @@ env:
   RELEASE: nanbield
   PACKAGE_FEED_GPG_PASSPHRASE_FILE: /tmp/pkgfeed_password_file
   BB_GENERATE_MIRROR_TARBALLS: 0
-  BB_ENV_PASSTHROUGH_ADDITIONS: BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE
+  BB_ENV_PASSTHROUGH_ADDITIONS: BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE BB_HASHSERVE_UPSTREAM SSTATE_MIRRORS
 
 jobs:
   kas-ci:
@@ -48,25 +48,23 @@ jobs:
           ssh-add - <<< '${{ secrets.DEPLOY_KEY2 }}'
       - name: install yocto dependencies
         run: |
-          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install gawk wget git git-lfs diffstat unzip texinfo gcc build-essential chrpath socat cpio python3-pexpect xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev pylint xterm python3-subunit mesa-common-dev zstd liblz4-tool file
+          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install gawk wget git git-lfs diffstat unzip texinfo gcc build-essential chrpath socat cpio python3-pexpect xz-utils debianutils \
+          iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev pylint xterm python3-subunit mesa-common-dev zstd liblz4-tool file fuse3 mergerfs
           sudo pip3 install --no-input kas
           sudo rm /bin/sh && sudo ln -s bash /bin/sh
       - name: Setup Rclone
-        uses: AnimMouse/setup-rclone@v1
-        # env:
-        #   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
+        env:
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
-      - name: fetch cache
         run: |
-          if rclone lsd scailx-storage:actions-cache/$RELEASE/cache; then
-            echo found cache $RELEASE
-            rclone copy scailx-storage:actions-cache/$RELEASE/cache ./cache
-            cat ./cache/c.tar.* | tar xvf - -C ./ || echo untar failed
-            rm -rf ./cache
-          else
-            No cache $RELEASE
-          fi
+          mkdir -p ~/.config/rclone
+          curl https://rclone.org/install.sh | bash
+          echo "$rclone_config" | base64 -d > ~/.config/rclone/rclone.conf
+          rclone version
+      - name: mount cache dir
+        uses: ./.github/workflows/bucket-mount
+        with:
+          MOUNT_PATH: ${{ github.workspace }}/build/bucket-cache
+          BUCKET_PATH: scailx-storage:scailx-jammy/${{ env.RELEASE }}/sstate-cache
       # - name: sync sstate
       #   run: |
       #     mkdir -p ./build/sstate-cache
@@ -75,24 +73,16 @@ jobs:
         env:
             KAS_ALLOW_ROOT: yes
         run: |
+          set -x
+          if [ -f ${{ github.workspace }}/build/bucket-cache/cache/hashserv.db ]; then
+            kas shell -c "bitbake-hashserv --read-only --bind :8987 --database ${{ github.workspace }}/build/bucket-cache/cache/hashserv.db &"
+            sleep 5
+            if lsof -i:8987; then
+              export BB_HASHSERVE_UPSTREAM="localhost:8987"
+              export SSTATE_MIRRORS="file://.* file://${{ github.workspace }}/build/bucket-cache/sstate-cache/PATH"
+            fi
+          fi
           kas build --target linux-imx                "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target scailx-image-swuodate-ml "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target scailx-bootstrap-image   "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target package-index            "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-      - name: save sstate
-        run: |
-          rm -rf build/downloads/git2
-          mkdir -p cache
-          tar -cf - build/sstate-cache | split -b 50M - cache/c.tar.
-          rclone sync ./cache/ scailx-storage:actions-cache/$RELEASE/cache2 --transfers 64
-          # rclone sync ./build/sstate-cache scailx-storage:scailx-jammy/$RELEASE/sstate-cache --transfers 64
-      - name: upload packages to ppa
-        run: |
-          rclone copy build/deploy/deb/ scailx-storage:scailx-jammy/$RELEASE/deb
-      - name: Copy outputs
-        run: |
-          mkdir release
-          SCAILX_VERSION=${{ steps.scailx_version.outputs.OUT }}
-          find ./deploy/images/scailx-imx8mp/ -maxdepth 1 -type f -not -type l -exec cp -ft ./release {} + &
-          wait
-          rclone copy ./release/ scailx-storage:scailx-jammy/$RELEASE/$SCAILX_VERSION/
+          # kas build --target scailx-image-swuodate-ml "scailx_$RELEASE.yaml"    || echo "yocto build failed"
+          # kas build --target scailx-bootstrap-image   "scailx_$RELEASE.yaml"    || echo "yocto build failed"
+          # kas build --target package-index            "scailx_$RELEASE.yaml"    || echo "yocto build failed"
