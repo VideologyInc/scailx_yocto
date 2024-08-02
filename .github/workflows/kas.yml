@@ -53,13 +53,11 @@ jobs:
           sudo pip3 install --no-input kas
           sudo rm /bin/sh && sudo ln -s bash /bin/sh
       - name: Setup Rclone
-        env:
+        uses: AnimMouse/setup-rclone@v1
+        # env:
+        #   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
-        run: |
-          mkdir -p ~/.config/rclone
-          curl https://rclone.org/install.sh | bash
-          echo "$rclone_config" | base64 -d > ~/.config/rclone/rclone.conf
-          rclone version
       - name: mount cache dir
         uses: ./.github/workflows/bucket-mount
         with:
