@@ -1,11 +1,15 @@
 # create release
 
+name: create release
+
 on:
   workflow_dispatch:
   workflow_run:
     workflows: [kas]
     types:
       - completed
+env:
+  RELEASE: nanbield
 
 jobs:
   create_release:

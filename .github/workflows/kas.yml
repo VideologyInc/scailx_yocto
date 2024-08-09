@@ -70,29 +70,30 @@ jobs:
       # - name: sync sstate
       #   run: |
       #     mkdir -p ./build/sstate-cache
-      #     rclone sync scailx-storage:scailx-jammy/$RELEASE/sstate-cache ./build/sstate-cache --transfers 64
+      #     rclone sync scailx-storage:scailx-ppa/$RELEASE/sstate-cache ./build/sstate-cache --transfers 64
       - name: Build yocto
         env:
             KAS_ALLOW_ROOT: yes
         run: |
-          kas build --target linux-imx                "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target scailx-image-swuodate-ml "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target scailx-bootstrap-image   "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target package-index            "scailx_$RELEASE.yaml"    || echo "yocto build failed"
+          kas build --target linux-imx                 "scailx_$RELEASE.yaml"
+          kas build --target scailx-ml                 "scailx_$RELEASE.yaml"
+          kas build --target scailx-bootstrap-image    "scailx_$RELEASE.yaml"
+          kas build --target scailx-ml -c populate-sdk "scailx_$RELEASE.yaml"
+          kas build --target package-index             "scailx_$RELEASE.yaml"
       - name: save sstate
         run: |
           rm -rf build/downloads/git2
           mkdir -p cache
           tar -cf - build/sstate-cache | split -b 50M - cache/c.tar.
           rclone sync ./cache/ scailx-storage:actions-cache/$RELEASE/cache2 --transfers 64
-          # rclone sync ./build/sstate-cache scailx-storage:scailx-jammy/$RELEASE/sstate-cache --transfers 64
+          # rclone sync ./build/sstate-cache scailx-storage:scailx-ppa/$RELEASE/sstate-cache --transfers 64
       - name: upload packages to ppa
         run: |
-          rclone copy build/deploy/deb/ scailx-storage:scailx-jammy/$RELEASE/deb
+          rclone copy build/deploy/deb/ scailx-storage:scailx-ppa/$RELEASE/deb
       - name: Copy outputs
         run: |
           mkdir release
           SCAILX_VERSION=${{ steps.scailx_version.outputs.OUT }}
-          find ./deploy/images/scailx-imx8mp/ -maxdepth 1 -type f -not -type l -exec cp -ft ./release {} + &
+          find build/deploy/images/ -maxdepth 2 -type f -not -type l -exec cp -ft ./release {} + &
           wait
-          rclone copy ./release/ scailx-storage:scailx-jammy/$RELEASE/$SCAILX_VERSION/
+          rclone copy ./release/ scailx-storage:scailx-ppa/$RELEASE/$SCAILX_VERSION/

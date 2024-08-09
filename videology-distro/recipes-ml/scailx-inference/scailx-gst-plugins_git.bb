@@ -4,13 +4,14 @@ SECTION = "multimedia"
 SRC_URI = "git://git@github.com/VideologyInc/scailx-embedded.git;protocol=ssh;branch=develop"
 
 # Modify these as desired
-PV = "0.1.0"
-SRCREV = "e9fbd5074b85bc2ca90540b79274b3f38bf33f81"
+PV = "24.08.1"
+SRCREV = "4e13190361bd229c6b39a37c439d3fab03e1a6a1"
 S = "${WORKDIR}/git"
 B = "${WORKDIR}/build"
 
 PKGCONFIG = "infer gstosd events test mqttsink apps"
-DEPENDS += "gstreamer1.0 opencv gstreamer1.0-plugins-bad libsoup-2.4 json-glib tensorflow-lite-vx-delegate paho-mqtt-c"
+DEPENDS += "gstreamer1.0 opencv gstreamer1.0-plugins-bad libsoup-2.4 json-glib tensorflow-lite tensorflow-lite-vx-delegate tvm paho-mqtt-c flatbuffers flatbuffers-native protobuf protobuf-native"
+RDEPENDS:${PN} += "python3-core gstreamer1.0-plugins-bad-webrtc"
 
 inherit pkgconfig meson use-imx-headers
 
@@ -22,7 +23,9 @@ FILES:${PN} = "${libdir} ${bindir} ${datadir}"
 PACKAGES:remove = "${PN}-doc ${PN}-dev ${PN}-locale ${PN}-staticdev"
 
 RDEPENDS:${PN} += "python3-core"
-# FILES:${PN} += "${datadir}/${PN}"
+FILES:${PN} += "${datadir}/${PN}"
 # FILES:${PN}-dev = "${libdir}/pkgconfig"
 
 RM_WORK_EXCLUDE += "${PN}"
+
+# INSANE_SKIP:${PN} += "installed-vs-shipped"

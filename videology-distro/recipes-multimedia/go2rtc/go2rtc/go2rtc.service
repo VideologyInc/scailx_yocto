@@ -1,6 +1,6 @@
 [Unit]
 Description=go2rtc service
-After=network.target
+After=imx8-isp.service
 
 [Service]
 Restart=on-failure

@@ -118,6 +118,15 @@ do_add_scailx_version () {
 }
 IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_version;"
 
+do_add_scailx_packagefeed() {
+    for f in ${PACKAGE_ARCHS}; do
+        bbwarn "Adding scailx package feed for $f"
+        [ -d ${WORKDIR}/oe-rootfs-repo/$f ] || continue
+        echo "deb [trusted=yes] https://scailx-ppa.org/${DISTRO}/${DISTRO_VERSION}/deb/$f ./" >> ${IMAGE_ROOTFS}${sysconfdir}/apt/sources.list.d/scailx.list
+    done
+}
+IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_packagefeed;"
+
 # do_swuimage:append() {
 #     import libconf, io, json
 #     swd = os.path.join(d.getVar('S') ,'sw-description')

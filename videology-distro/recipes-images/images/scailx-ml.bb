@@ -40,6 +40,8 @@ IMAGE_INSTALL += " \
     gnupg \
     dtc \
     lsof \
+    meson \
+    gstreamer1.0-dev \
     i2c-tools \
     hailo-pci \
     hailo-firmware \
