@@ -35,7 +35,7 @@ target:
 
 local_conf_header:
   distro: |
-    SCAILX_VERSION="0.9.1"
+    SCAILX_VERSION="0.9.2"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
     DEPLOY_DIR = "${TOPDIR}/deploy"
