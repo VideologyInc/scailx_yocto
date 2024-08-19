@@ -130,8 +130,8 @@ jobs:
           name: build_${{ github.sha }}
           path: build_${{ github.sha }}.txt
 
-  transfer deploy:
-    name: Transfer deploy
+  transfer-deploy:
+    name: Transfer deploy artifacts
     runs-on: ubuntu-latest
     needs: kas-ci
     steps:
