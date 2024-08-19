@@ -47,53 +47,83 @@ jobs:
           eval `ssh-agent -s`
           ssh-add - <<< '${{ secrets.DEPLOY_KEY }}'
           ssh-add - <<< '${{ secrets.DEPLOY_KEY2 }}'
+      - name: install gh, locales
+        run: |
+          sudo mkdir -p -m 755 /etc/apt/keyrings
+          wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+          sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install locales gh
+          sudo locale-gen --purge "en_US.UTF-8"
+          sudo update-locale "LANG=en_US.UTF-8"
+          sudo dpkg-reconfigure --frontend noninteractive locales
       - name: install yocto dependencies
         run: |
-          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install gawk wget git git-lfs diffstat unzip texinfo gcc build-essential chrpath socat cpio python3-pexpect xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev pylint xterm python3-subunit mesa-common-dev zstd liblz4-tool file
+          export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install locales gawk wget git git-lfs diffstat unzip texinfo gcc build-essential chrpath socat cpio python3-pexpect xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa libsdl1.2-dev pylint xterm python3-subunit mesa-common-dev zstd liblz4-tool file
           sudo pip3 install --no-input kas
           sudo rm /bin/sh && sudo ln -s bash /bin/sh
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
-        # env:
-        #   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
-      - name: fetch cache
+      - id: bbvars
         run: |
-          if rclone lsd scailx-storage:actions-cache/$RELEASE/cache; then
-            echo found cache $RELEASE
-            rclone copy scailx-storage:actions-cache/$RELEASE/cache ./cache
-            cat ./cache/c.tar.* | tar xvf - -C ./ || echo untar failed
-            rm -rf ./cache
-          else
-            No cache $RELEASE
-          fi
-      # - name: sync sstate
-      #   run: |
-      #     mkdir -p ./build/sstate-cache
-      #     rclone sync scailx-storage:scailx-jammy/$RELEASE/sstate-cache ./build/sstate-cache --transfers 64
-      - name: Build yocto
-        env:
-            KAS_ALLOW_ROOT: yes
+          DISTRO_VERSION=$(kas shell -c "bitbake-getvar --value DISTRO_VERSION")
+          SCAILX_VERSION=$(kas shell -c "bitbake-getvar --value SCAILX_VERSION")
+          DISTRO=$(kas shell -c "bitbake-getvar --value DISTRO")
+          echo "DISTRO_VERSION=$DISTRO_VERSION"
+          echo "SCAILX_VERSION=$SCAILX_VERSION"
+          echo "DISTRO=$DISTRO"
+          echo "DISTRO_VERSION=$DISTRO_VERSION" >> $GITHUB_OUTPUT
+          echo "SCAILX_VERSION=$SCAILX_VERSION" >> $GITHUB_OUTPUT
+          echo "DISTRO=$DISTRO" >> $GITHUB_OUTPUT
+      - name: mount deploy dir
+        uses: ./.github/workflows/bucket-mount
+        with:
+          NAME: deploy
+          MOUNT_PATH: ${{ github.workspace }}/build/deploy
+          BUCKET_PATH: scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}
+      - name: mount cache dir
+        uses: ./.github/workflows/bucket-mount
+        with:
+          NAME: sstate
+          MOUNT_PATH: ${{ github.workspace }}/build/sstate-cache
+          BUCKET_PATH: scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/sstate-cache
+      - name: copy sstate db
         run: |
-          kas build --target linux-imx                "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target scailx-image-swuodate-ml "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target scailx-bootstrap-image   "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-          kas build --target package-index            "scailx_$RELEASE.yaml"    || echo "yocto build failed"
-      - name: save sstate
+          [ -f ${{ github.workspace }}/build/sstate-cache/cache/hashserv.db ] && cp -r ${{ github.workspace }}/build/sstate-cache/cache ${{ github.workspace }}/build/
+      - name: Build kernel
         run: |
-          rm -rf build/downloads/git2
-          mkdir -p cache
-          tar -cf - build/sstate-cache | split -b 50M - cache/c.tar.
-          rclone sync ./cache/ scailx-storage:actions-cache/$RELEASE/cache2 --transfers 64
-          # rclone sync ./build/sstate-cache scailx-storage:scailx-jammy/$RELEASE/sstate-cache --transfers 64
-      - name: upload packages to ppa
+          kas build --target linux-imx                 "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+          kas build --target scailx-bootstrap-image    "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+      - name: build image
+        run : |
+          kas build --target scailx-ml                 "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+      - name: build big container for ppa-packages
         run: |
-          rclone copy build/deploy/deb/ scailx-storage:scailx-jammy/$RELEASE/deb
-      - name: Copy outputs
+          kas build --target scailx-builder-container  "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+      - name: build package index
         run: |
-          mkdir release
-          SCAILX_VERSION=${{ steps.scailx_version.outputs.OUT }}
-          find ./deploy/images/scailx-imx8mp/ -maxdepth 1 -type f -not -type l -exec cp -ft ./release {} + &
-          wait
-          rclone copy ./release/ scailx-storage:scailx-jammy/$RELEASE/$SCAILX_VERSION/
+          kas build --target package-index             "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+      - name: build sdk
+        run: |
+          kas build --target scailx-ml -c populate-sdk "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+      - name: restore sstate db
+        run: |
+          [ -f ${{ github.workspace }}/build/cache/hashserv.db ] && cp -fr ${{ github.workspace }}/build/cache/* ${{ github.workspace }}/build/sstate-cache/cache/
+      - name: tag release
+        run: |
+          touch build_${{ github.sha }}.txt
+          echo "SCAILX_VERSION=${{ steps.bbvars.outputs.SCAILX_VERSION }}" >> build_${{ github.sha }}.txt
+          echo "DISTRO_VERSION=${{ steps.bbvars.outputs.DISTRO_VERSION }}" >> build_${{ github.sha }}.txt
+          echo "BUILD_DATE=$(date)" >> build_${{ github.sha }}.txt
+          echo "TARGET_IMAGE=scailx-ml" >> build_${{ github.sha }}.txt
+          echo "DISTRO=${{ steps.bbvars.outputs.DISTRO }}" >> build_${{ github.sha }}.txt
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build_${{ github.sha }}
+          path: build_${{ github.sha }}.txt
+      - name: upload release to bucket
+        run: |
+          rclone copy build_${{ github.sha }}.txt scailx-storage:scailx-ppa/release/

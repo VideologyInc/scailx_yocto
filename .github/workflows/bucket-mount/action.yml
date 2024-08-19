@@ -1,0 +1,40 @@
+name: 'Mount bucket folder '
+description: 'mount s3 compatible bucket folder to from rclone config in the working dir. unmount it at the end.'
+inputs:
+  MOUNT_PATH:
+    description: 'folder to mount the buck to '
+    default: mountpoint
+  BUCKET_PATH:
+    description: 'bucket name:path as in rclone confing'
+    default: bucket:path/folder
+  NAME:
+    description: 'name of the mount'
+    default: mount
+
+runs:
+  using: "composite"
+  steps:
+    - name:  install dependencies
+      shell: bash
+      run: |
+        if command -v fusermount &> /dev/null; then
+          echo "fusermount is available"
+        else
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y mergerfs fuse3
+        fi
+    - id: mount_bucket
+      uses: pyTooling/Actions/with-post-step@v0.4.5
+      env:
+        MOUNT_PATH: ${{ inputs.MOUNT_PATH }}
+        BUCKET_PATH: ${{ inputs.BUCKET_PATH }}
+        MOUNT_FLAGS: "--log-file=rclone_mnt_log_${{ inputs.NAME }} --daemon --no-modtime --umask 002 --dir-cache-time 24h --buffer-size 512M --transfers 64 --vfs-fast-fingerprint --vfs-cache-mode full --vfs-cache-max-age 240h --vfs-read-chunk-size 128M --vfs-read-chunk-size-limit 1G --allow-non-empty --cache-dir=vfs_cache_${{ inputs.NAME }} --vfs-refresh --use-mmap"
+      with:
+        main: |
+          mkdir -p $MOUNT_PATH
+          mkdir -p vfs_cache_${{ inputs.NAME }}
+          echo "running rclone mount $BUCKET_PATH $MOUNT_PATH $MOUNT_FLAGS"
+          rclone mount $BUCKET_PATH $MOUNT_PATH $MOUNT_FLAGS
+        post: |
+          cat rclone_mnt_log_${{ inputs.NAME }}
+          fusermount -uz ${{ inputs.MOUNT_PATH }} || true
