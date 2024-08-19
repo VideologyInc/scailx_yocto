@@ -132,7 +132,7 @@ jobs:
 
   transfer deploy:
     name: Transfer deploy
-    runs-on: ubuntu-jammy-16c
+    runs-on: ubuntu-latest
     needs: kas-ci
     steps:
       - name: Checkout
@@ -148,4 +148,4 @@ jobs:
       - name: transfer deploy
         run: |
           source build_${{ github.sha }}.txt
-          rclone copyto scailx-storage:scailx-ppa/${{ DISTRO_VERSION }}/deploy_${{ github.sha }} scailx-storage:scailx-ppa/${{ DISTRO_VERSION }}/deploy --transfers 64 -M --no-update-dir-modtime --no-update-modtime --multi-thread-streams 64 --inplace --fast-list
+          rclone copyto scailx-storage:scailx-ppa/$DISTRO_VERSION/deploy_${{ github.sha }} scailx-storage:scailx-ppa/$DISTRO_VERSION/deploy --transfers 64 -M --no-update-dir-modtime --no-update-modtime --multi-thread-streams 64 --inplace --fast-list
