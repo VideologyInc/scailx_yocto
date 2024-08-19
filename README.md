@@ -17,22 +17,22 @@ git clone git@github.com:VideologyInc/scailx_yocto.git
 cd scailx_yocto
 
 # build using kas
-kas build scailx.yaml
+kas build
 ```
 To enter the bitbake environment to perform other bitbake tasks, use `kas shell`:
 ```
 kas shell scailx.yaml
-bitbake linux-imx scailx-image <or some other recipe>
+bitbake linux-imx scailx-ml <or some other recipe>
 ```
 
 ## Containerized Build
 The easiest containerized build is by using [vscode devcontainers]([url](https://code.visualstudio.com/docs/devcontainers/containers)). 
 
-Note that Devcontainer build will not work under windows, as devcontainers on windows mount the NTFS filesystem in the devcontainer, and this will fail with Yocto as it needs a journal-fs with permissions for OS creation. If you wish to build in Windows, use a [WSL2 device with ample vdisc space]([url](https://ejaaskel.dev/yocto-on-wsl2-easier-than-you-think/)) (>512GB) not mounted on your system (C:) drive. Tis is  
+Note that Devcontainer build will not work under windows, as devcontainers on windows mount the NTFS filesystem in the devcontainer, and this will fail with Yocto as it needs a journal-fs with permissions for OS creation. If you wish to build in Windows, use a [WSL2 device with ample vdisc space]([url](https://ejaaskel.dev/yocto-on-wsl2-easier-than-you-think/)) (>512GB) not mounted on your system (C:) drive.   
 
 1. Make sure Docker is [installed and properly configured for your host system]([url](https://docs.docker.com/engine/install/)).
 2. Clone the repo
-3. Open in visual-studio-code
+3. Open in [visual-studio-code]([url](https://code.visualstudio.com/))
 4. Open in devcontainer -> local 
 5. Run kas build as noted above. 
 
@@ -40,5 +40,5 @@ Note that Devcontainer build will not work under windows, as devcontainers on wi
 ```
 git stash
 git switch -C master origin/master
-kas build --force-checkout scailx.yaml
+kas build --force-checkout 
 ```
