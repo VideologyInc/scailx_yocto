@@ -41,9 +41,9 @@ IMAGE_INSTALL += " \
     dtc \
     lsof \
     i2c-tools \
+    pyhailort \
     hailo-pci \
     hailo-firmware \
-    amazon-kvs-producer-sdk-cpp \
     v4l-utils \
     v4l2loopback \
     v4l2loopback-utils \
@@ -57,14 +57,12 @@ IMAGE_INSTALL += " \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
-    go \
     scailx-gst-plugins \
     scailx-ai-portal \
     nodejs \
     nodejs-npm \
     git \
     go2rtc \
-    imx-g2d-samples \
     gputop \
     ser2net \
     ffmpeg \

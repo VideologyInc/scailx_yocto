@@ -35,9 +35,14 @@ IMAGE_INSTALL = " \
 IMAGE_INSTALL += " \
     packagegroup-fsl-gstreamer1.0 \
     packagegroup-imx-ml \
+    packagegroup-fsl-tools-gpu \
     packagegroup-fsl-opencv-imx \
 "
-IMAGE_INSTALL += "packagegroup-self-hosted-sdk"
+IMAGE_INSTALL += " \
+    packagegroup-self-hosted-sdk \
+    packagegroup-rust-sdk-target \
+    packagegroup-self-hosted-graphics \
+"
 
 # Add opencv for i.MX GPU
 OPENCV_PKGS       ?= ""
@@ -57,10 +62,13 @@ IMAGE_INSTALL += " \
     nodejs \
     nodejs-npm \
     go \
+    htop \
     i2c-tools \
     pyhailort \
     hailortcli \
     amazon-kvs-producer-sdk-cpp \
+    imx-g2d-samples \
+    imx-m7-demos \
     python3-pyserial \
     gst-variable-rtsp-server \
     python3-ar0234 \

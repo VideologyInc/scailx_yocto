@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-EnvironmentFile=/usr/scail-ai-portal/.env
-WorkingDirectory=/usr/scail-ai-portal/.env
+# EnvironmentFile=/usr/scail-ai-portal/.env
+WorkingDirectory=/usr/scail-ai-portal
 ExecStartPre=/bin/sleep 5
 ExecStart=node /usr/scail-ai-portal/server.js
 Restart=on-failure

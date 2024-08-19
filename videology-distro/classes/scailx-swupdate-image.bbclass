@@ -49,6 +49,8 @@ IMAGE_INSTALL:append:ubuntu = " \
 
 APTGET_EXTRA_PACKAGES += " u-boot-tools "
 
+IMAGE_NAME_SUFFIX ?= "-${SCAILX_VERSION}-img"
+
 IMAGE_FSTYPES = "squashfs"
 
 do_fetch[depends] += "virtual/bootloader:do_deploy"
