@@ -77,12 +77,12 @@ jobs:
           echo "DISTRO_VERSION=$DISTRO_VERSION" >> $GITHUB_OUTPUT
           echo "SCAILX_VERSION=$SCAILX_VERSION" >> $GITHUB_OUTPUT
           echo "DISTRO=$DISTRO" >> $GITHUB_OUTPUT
-      - name: mount deploy dir
+      - name: mount deploy-deb dir
         uses: ./.github/workflows/bucket-mount
         with:
           NAME: deploy
-          MOUNT_PATH: ${{ github.workspace }}/build/deploy
-          BUCKET_PATH: scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}
+          MOUNT_PATH: ${{ github.workspace }}/build/deploy/deb
+          BUCKET_PATH: scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/deb
       - name: mount cache dir
         uses: ./.github/workflows/bucket-mount
         with:
@@ -94,23 +94,29 @@ jobs:
           [ -f ${{ github.workspace }}/build/sstate-cache/cache/hashserv.db ] && cp -r ${{ github.workspace }}/build/sstate-cache/cache ${{ github.workspace }}/build/
       - name: Build kernel
         run: |
-          kas build --target linux-imx                 "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
-          kas build --target scailx-bootstrap-image    "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+          kas build --target linux-imx                 "scailx_$RELEASE.yaml"
+          kas build --target scailx-bootstrap-image    "scailx_$RELEASE.yaml"
       - name: build image
         run : |
-          kas build --target scailx-ml                 "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+          kas build --target scailx-ml                 "scailx_$RELEASE.yaml"
       - name: build big container for ppa-packages
         run: |
-          kas build --target scailx-builder-container  "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+          kas build --target scailx-builder-container  "scailx_$RELEASE.yaml"
       - name: build package index
         run: |
-          kas build --target package-index             "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+          kas build --target package-index             "scailx_$RELEASE.yaml"
       - name: build sdk
         run: |
-          kas build --target scailx-ml -c populate-sdk "scailx_$RELEASE.yaml" || cat build/tmp/log/cooker/scailx-imx8mp/console-latest.log
+          kas build --target scailx-ml -c populate-sdk "scailx_$RELEASE.yaml"
       - name: restore sstate db
         run: |
           [ -f ${{ github.workspace }}/build/cache/hashserv.db ] && cp -fr ${{ github.workspace }}/build/cache/* ${{ github.workspace }}/build/sstate-cache/cache/
+      - name: save images and sdk
+        run: |
+          rclone copy ${{ github.workspace }}/build/deploy/images scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/images --transfers 64 --checkers 64 &
+          rclone copy ${{ github.workspace }}/build/deploy/sdk scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/sdk --transfers 64 --checkers 64 &
+          rclone copy ${{ github.workspace }}/build/tmp scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/tmp --transfers 64 --checkers 64 &
+          wait
       - name: tag release
         run: |
           touch build_${{ github.sha }}.txt
@@ -124,6 +130,3 @@ jobs:
         with:
           name: build_${{ github.sha }}
           path: build_${{ github.sha }}.txt
-      - name: upload release to bucket
-        run: |
-          rclone copy build_${{ github.sha }}.txt scailx-storage:scailx-ppa/release/
