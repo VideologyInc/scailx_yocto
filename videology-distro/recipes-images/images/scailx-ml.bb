@@ -57,8 +57,6 @@ IMAGE_INSTALL += " \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
-    scailx-gst-plugins \
-    scailx-ai-portal \
     nodejs \
     nodejs-npm \
     git \
@@ -72,6 +70,8 @@ IMAGE_INSTALL += " \
     kernel-module-crosslink-lvds2mipi \
     ${DOCKER} \
 "
+
+IMAGE_INSTALL += " ${@bb.utils.contains('SCAILX_SOURCES', 'yes', 'scailx-gst-plugins scailx-ai-portal', '', d)} "
 
 CORE_IMAGE_EXTRA_INSTALL += " \
     packagegroup-core-full-cmdline \
