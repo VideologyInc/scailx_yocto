@@ -15,6 +15,6 @@ do_install:append () {
 	rm -rf ${D}/www/images/logo.png
 }
 
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"
 
 DEPENDS += "util-linux e2fsprogs"

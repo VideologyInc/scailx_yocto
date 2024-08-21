@@ -9,4 +9,4 @@ link_default_dtb () {
     fi
 }
 
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"

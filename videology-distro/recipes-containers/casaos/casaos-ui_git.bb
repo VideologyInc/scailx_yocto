@@ -25,6 +25,6 @@ do_install(){
 
 RDEPENDS:${PN} = "bash"
 
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"
 
 INSANE_SKIP:${PN} += "file-rdeps"

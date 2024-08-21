@@ -22,7 +22,7 @@ inherit go-mod
 
 FILES:${PN} += "${bindir}/go2rtc"
 
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"
 
 SRC_URI += "file://go2rtc.yaml"
 SRC_URI += "file://go2rtc.service"

@@ -11,7 +11,7 @@ S = "${WORKDIR}/git"
 
 RDEPENDS:${PN} += "nodejs python3-core scailx-gst-plugins python3-websockets"
 
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"
 
 do_install(){
     install -d ${D}${systemd_system_unitdir}

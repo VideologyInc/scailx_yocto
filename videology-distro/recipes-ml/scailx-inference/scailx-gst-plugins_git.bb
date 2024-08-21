@@ -26,6 +26,6 @@ RDEPENDS:${PN} += "python3-core"
 FILES:${PN} += "${datadir}/${PN}"
 # FILES:${PN}-dev = "${libdir}/pkgconfig"
 
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"
 
 # INSANE_SKIP:${PN} += "installed-vs-shipped"

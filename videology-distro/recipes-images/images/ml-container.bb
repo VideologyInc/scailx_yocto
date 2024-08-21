@@ -14,7 +14,7 @@ IMAGE_FEATURES = ""
 IMAGE_LINGUAS = ""
 NO_RECOMMENDATIONS = "1"
 
-RM_WORK_EXCLUDE += " ${PN}"
+# RM_WORK_EXCLUDE += " ${PN}"
 
 OVERLAYFS_QA_SKIP[storage] = "mount-configured"
 MACHINE_FEATURES = ""

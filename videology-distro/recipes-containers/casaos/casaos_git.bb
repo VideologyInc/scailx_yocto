@@ -59,6 +59,6 @@ FILES_${PN} += "${sysconfdir}/casaos ${bindir} ${systemd_system_unitdir} ${datad
 
 INSANE_SKIP:${PN} += "already-stripped"
 
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"
 
 # INSANE_SKIP:${PN} += "file-rdeps"

@@ -6,4 +6,4 @@ SRCREV ="4ec17748e893018c54d3d5bdb9d88674c95482a6"
 S = "${WORKDIR}/git"
 
 PV = "0.1.29"
-RM_WORK_EXCLUDE += "${PN}"
+# RM_WORK_EXCLUDE += "${PN}"
