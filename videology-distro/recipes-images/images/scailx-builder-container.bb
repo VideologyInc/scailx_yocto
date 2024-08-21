@@ -36,6 +36,7 @@ IMAGE_INSTALL += " \
     packagegroup-fsl-gstreamer1.0 \
     packagegroup-imx-ml \
     packagegroup-fsl-tools-gpu \
+    packagegroup-fsl-tools-benchmark \
     packagegroup-fsl-opencv-imx \
 "
 IMAGE_INSTALL += " \
@@ -69,6 +70,8 @@ IMAGE_INSTALL += " \
     amazon-kvs-producer-sdk-cpp \
     imx-g2d-samples \
     imx-m7-demos \
+    imx-gpu-viv-tools \
+    imx-gpu-viv-demos \
     python3-pyserial \
     gst-variable-rtsp-server \
     python3-ar0234 \
@@ -90,6 +93,11 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     packagegroup-meta-python \
     gstreamer1.0-python \
 "
+
+do_add_scailx_version () {
+    echo "${SCAILX_VERSION}" > ${IMAGE_ROOTFS}${sysconfdir}/scailx-version
+}
+IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_version;"
 
 TARGET_HOSTNAME ?= "scailx-ai"
 

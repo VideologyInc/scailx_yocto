@@ -52,8 +52,6 @@ IMAGE_INSTALL += " \
     kernel-module-crosslink-lvds2mipi \
     kernel-module-gs-ar0234 \
     python3-ar0234 \
-    imx-gpu-viv-tools \
-    imx-gpu-viv-demos \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
