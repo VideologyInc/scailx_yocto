@@ -1,0 +1,50 @@
+From cb77f2de7716a7e1e23216383bef0e5f795babe5 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Wed, 21 Aug 2024 13:50:00 +0200
+Subject: [PATCH] remove g_print from vpu
+
+---
+ plugins/vpu/gstvpudecobject.c | 8 ++++----
+ plugins/vpu/gstvpuenc.c       | 8 ++++----
+ 2 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/plugins/vpu/gstvpudecobject.c b/plugins/vpu/gstvpudecobject.c
+index 3280c6b..5922976 100644
+--- a/plugins/vpu/gstvpudecobject.c
++++ b/plugins/vpu/gstvpudecobject.c
+@@ -321,11 +321,11 @@ gst_vpu_dec_object_start (GstVpuDecObject * vpu_dec_object)
+         gst_vpu_dec_object_strerror(ret));
+   }
+ 
+-  g_print("====== VPUDEC: %s build on %s %s. ======\n",  (VERSION),__DATE__,__TIME__);;
+-  g_print("\twrapper: %d.%d.%d (%s)\n", wrapper_version.nMajor, wrapper_version.nMinor, 
++  GST_INFO_OBJECT (vpu_dec_object, "====== VPUDEC: %s build on %s %s. ======\n",  (VERSION),__DATE__,__TIME__);;
++  GST_INFO_OBJECT (vpu_dec_object, "\twrapper: %d.%d.%d (%s)\n", wrapper_version.nMajor, wrapper_version.nMinor,
+     wrapper_version.nRelease, (wrapper_version.pBinary? wrapper_version.pBinary:"unknow"));
+-  g_print("\tvpulib: %d.%d.%d\n", version.nLibMajor, version.nLibMinor, version.nLibRelease);
+-  g_print("\tfirmware: %d.%d.%d.%d\n", version.nFwMajor, version.nFwMinor, version.nFwRelease, version.nFwCode);
++  GST_INFO_OBJECT (vpu_dec_object, "\tvpulib: %d.%d.%d\n", version.nLibMajor, version.nLibMinor, version.nLibRelease);
++  GST_INFO_OBJECT (vpu_dec_object, "\tfirmware: %d.%d.%d.%d\n", version.nFwMajor, version.nFwMinor, version.nFwRelease, version.nFwCode);
+ 
+   /* mem_info contains information about how to set up memory blocks
+    * the VPU uses as temporary storage (they are "work buffers") */
+diff --git a/plugins/vpu/gstvpuenc.c b/plugins/vpu/gstvpuenc.c
+index 39b0ba0..78e00ee 100755
+--- a/plugins/vpu/gstvpuenc.c
++++ b/plugins/vpu/gstvpuenc.c
+@@ -622,11 +622,11 @@ gst_vpu_enc_start (GstVideoEncoder * benc)
+         gst_vpu_enc_strerror(ret));
+   }
+ 
+-  g_print("====== VPUENC: %s build on %s %s. ======\n",  (VERSION),__DATE__,__TIME__);
+-  g_print("\twrapper: %d.%d.%d (%s)\n", wrapper_version.nMajor, wrapper_version.nMinor, 
++  GST_INFO_OBJECT (enc, "====== VPUENC: %s build on %s %s. ======\n",  (VERSION),__DATE__,__TIME__);
++  GST_INFO_OBJECT (enc, "\twrapper: %d.%d.%d (%s)\n", wrapper_version.nMajor, wrapper_version.nMinor,
+     wrapper_version.nRelease, (wrapper_version.pBinary? wrapper_version.pBinary:"unknow"));
+-  g_print("\tvpulib: %d.%d.%d\n", version.nLibMajor, version.nLibMinor, version.nLibRelease);
+-  g_print("\tfirmware: %d.%d.%d.%d\n", version.nFwMajor, version.nFwMinor, version.nFwRelease, version.nFwCode);
++  GST_INFO_OBJECT (enc, "\tvpulib: %d.%d.%d\n", version.nLibMajor, version.nLibMinor, version.nLibRelease);
++  GST_INFO_OBJECT (enc, "\tfirmware: %d.%d.%d.%d\n", version.nFwMajor, version.nFwMinor, version.nFwRelease, version.nFwCode);
+ 
+ 
+   /* mem_info contains information about how to set up memory blocks
