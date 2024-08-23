@@ -43,6 +43,7 @@ jobs:
       - id: scailx_version
         run: |
           SCAILX_VERSION=$(grep 'SCAILX_VERSION' scailx_$RELEASE.yaml | cut -d '=' -f2 | xargs)
+          ln -sf -T scailx_$RELEASE.yaml .config.yaml
           echo "OUT=$SCAILX_VERSION" >> $GITHUB_OUTPUT
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
