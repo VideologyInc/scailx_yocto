@@ -191,6 +191,15 @@ gpio_b_usb_phy: &usb3_phy0{};
 	status = "okay";
 };
 
+&i2c2 {
+	/* RTC */
+	rv3028: rtc@52 	{
+		compatible = "microcrystal,rv3028";
+		reg = <0x52>;
+		trickle-resistor-ohms = <5000>;
+	};
+};
+
 &i2c3 {
 	gpio_expander: gpio@27 {
 		compatible = "nxp,pcal9535";
@@ -222,13 +231,6 @@ gpio_b_usb_phy: &usb3_phy0{};
 			"PWR-EN_CAM-B",
 			"Reserved_CAM-A",
 			"";
-	};
-
-	/* RTC */
-	rv3028: rtc@52 	{
-		compatible = "microcrystal,rv3028";
-		reg = <0x52>;
-		trickle-resistor-ohms = <5000>;
 	};
 
 	/* System power sensor */
