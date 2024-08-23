@@ -19,13 +19,11 @@ COMPATIBLE_MACHINE = "(mx8-nxp-bsp)"
 
 FILES:${PN} = "${libdir} ${bindir} ${datadir}"
 
-# INSANE_SKIP:${PN} += "installed-vs-shipped"
 PACKAGES:remove = "${PN}-doc ${PN}-dev ${PN}-locale ${PN}-staticdev"
+PACKAGE_DEBUG_SPLIT_STYLE = 'debug-without-src'
 
 RDEPENDS:${PN} += "python3-core"
 FILES:${PN} += "${datadir}/${PN}"
-# FILES:${PN}-dev = "${libdir}/pkgconfig"
 
 # RM_WORK_EXCLUDE += "${PN}"
 
-# INSANE_SKIP:${PN} += "installed-vs-shipped"
