@@ -63,6 +63,7 @@ IMAGE_INSTALL += " \
     nodejs \
     nodejs-npm \
     go \
+    fluentbit \
     htop \
     i2c-tools \
     pyhailort \
