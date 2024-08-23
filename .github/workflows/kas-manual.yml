@@ -112,7 +112,7 @@ jobs:
           BUCKET_PATH: scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/sstate-cache
       - name: copy sstate db
         run: |
-          [ -f ${{ github.workspace }}/build/sstate-cache/cache/hashserv.db ] && cp -r ${{ github.workspace }}/build/sstate-cache/cache ${{ github.workspace }}/build/
+          [ -f ${{ github.workspace }}/build/sstate-cache/cache/hashserv.db ] && cp -r ${{ github.workspace }}/build/sstate-cache/cache ${{ github.workspace }}/build/ || echo "no sstate db found"
       - name: build images
         run : |
           kas shell -c "bitbake ${{ inputs.images }}"  "scailx_${{ inputs.release }}.yaml"
