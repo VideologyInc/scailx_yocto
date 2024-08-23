@@ -9,12 +9,9 @@
 # SPDX-License-Identifier: MIT
 # ---------------------------------------------------------------------------
 
-name: kas build
+name: kas-manual
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
     inputs:
       release:
@@ -23,9 +20,20 @@ on:
         options:
           - nanbield
           - scarthgap
+      images:
+        type: string
+        description: 'yocto images to build'
+        default: 'scailx-ml scailx-bootstrap-image scailx-builder-container'
+      build_sdk:
+        type: boolean
+        description: 'Build SDK'
+        default: true
+      package_index:
+        type: boolean
+        description: 'Build package index'
+        default: true
 
 env:
-  RELEASE: nanbield
   LANG: "en_US.UTF-8"
   KAS_ALLOW_ROOT: yes
   PACKAGE_FEED_GPG_PASSPHRASE_FILE: /tmp/pkgfeed_password_file
@@ -34,15 +42,18 @@ env:
   SCAILX_SOURCES: yes
 
 jobs:
-  kas-ci:
+  kas-manual:
     name: Build kas/ci targets
     runs-on: ubuntu-jammy-16c
+    # runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # - name: Free Disk Space
+      #   uses: ./.github/workflows/free-disk-space
       - id: scailx_version
         run: |
-          SCAILX_VERSION=$(grep 'SCAILX_VERSION' scailx_$RELEASE.yaml | cut -d '=' -f2 | xargs)
+          SCAILX_VERSION=$(grep 'SCAILX_VERSION' scailx_$${{ inputs.release }}.yaml | cut -d '=' -f2 | xargs)
           echo "OUT=$SCAILX_VERSION" >> $GITHUB_OUTPUT
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
@@ -101,22 +112,18 @@ jobs:
       - name: copy sstate db
         run: |
           [ -f ${{ github.workspace }}/build/sstate-cache/cache/hashserv.db ] && cp -r ${{ github.workspace }}/build/sstate-cache/cache ${{ github.workspace }}/build/
-      - name: Build kernel
-        run: |
-          kas build --target linux-imx                 "scailx_$RELEASE.yaml"
-          kas build --target scailx-bootstrap-image    "scailx_$RELEASE.yaml"
-      - name: build image
+      - name: build images
         run : |
-          kas build --target scailx-ml                 "scailx_$RELEASE.yaml"
-      - name: build big container for ppa-packages
-        run: |
-          kas build --target scailx-builder-container  "scailx_$RELEASE.yaml"
+          kas shell -c "bitbake ${{ inputs.images }}"  "scailx_${{ inputs.release }}.yaml"
+          kas build --target scailx-ml                 "scailx_${{ inputs.release }}.yaml"
       - name: build package index
+        if: ${{ inputs.package_index }}
         run: |
-          kas build --target package-index             "scailx_$RELEASE.yaml"
+          kas build --target package-index             "scailx_${{ inputs.release }}.yaml"
       - name: build sdk
+        if: ${{ inputs.build_sdk }}
         run: |
-          kas build --target scailx-ml -c populate-sdk "scailx_$RELEASE.yaml"
+          kas build --target scailx-ml -c populate-sdk "scailx_${{ inputs.release }}.yaml"
       - name: restore sstate db
         run: |
           [ -f ${{ github.workspace }}/build/cache/hashserv.db ] && cp -fr ${{ github.workspace }}/build/cache/* ${{ github.workspace }}/build/sstate-cache/cache/
@@ -134,6 +141,7 @@ jobs:
           echo "BUILD_DATE=$(date)" >> build_${{ github.sha }}.txt
           echo "TARGET_IMAGE=scailx-ml" >> build_${{ github.sha }}.txt
           echo "DISTRO=${{ steps.bbvars.outputs.DISTRO }}" >> build_${{ github.sha }}.txt
+          echo "RELEASE=${{ inputs.release }}" >> build_${{ github.sha }}.txt
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -143,7 +151,7 @@ jobs:
   transfer-deploy:
     name: Transfer deploy artifacts
     runs-on: ubuntu-latest
-    needs: kas-ci
+    needs: kas-manual
     environment: deploy_env
     steps:
       - name: Checkout

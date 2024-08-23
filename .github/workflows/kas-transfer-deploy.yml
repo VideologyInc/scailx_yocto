@@ -1,0 +1,39 @@
+# ---------------------------------------------------------------------------
+# CI workflows for scailx based on pure kas workflow
+# ---------------------------------------------------------------------------
+#
+# This software is a part of Scailx
+# Copyright (C) 2023 Videology Inc
+#
+# ---------------------------------------------------------------------------
+# SPDX-License-Identifier: MIT
+# ---------------------------------------------------------------------------
+
+name: kas-transfer-deploy
+
+on:
+  workflow_dispatch:
+    # workflow_run:
+  #   workflows: ["kas build", "kas-manual"]
+  #   types:
+  #     - completed
+
+jobs:
+  transfer-deploy:
+    name: Transfer deploy artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONFIG }}
+      - name: download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build_${{ github.sha }}
+      - name: transfer deploy
+        run: |
+          source build_${{ github.sha }}.txt
+          rclone copyto scailx-storage:scailx-ppa/$DISTRO_VERSION/deploy_${{ github.sha }} scailx-storage:scailx-ppa/$DISTRO_VERSION/deploy --transfers 64 -M --no-update-dir-modtime --no-update-modtime --multi-thread-streams 64 --inplace --fast-list
