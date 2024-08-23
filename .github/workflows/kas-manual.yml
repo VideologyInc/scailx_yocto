@@ -53,8 +53,8 @@ jobs:
       #   uses: ./.github/workflows/free-disk-space
       - id: scailx_version
         run: |
-          SCAILX_VERSION=$(grep 'SCAILX_VERSION' scailx_$${{ inputs.release }}.yaml | cut -d '=' -f2 | xargs)
-          ln -sf -T scailx_$${{ inputs.release }}.yaml .config.yaml
+          SCAILX_VERSION=$(grep 'SCAILX_VERSION' scailx_${{ inputs.release }}.yaml | cut -d '=' -f2 | xargs)
+          ln -sf -T scailx_${{ inputs.release }}.yaml .config.yaml
           echo "OUT=$SCAILX_VERSION" >> $GITHUB_OUTPUT
       - name: Import GPG key
         uses: crazy-max/ghaction-import-gpg@v6
