@@ -14,20 +14,20 @@ index 3679954..72d346c 100644
 +++ b/meta-hailo-accelerator/conf/layer.conf
 @@ -10,4 +10,4 @@ BBFILE_PATTERN_meta-hailo-accelerator = "^${LAYERDIR}/"
  BBFILE_PRIORITY_meta-hailo-accelerator = "8"
- 
+
  LAYERDEPENDS_meta-hailo-accelerator = "core"
 -LAYERSERIES_COMPAT_meta-hailo-accelerator = "mickledore"
-+LAYERSERIES_COMPAT_meta-hailo-accelerator = "mickledore nanbield"
++LAYERSERIES_COMPAT_meta-hailo-accelerator = "mickledore nanbield scarthgap"
 diff --git a/meta-hailo-libhailort/conf/layer.conf b/meta-hailo-libhailort/conf/layer.conf
 index 7a79570..fc0d431 100644
 --- a/meta-hailo-libhailort/conf/layer.conf
 +++ b/meta-hailo-libhailort/conf/layer.conf
 @@ -10,4 +10,4 @@ BBFILE_PATTERN_meta-hailo-libhailort = "^${LAYERDIR}/"
  BBFILE_PRIORITY_meta-hailo-libhailort = "8"
- 
+
  LAYERDEPENDS_meta-hailo-libhailort = "core"
 -LAYERSERIES_COMPAT_meta-hailo-libhailort = "mickledore"
-+LAYERSERIES_COMPAT_meta-hailo-libhailort = "mickledore nanbield"
--- 
++LAYERSERIES_COMPAT_meta-hailo-libhailort = "mickledore nanbield scarthgap"
+--
 2.34.1
 

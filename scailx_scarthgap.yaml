@@ -1,0 +1,54 @@
+# scailx yocto for Videology
+#
+# Authors:
+#   Kobus Goosen
+#
+# SPDX-License-Identifier: MIT
+#
+header:
+  version: 14
+  includes:
+    - nxp-imx-scarthgap.yaml
+    - kas/scarthgap.yml
+    - lf-6.6.23-2.0.0-scarthgap.yaml
+    # - kas/go-lts-mixins.yml
+    - kas/layers/meta-swupdate.yml
+    - kas/layers/meta-security.yml
+    - kas/layers/meta-hailo.yml
+    - kas/layers/meta-aws.yml
+
+repos:
+  scailx:
+    layers:
+      videology-bsp-karo:
+      videology-distro:
+  meta-imx:
+    # use latest branch commit.
+    commit: ae04eecd48e557437ec90366795b8cf202d0ce14
+
+bblayers_conf_header:
+  standard: |
+    # BBPATH = "${TOPDIR}"
+    # BBFILES ?= ""
+
+distro: scailx
+machine: scailx-imx8mp
+target:
+  - scailx-ml
+
+local_conf_header:
+  distro: |
+    SCAILX_VERSION="0.9.3"
+  folders: |
+    BB_GENERATE_MIRROR_TARBALLS = "1"
+    DEPLOY_DIR = "${TOPDIR}/deploy"
+
+  rmwork: |
+    INHERIT += "rm_work"
+  other: |
+    EXTRA_IMAGE_FEATURES ?= "debug-tweaks"
+    USER_CLASSES ?= "buildstats"
+    PATCHRESOLVE = "noop"
+  buildinfo: |
+    INHERIT += " image-buildinfo"
+    IMAGE_BUILDINFO_VARS:append = " BUILD_SYS COMMON_FEATURES DEFAULTTUNE DISTRO DISTRO_FEATURES DISTRO_NAME DISTRO_VERSION IMAGE_BASENAME IMAGE_FEATURES KERNEL_DEVICETREE MACHINE MACHINEOVERRIDES MACHINE_FEATURES NATIVELSBSTRING PREFERRED_PROVIDER_virtual/bootloader PREFERRED_PROVIDER_virtual/kernel PREFERRED_PROVIDER_virtual/mesa SERIAL_CONSOLE SOC_FAMILY UBOOT_MACHINE"
