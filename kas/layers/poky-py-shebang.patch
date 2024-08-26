@@ -1,7 +1,7 @@
-From 6e1f88dd3b33d2856467800df5cbaad52e434bd0 Mon Sep 17 00:00:00 2001
-From: Kobus Goosen <kgoosen@videologyinc.com>
-Date: Thu, 6 Jun 2024 11:01:18 +0200
-Subject: [PATCH] py_shebang
+From 30db99963bc6c032962321c6cc1b95e09d0beb2f Mon Sep 17 00:00:00 2001
+From: kas <kas@example.com>
+Date: Fri, 23 Aug 2024 17:56:50 +0200
+Subject: [PATCH] msg
 
 ---
  bitbake/lib/bb/build.py | 1 +
@@ -11,14 +11,18 @@ diff --git a/bitbake/lib/bb/build.py b/bitbake/lib/bb/build.py
 index 44d08f5c55c..8c98e90d00a 100644
 --- a/bitbake/lib/bb/build.py
 +++ b/bitbake/lib/bb/build.py
-@@ -281,6 +281,7 @@ def exec_func_python(func, d, runfile, cwd=None):
+@@ -279,10 +279,11 @@ def exec_func_python(func, d, runfile, cwd=None):
+     """Execute a python BB 'function'"""
+
      code = _functionfmt.format(function=func)
      bb.utils.mkdirhier(os.path.dirname(runfile))
      with open(runfile, 'w') as script:
 +        script.write("#!/usr/bin/env python3\n\n")
          bb.data.emit_func_python(func, script, d)
- 
+
      if cwd:
--- 
+         try:
+             olddir = os.getcwd()
+--
 2.34.1
 
