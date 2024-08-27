@@ -15,14 +15,6 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
-    inputs:
-      release:
-        type: choice
-        description: 'Release to build'
-        options:
-          - nanbield
-          - scarthgap
 
 env:
   RELEASE: nanbield
@@ -30,7 +22,7 @@ env:
   KAS_ALLOW_ROOT: yes
   PACKAGE_FEED_GPG_PASSPHRASE_FILE: /tmp/pkgfeed_password_file
   BB_GENERATE_MIRROR_TARBALLS: 0
-  BB_ENV_PASSTHROUGH_ADDITIONS: BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE SCAILX_SOURCES
+  BB_ENV_PASSTHROUGH_ADDITIONS: BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE SCAILX_SOURCES DL_DIR
   SCAILX_SOURCES: yes
 
 jobs:
