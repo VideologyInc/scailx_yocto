@@ -36,7 +36,7 @@ env:
 jobs:
   kas-ci:
     name: Build kas/ci targets
-    runs-on: ubuntu-jammy-16c
+    runs-on: [yocto-runner,ubuntu-jammy-16c]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
