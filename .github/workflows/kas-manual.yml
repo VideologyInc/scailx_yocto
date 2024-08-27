@@ -44,7 +44,7 @@ env:
 jobs:
   kas-manual:
     name: Build kas/ci targets
-    runs-on: ubuntu-jammy-16c
+    runs-on: kobus-dell-pop
     # runs-on: ubuntu-22.04
     steps:
       - name: Checkout
