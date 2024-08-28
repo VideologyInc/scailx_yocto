@@ -49,13 +49,13 @@ jobs:
           eval `ssh-agent -s`
           ssh-add - <<< '${{ secrets.DEPLOY_KEY }}'
           ssh-add - <<< '${{ secrets.DEPLOY_KEY2 }}'
-      - name: install gh, locales
+      - name: install locales
         run: |
           sudo mkdir -p -m 755 /etc/apt/keyrings
           wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
           sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
           echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install locales gh
+          sudo apt-get update && export DEBIAN_FRONTEND=noninteractive && sudo apt-get -y install locales
           sudo locale-gen --purge "en_US.UTF-8"
           sudo update-locale "LANG=en_US.UTF-8"
           sudo dpkg-reconfigure --frontend noninteractive locales
@@ -67,6 +67,7 @@ jobs:
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
+          version: v1.67.0
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - id: bbvars
         run: |
@@ -144,6 +145,7 @@ jobs:
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
+          version: v1.67.0
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - name: download artifacts
         uses: actions/download-artifact@v4

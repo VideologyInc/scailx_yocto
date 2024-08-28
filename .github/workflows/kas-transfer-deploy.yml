@@ -28,6 +28,7 @@ jobs:
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
+          version: v1.67.0
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - name: download artifacts
         uses: actions/download-artifact@v4
