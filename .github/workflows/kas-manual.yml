@@ -56,13 +56,12 @@ jobs:
           SCAILX_VERSION=$(grep 'SCAILX_VERSION' scailx_${{ inputs.release }}.yaml | cut -d '=' -f2 | xargs)
           ln -sf -T scailx_${{ inputs.release }}.yaml .config.yaml
           echo "OUT=$SCAILX_VERSION" >> $GITHUB_OUTPUT
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.PKGFEED_GPG_PRIVATEKEY }}
-          passphrase: ${{ secrets.PKGFEED_GPG_PASSWORD }}
-      - run:
+      - name: Setup GPG passphrase
+        run:
           mkdir -p `dirname "$PACKAGE_FEED_GPG_PASSPHRASE_FILE"` && echo "${{ secrets.PKGFEED_GPG_PASSWORD }}" > $PACKAGE_FEED_GPG_PASSPHRASE_FILE
+      - name: import gpg key for ppa signature
+        run: |
+          echo "${{ secrets.PKGFEED_GPG_PRIVATEKEY }}" | gpg --batch --import --yes --passphrase-file $PACKAGE_FEED_GPG_PASSPHRASE_FILE
       - name: import ssh key for private repos
         run: |
           eval `ssh-agent -s`
