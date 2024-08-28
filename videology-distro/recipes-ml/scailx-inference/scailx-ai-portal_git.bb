@@ -1,12 +1,12 @@
 LICENSE = "CLOSED"
 SECTION = "multimedia"
 
-SRC_URI = "https://scailx-ppa.org/scailx-apps/scailx-ai-portal/scailx-ai-portal_24.08.2.zip;subdir=git;name=zip"
+SRC_URI = "https://scailx-ppa.org/scailx-apps/scailx-ai-portal/scailx-ai-portal_${PV}.zip;subdir=git;name=zip"
 SRC_URI += "file://scailx-ai-portal.service"
-SRC_URI[zip.sha256sum] = "9cf59783196b91b6d73390b4bad9b422ba1f549eb155ae2d1d6e82434e73722e"
+SRC_URI[zip.sha256sum] = "c8d2b111439d601e83b75ff6ae4b4af028d0c425fd11750d4d2dab69bc6153b9"
 
 # Modify these as desired
-PV = "24.08.1"
+PV = "v24.08.4"
 S = "${WORKDIR}/git"
 
 RDEPENDS:${PN} += "nodejs python3-core scailx-gst-plugins python3-websockets"
