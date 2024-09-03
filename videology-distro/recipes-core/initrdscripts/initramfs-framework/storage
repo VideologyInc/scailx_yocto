@@ -31,7 +31,8 @@ storage_overlay_hook() {
         mkdir -p /volumes/$f
         mount -t squashfs -o loop /storage/bsp/$CURRENT_SLOT/mounts/$f.squashfs /volumes/$f && mounts="/volumes/$f:$mounts"
     done
-    modprobe overlay || info "Failed to load overlay module"
+    overlaymod=$(find /lib/modules -name overlay.ko | head -n 1)
+    insmod $overlaymod || info "Failed to load overlay module"
     # clear the overlay if the clear_overlay file exists
     if [ -f /storage/clear_overlay ]; then
         info "Clearing overlay"
