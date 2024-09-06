@@ -9,3 +9,6 @@ SRC_URI:append = " file://scailx-kmeta;type=kmeta;destsuffix=scailx-kmeta "
 SRC_URI:append = " file://of-configfs.patch "
 
 PV:scailx = "${LINUX_VERSION}"
+
+SCMVERSION = "n"
+LINUX_VERSION_EXTENSION = ""
