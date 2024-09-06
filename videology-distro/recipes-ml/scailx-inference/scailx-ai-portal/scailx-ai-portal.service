@@ -1,14 +1,16 @@
 [Unit]
-Description=scail-ai-portal
+Description=scailx-ai-portal
 After=network.target
 
 [Service]
 Type=simple
-# EnvironmentFile=/usr/scail-ai-portal/.env
-WorkingDirectory=/usr/scail-ai-portal
+# EnvironmentFile=/usr/scailx-ai-portal/.env
+WorkingDirectory=/usr/scailx-ai-portal
 ExecStartPre=/bin/sleep 5
-ExecStart=node /usr/scail-ai-portal/server.js
+ExecStart=node server.js
 Restart=on-failure
+Environment=NODE_ENV=production
+Environment=PWD=/usr/scailx-ai-portal
 
 [Install]
 WantedBy=multi-user.target
