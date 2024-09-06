@@ -1,0 +1,29 @@
+From cecbf4544c71cfe18167b03b8c2291c81b022838 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Mon, 2 Sep 2024 14:57:44 +0200
+Subject: [PATCH 2/4] ptz_service fix printf
+
+---
+ ptz_service.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ptz_service.c b/ptz_service.c
+index 7c349e5..b3d43f4 100644
+--- a/ptz_service.c
++++ b/ptz_service.c
+@@ -749,11 +749,11 @@ int ptz_stop()
+     if (service_ctx.ptz_node.move_stop == NULL) {
+         send_action_failed_fault("ptz_service", -3);
+         return -3;
+     }
+ 
+-    sprintf(sys_command, service_ctx.ptz_node.move_stop);
++    snprintf(sys_command, sizeof(sys_command), "%s", service_ctx.ptz_node.move_stop);
+     system(sys_command);
+ 
+     long size = cat(NULL, "ptz_service_files/Stop.xml", 0);
+ 
+     fprintf(stdout, "Content-type: application/soap+xml\r\n");
+-- 
+2.34.1
+

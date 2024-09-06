@@ -1,0 +1,18 @@
+[Unit]
+Description=Onvif Simple Server
+Wants=network-online.target
+After=scailx-ai-portal.service
+
+[Service]
+Type=simple
+PIDFile=/run/lighttpd_onvif.pid
+ExecStartPre=lighttpd -tt -f /etc/lighttpd_onvif_ss.conf
+ExecStart=lighttpd -D -f /etc/lighttpd_onvif_ss.conf
+ExecReload=/bin/kill -USR1 $MAINPID
+Restart=on-failure
+StartLimitInterval=40s
+StartLimitBurst=4
+
+[Install]
+WantedBy=multi-user.target
+

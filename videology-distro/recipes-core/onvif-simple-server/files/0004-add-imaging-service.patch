@@ -1,0 +1,1051 @@
+From 737484399cb1dd9eb5599fe073d93023e9585baa Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Thu, 5 Sep 2024 09:59:38 +0200
+Subject: [PATCH 4/4] add imaging service
+
+fix header
+---
+ Makefile                                      |   2 +-
+ conf.c                                        |   7 +
+ device_service.c                              |  19 +-
+ .../GetCapabilities_no_ptz.xml                |   4 +
+ .../GetImagingCapabilities.xml                |  35 ++
+ device_service_files/GetServices_no_ptz.xml   |   9 +
+ .../GetServices_with_capabilities_no_ptz.xml  |  30 ++
+ imaging_service.c                             | 307 ++++++++++++++++++
+ imaging_service.h                             |  13 +
+ imaging_service_files/GetCurrentPreset.xml    |  26 ++
+ imaging_service_files/GetImagingSettings.xml  |  37 +++
+ imaging_service_files/GetOptions.xml          |  45 +++
+ .../GetServiceCapabilities.xml                |  28 ++
+ imaging_service_files/SetCurrentPreset.xml    |  26 ++
+ imaging_service_files/SetImagingSettings.xml  |  26 ++
+ media_service_files/GetVideoSources.xml       |   1 -
+ onvif_simple_server.c                         |  30 ++
+ onvif_simple_server.h                         |   6 +
+ 18 files changed, 644 insertions(+), 7 deletions(-)
+ create mode 100644 device_service_files/GetImagingCapabilities.xml
+ create mode 100644 imaging_service.c
+ create mode 100644 imaging_service.h
+ create mode 100644 imaging_service_files/GetCurrentPreset.xml
+ create mode 100644 imaging_service_files/GetImagingSettings.xml
+ create mode 100644 imaging_service_files/GetOptions.xml
+ create mode 100644 imaging_service_files/GetServiceCapabilities.xml
+ create mode 100644 imaging_service_files/SetCurrentPreset.xml
+ create mode 100644 imaging_service_files/SetImagingSettings.xml
+
+diff --git a/Makefile b/Makefile
+index f85abbc..b9087f1 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,8 +1,8 @@
+ # Set HAVE_MBEDTLS variable if you want to use MBEDTLS instead of TOMCRYPT
+ 
+-OBJECTS_O = onvif_simple_server.o device_service.o media_service.o ptz_service.o events_service.o fault.o conf.o utils.o log.o ezxml_wrapper.o ezxml/ezxml.o
++OBJECTS_O = onvif_simple_server.o imaging_service.o device_service.o media_service.o ptz_service.o events_service.o fault.o conf.o utils.o log.o ezxml_wrapper.o ezxml/ezxml.o
+ OBJECTS_N = onvif_notify_server.o conf.o utils.o log.o ezxml_wrapper.o ezxml/ezxml.o
+ OBJECTS_W = wsd_simple_server.o utils.o log.o ezxml_wrapper.o ezxml/ezxml.o
+ INCLUDE = -ffunction-sections -fdata-sections -lrt
+ 
+ ifdef HAVE_MBEDTLS
+diff --git a/conf.c b/conf.c
+index 290cc8a..02a4e31 100644
+--- a/conf.c
++++ b/conf.c
+@@ -57,10 +57,11 @@ int process_conf_file(char *file)
+     service_ctx.adv_synology_nvr = 0;
+     service_ctx.profiles = NULL;
+     service_ctx.profiles_num = 0;
+     service_ctx.scopes = NULL;
+     service_ctx.scopes_num = 0;
++    service_ctx.imaging_node.imaging_ctrl = NULL;
+     service_ctx.ptz_node.enable = 0;
+     service_ctx.events = NULL;
+     service_ctx.events_enable = EVENTS_NONE;
+     service_ctx.events_num = 0;
+ 
+@@ -216,10 +217,13 @@ int process_conf_file(char *file)
+             service_ctx.profiles[service_ctx.profiles_num - 1].url = (char *) malloc(strlen(value) + 1);
+             strcpy(service_ctx.profiles[service_ctx.profiles_num - 1].url, value);
+         } else if (strcasecmp(param, "snapurl") == 0) {
+             service_ctx.profiles[service_ctx.profiles_num - 1].snapurl = (char *) malloc(strlen(value) + 1);
+             strcpy(service_ctx.profiles[service_ctx.profiles_num - 1].snapurl, value);
++        } else if (strcasecmp(param, "imaging_ctrl") == 0) {
++            service_ctx.imaging_node.imaging_ctrl = (char *)malloc(strlen(value) + 1);
++            strcpy(service_ctx.imaging_node.imaging_ctrl, value);
+         } else if (strcasecmp(param, "type") == 0) {
+             if (strcasecmp(value, "JPEG") == 0)
+                 service_ctx.profiles[service_ctx.profiles_num - 1].type = JPEG;
+             else if (strcasecmp(value, "MPEG4") == 0)
+                 service_ctx.profiles[service_ctx.profiles_num - 1].type = MPEG4;
+@@ -435,10 +439,12 @@ int process_conf_file(char *file)
+     }
+     if (service_ctx.ifs == NULL) {
+         service_ctx.ifs = (char *) malloc(strlen(DEFAULT_IFS) + 1);
+         strcpy(service_ctx.ifs, DEFAULT_IFS);
+     }
++
++    return 0;
+ }
+ 
+ void free_conf_file()
+ {
+     int i;
+@@ -481,10 +487,11 @@ void free_conf_file()
+     }
+     if (service_ctx.scopes != NULL) free(service_ctx.scopes);
+ 
+     if (service_ctx.events != NULL) free(service_ctx.events);
+     if (service_ctx.ifs != NULL) free(service_ctx.ifs);
++    if (service_ctx.imaging_node.imaging_ctrl != NULL) free(service_ctx.imaging_node.imaging_ctrl);
+     if (service_ctx.hardware_id != NULL) free(service_ctx.hardware_id);
+     if (service_ctx.serial_num != NULL) free(service_ctx.serial_num);
+     if (service_ctx.firmware_ver != NULL) free(service_ctx.firmware_ver);
+     if (service_ctx.model != NULL) free(service_ctx.model);
+     if (service_ctx.manufacturer != NULL) free(service_ctx.manufacturer);
+diff --git a/device_service.c b/device_service.c
+index ffeabf9..19dcd74 100644
+--- a/device_service.c
++++ b/device_service.c
+@@ -34,10 +34,11 @@ int device_get_services()
+ {
+     char address[16];
+     char netmask[16];
+ 
+     get_ip_address(address, netmask, service_ctx.ifs);
++    char imaging_service_address[MAX_LEN];
+     char device_service_address[MAX_LEN];
+     char media_service_address[MAX_LEN];
+     char ptz_service_address[MAX_LEN];
+     char events_service_address[MAX_LEN];
+     char port[8];
+@@ -47,10 +48,11 @@ int device_get_services()
+ 
+     port[0] = '\0';
+     if (service_ctx.port != 80)
+         sprintf(port, ":%d", service_ctx.port);
+     sprintf(device_service_address, "http://%s%s/onvif/device_service", address, port);
++    sprintf(imaging_service_address, "http://%s%s/onvif/imaging_service", address, port);
+     sprintf(media_service_address, "http://%s%s/onvif/media_service", address, port);
+     sprintf(ptz_service_address, "http://%s%s/onvif/ptz_service", address, port);
+     sprintf(events_service_address, "http://%s%s/onvif/events_service", address, port);
+ 
+     if ((service_ctx.events_enable == EVENTS_PULL) || (service_ctx.events_enable == EVENTS_BOTH)) {
+@@ -65,22 +67,24 @@ int device_get_services()
+     }
+ 
+     cap = get_element("IncludeCapability", "Body");
+     if ((cap != NULL) && (strcasecmp(cap, "true")) == 0) {
+         if (service_ctx.ptz_node.enable == 0) {
+-            long size = cat(NULL, "device_service_files/GetServices_with_capabilities_no_ptz.xml", 10,
++            long size = cat(NULL, "device_service_files/GetServices_with_capabilities_no_ptz.xml", 12,
+                     "%DEVICE_SERVICE_ADDRESS%", device_service_address,
++                    "%IMAGING_SERVICE_ADDRESS%", imaging_service_address,
+                     "%MEDIA_SERVICE_ADDRESS%", media_service_address,
+                     "%EVENTS_SERVICE_ADDRESS%", events_service_address,
+                     "%EVENTS_PUSH%", epush,
+                     "%EVENTS_PULL%", epull);
+ 
+             fprintf(stdout, "Content-type: application/soap+xml\r\n");
+             fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
+ 
+-            return cat("stdout", "device_service_files/GetServices_with_capabilities_no_ptz.xml", 10,
++            return cat("stdout", "device_service_files/GetServices_with_capabilities_no_ptz.xml", 12,
+                     "%DEVICE_SERVICE_ADDRESS%", device_service_address,
++                    "%IMAGING_SERVICE_ADDRESS%", imaging_service_address,
+                     "%MEDIA_SERVICE_ADDRESS%", media_service_address,
+                     "%EVENTS_SERVICE_ADDRESS%", events_service_address,
+                     "%EVENTS_PUSH%", epush,
+                     "%EVENTS_PULL%", epull);
+         } else {
+@@ -103,20 +107,22 @@ int device_get_services()
+                     "%EVENTS_PUSH%", epush,
+                     "%EVENTS_PULL%", epull);
+         }
+     } else {
+         if (service_ctx.ptz_node.enable == 0) {
+-            long size = cat(NULL, "device_service_files/GetServices_no_ptz.xml", 6,
++            long size = cat(NULL, "device_service_files/GetServices_no_ptz.xml", 8,
+                     "%DEVICE_SERVICE_ADDRESS%", device_service_address,
++                    "%IMAGING_SERVICE_ADDRESS%", imaging_service_address,
+                     "%MEDIA_SERVICE_ADDRESS%", media_service_address,
+                     "%EVENTS_SERVICE_ADDRESS%", events_service_address);
+ 
+             fprintf(stdout, "Content-type: application/soap+xml\r\n");
+             fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
+ 
+-            return cat("stdout", "device_service_files/GetServices_no_ptz.xml", 6,
++            return cat("stdout", "device_service_files/GetServices_no_ptz.xml", 8,
+                     "%DEVICE_SERVICE_ADDRESS%", device_service_address,
++                    "%IMAGING_SERVICE_ADDRESS%", imaging_service_address,
+                     "%MEDIA_SERVICE_ADDRESS%", media_service_address,
+                     "%EVENTS_SERVICE_ADDRESS%", events_service_address);
+         } else {
+             long size = cat(NULL, "device_service_files/GetServices_ptz.xml", 8,
+                     "%DEVICE_SERVICE_ADDRESS%", device_service_address,
+@@ -283,10 +289,11 @@ int device_get_capabilities()
+     char address[16];
+     char netmask[16];
+ 
+     get_ip_address(address, netmask, service_ctx.ifs);
+     char device_service_address[MAX_LEN];
++    char imaging_service_address[MAX_LEN];
+     char media_service_address[MAX_LEN];
+     char ptz_service_address[MAX_LEN];
+     char events_service_address[MAX_LEN];
+     char port[8];
+     int icategory;
+@@ -316,10 +323,11 @@ int device_get_capabilities()
+ 
+     port[0] = '\0';
+     if (service_ctx.port != 80)
+         sprintf(port, ":%d", service_ctx.port);
+     sprintf(device_service_address, "http://%s%s/onvif/device_service", address, port);
++    sprintf(imaging_service_address, "http://%s%s/onvif/imaging_service", address, port);
+     sprintf(media_service_address, "http://%s%s/onvif/media_service", address, port);
+     sprintf(ptz_service_address, "http://%s%s/onvif/ptz_service", address, port);
+     sprintf(events_service_address, "http://%s%s/onvif/events_service", address, port);
+ 
+     if ((service_ctx.events_enable == EVENTS_PULL) || (service_ctx.events_enable == EVENTS_BOTH)) {
+@@ -378,12 +386,13 @@ int device_get_capabilities()
+                 "%EVENTS_SERVICE_ADDRESS%", events_service_address,
+                 "%EVENTS_PUSH%", epush,
+                 "%EVENTS_PULL%", epull);
+     } else {
+         if (service_ctx.ptz_node.enable == 0) {
+-            long size = cat(NULL, "device_service_files/GetCapabilities_no_ptz.xml", 10,
++            long size = cat(NULL, "device_service_files/GetCapabilities_no_ptz.xml", 12,
+                     "%DEVICE_SERVICE_ADDRESS%", device_service_address,
++                    "%IMAGING_SERVICE_ADDRESS%", imaging_service_address,
+                     "%MEDIA_SERVICE_ADDRESS%", media_service_address,
+                     "%EVENTS_SERVICE_ADDRESS%", events_service_address,
+                     "%EVENTS_PUSH%", epush,
+                     "%EVENTS_PULL%", epull);
+ 
+diff --git a/device_service_files/GetCapabilities_no_ptz.xml b/device_service_files/GetCapabilities_no_ptz.xml
+index 493c28a..5fdbbdc 100644
+--- a/device_service_files/GetCapabilities_no_ptz.xml
++++ b/device_service_files/GetCapabilities_no_ptz.xml
+@@ -13,10 +13,11 @@
+                    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
+                    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
+                    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
+                    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
+                    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++                   xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
+                    xmlns:c14n="http://www.w3.org/2001/10/xml-exc-c14n#"
+                    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                    xmlns:saml1="urn:oasis:names:tc:SAML:1.0:assertion"
+                    xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion"
+                    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+@@ -67,10 +68,13 @@
+                         <tt:SAMLToken>false</tt:SAMLToken>
+                         <tt:KerberosToken>false</tt:KerberosToken>
+                         <tt:RELToken>false</tt:RELToken>
+                     </tt:Security>
+                 </tt:Device>
++                <tt:Imaging>
++                    <tt:XAddr>%IMAGING_SERVICE_ADDRESS%</tt:XAddr>
++                </tt:Imaging>
+                 <tt:Events>
+                     <tt:XAddr>%EVENTS_SERVICE_ADDRESS%</tt:XAddr>
+                     <tt:WSSubscriptionPolicySupport>%EVENTS_PUSH%</tt:WSSubscriptionPolicySupport>
+                     <tt:WSPullPointSupport>%EVENTS_PULL%</tt:WSPullPointSupport>
+                     <tt:WSPausableSubscriptionManagerInterfaceSupport>false</tt:WSPausableSubscriptionManagerInterfaceSupport>
+diff --git a/device_service_files/GetImagingCapabilities.xml b/device_service_files/GetImagingCapabilities.xml
+new file mode 100644
+index 0000000..4192e98
+--- /dev/null
++++ b/device_service_files/GetImagingCapabilities.xml
+@@ -0,0 +1,35 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++    xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++    xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++    xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++    xmlns:xmime="http://tempuri.org/xmime.xsd"
++    xmlns:xop="http://www.w3.org/2004/08/xop/include"
++    xmlns:tt="http://www.onvif.org/ver10/schema"
++    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
++    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++    xmlns:c14n="http://www.w3.org/2001/10/xml-exc-c14n#"
++    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
++    xmlns:saml1="urn:oasis:names:tc:SAML:1.0:assertion"
++    xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion"
++    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
++    <SOAP-ENV:Body>
++        <tds:GetCapabilitiesResponse>
++            <tds:Capabilities>
++                <tt:Imaging>
++                    <tt:XAddr>%IMAGING_SERVICE_ADDRESS%</tt:XAddr>
++                </tt:Imaging>
++            </tds:Capabilities>
++        </tds:GetCapabilitiesResponse>
++    </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
+diff --git a/device_service_files/GetServices_no_ptz.xml b/device_service_files/GetServices_no_ptz.xml
+index 1e64352..236f49e 100644
+--- a/device_service_files/GetServices_no_ptz.xml
++++ b/device_service_files/GetServices_no_ptz.xml
+@@ -13,10 +13,11 @@
+                    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
+                    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
+                    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
+                    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
+                    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++                   xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
+                    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+                    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
+                    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+     <SOAP-ENV:Body>
+@@ -43,8 +44,16 @@
+                 <tds:Version>
+                     <tt:Major>19</tt:Major>
+                     <tt:Minor>6</tt:Minor>
+                 </tds:Version>
+             </tds:Service>
++            <tds:Service>
++                <tds:Namespace>http://www.onvif.org/ver20/imaging/wsdl</tds:Namespace>
++                <tds:XAddr>%IMAGING_SERVICE_ADDRESS%</tds:XAddr>
++                <tds:Version>
++                    <tt:Major>19</tt:Major>
++                    <tt:Minor>6</tt:Minor>
++                </tds:Version>
++            </tds:Service>
+         </tds:GetServicesResponse>
+     </SOAP-ENV:Body>
+ </SOAP-ENV:Envelope>
+diff --git a/device_service_files/GetServices_with_capabilities_no_ptz.xml b/device_service_files/GetServices_with_capabilities_no_ptz.xml
+index cc88fc5..3888b32 100644
+--- a/device_service_files/GetServices_with_capabilities_no_ptz.xml
++++ b/device_service_files/GetServices_with_capabilities_no_ptz.xml
+@@ -13,10 +13,11 @@
+                    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
+                    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
+                    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
+                    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
+                    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++                   xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
+                    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
+                    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
+                    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+     <SOAP-ENV:Body>
+@@ -154,8 +155,37 @@
+                 <tds:Version>
+                     <tt:Major>19</tt:Major>
+                     <tt:Minor>6</tt:Minor>
+                 </tds:Version>
+             </tds:Service>
++            <tds:Service>
++                <tds:Namespace>http://www.onvif.org/ver20/imaging/wsdl</tds:Namespace>
++                <tds:XAddr>%IMAGING_SERVICE_ADDRESS%</tds:XAddr>
++                <timg:Capabilities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++                    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++                    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++                    xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++                    xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++                    xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++                    xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++                    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++                    xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++                    xmlns:xmime="http://tempuri.org/xmime.xsd"
++                    xmlns:xop="http://www.w3.org/2004/08/xop/include"
++                    xmlns:tt="http://www.onvif.org/ver10/schema"
++                    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++                    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++                    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++                    xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
++                    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++                    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++                    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++                    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd" ImageStabilization="false" Presets="false" AdaptablePreset="false">
++                </timg:Capabilities>
++                <tds:Version>
++                    <tt:Major>19</tt:Major>
++                    <tt:Minor>6</tt:Minor>
++                </tds:Version>
++            </tds:Service>
+         </tds:GetServicesResponse>
+     </SOAP-ENV:Body>
+ </SOAP-ENV:Envelope>
+diff --git a/imaging_service.c b/imaging_service.c
+new file mode 100644
+index 0000000..72685e4
+--- /dev/null
++++ b/imaging_service.c
+@@ -0,0 +1,307 @@
++#include <stdio.h>
++#include <string.h>
++
++#include "imaging_service.h"
++#include "conf.h"
++#include "fault.h"
++#include "utils.h"
++#include "log.h"
++#include "ezxml_wrapper.h"
++#include "onvif_simple_server.h"
++
++extern service_context_t service_ctx;
++
++static char* prepare_cmd(const char* str1, const char* str2)
++{
++    size_t len1 = strlen(str1);
++    size_t len2 = strlen(str2);
++
++    char* result = (char*)malloc(len1 + len2 + 1);
++    if (result == NULL)
++    {
++        log_debug("Memory allocation failed!");
++        return NULL;
++    }
++
++    strcpy(result, str1);
++    strcat(result, " ");
++    strcat(result, str2);
++
++    return result;
++}
++
++static int do_cmd(char *sys_command, char *output, size_t size)
++{
++    FILE *fp;
++
++    fp = popen(sys_command, "r");
++    if (fp == NULL)
++    {
++        log_error("Failed to run '%s' command", sys_command);
++        return -2;
++    }
++
++    if (fgets(output, size, fp) != NULL)
++    {
++        output[strcspn(output, "\n")] = '\0';
++        log_debug("'%s' command output: %s", sys_command, output);
++    }
++    pclose(fp);
++    fp = NULL;
++
++    return 0;
++}
++
++int imaging_get_current_preset()
++{
++    long size = cat(NULL, "imaging_service_files/GetCurrentPreset.xml", 0);
++
++    fprintf(stdout, "Content-type: application/soap+xml\r\n");
++    fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
++
++    return cat("stdout", "imaging_service_files/GetCurrentPreset.xml", 0);
++}
++
++int imaging_set_current_preset()
++{
++    long size = cat(NULL, "imaging_service_files/SetCurrentPreset.xml", 0);
++
++    fprintf(stdout, "Content-type: application/soap+xml\r\n");
++    fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
++
++    return cat("stdout", "imaging_service_files/SetCurrentPreset.xml", 0);
++}
++
++int imaging_get_options()
++{
++    char *values[8];
++    char values_string[256];
++    char *cmd;
++
++    if (service_ctx.imaging_node.imaging_ctrl == NULL)
++    {
++        send_fault("imaging_service", "Receiver", "ter:ActionNotSupported", "ter:terNoImagingForSource", "terNoImagingForSource", "The requested VideoSource does not support imaging settings");
++        log_debug("get_minmax command is NULL");
++        return -1;
++    }
++
++    cmd = prepare_cmd(service_ctx.imaging_node.imaging_ctrl, "get_minmax");
++    if (cmd != NULL)
++    {
++        do_cmd(cmd, values_string, sizeof(values_string));
++        free(cmd);
++    }
++
++    char* token = strtok(values_string, " ");
++    for (int i = 0; i < 8; i++)
++    {
++        if (token == NULL)
++        {
++            log_debug("not enough values in the 'values_string'");
++            return -2;
++        }
++        values[i] = token;
++        token = strtok(NULL, " ");
++    }
++
++    for (int i = 0; i < 8; i++)
++    {
++        log_debug("Value %d: %s", i + 1, values[i]);
++    }
++
++    long size = cat(NULL, "imaging_service_files/GetOptions.xml", 16,
++                    "%BRIGHTNESS_MIN%", values[0],
++                    "%BRIGHTNESS_MAX%", values[1],
++                    "%CONTRAST_MIN%", values[2],
++                    "%CONTRAST_MAX%", values[3],
++                    "%COLOR_SATURATION_MIN%", values[4],
++                    "%COLOR_SATURATION_MAX%", values[5],
++                    "%SHARPNESS_MIN%", values[6],
++                    "%SHARPNESS_MAX%", values[7]);
++
++    fprintf(stdout, "Content-type: application/soap+xml\r\n");
++    fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
++
++    return cat("stdout", "imaging_service_files/GetOptions.xml", 16,
++                    "%BRIGHTNESS_MIN%", values[0],
++                    "%BRIGHTNESS_MAX%", values[1],
++                    "%CONTRAST_MIN%", values[2],
++                    "%CONTRAST_MAX%", values[3],
++                    "%COLOR_SATURATION_MIN%", values[4],
++                    "%COLOR_SATURATION_MAX%", values[5],
++                    "%SHARPNESS_MIN%", values[6],
++                    "%SHARPNESS_MAX%", values[7]);
++}
++
++int imaging_get_service_capabilities()
++{
++    long size = cat(NULL, "imaging_service_files/GetServiceCapabilities.xml", 0);
++
++    fprintf(stdout, "Content-type: application/soap+xml\r\n");
++    fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
++
++    return cat("stdout", "imaging_service_files/GetServiceCapabilities.xml", 0);
++}
++
++int imaging_get_imaging_settings()
++{
++    char brightness[7] = "0.00";
++    char color_saturation[7] = "0.00";
++    char contrast[7] = "0.00";
++    char sharpness[7] = "0.00";
++    char *cmd;
++    ezxml_t node;
++
++    node = get_element_ptr(NULL, "VideoSourceToken", "Body");
++    if (node == NULL)
++    {
++        send_fault("imaging_service", "Sender", "ter:InvalidArgVal", "ter:terNoSource", "terNoSource", "The requested VideoSource does not exist");
++        return -1;
++    }
++
++    if (service_ctx.imaging_node.imaging_ctrl == NULL)
++    {
++        send_fault("imaging_service", "Receiver", "ter:ActionNotSupported", "ter:terNoImagingForSource", "terNoImagingForSource", "The requested VideoSource does not support imaging settings");
++        log_debug("imaging_ctrl command is NULL");
++        return -2;
++    }
++    
++    cmd = prepare_cmd(service_ctx.imaging_node.imaging_ctrl, "get_brightness");
++    if (cmd != NULL)
++    {
++        do_cmd(cmd, brightness, sizeof(brightness));
++        free(cmd);
++    }
++
++    cmd = prepare_cmd(service_ctx.imaging_node.imaging_ctrl, "get_color_saturation");
++    if (cmd != NULL)
++    {
++        do_cmd(cmd, color_saturation, sizeof(color_saturation));
++        free(cmd);
++    }
++
++    cmd = prepare_cmd(service_ctx.imaging_node.imaging_ctrl, "get_contrast");
++    if (cmd != NULL)
++    {
++        do_cmd(cmd, contrast, sizeof(contrast));
++        free(cmd);
++    }
++
++    cmd = prepare_cmd(service_ctx.imaging_node.imaging_ctrl, "get_sharpness");
++    if (cmd != NULL)
++    {
++        do_cmd(cmd, sharpness, sizeof(sharpness));
++        free(cmd);
++    }
++
++    long size = cat(NULL, "imaging_service_files/GetImagingSettings.xml", 8,
++                    "%BRIGHTNESS%", brightness,
++                    "%CONTRAST%", contrast,
++                    "%COLOR_SATURATION%", color_saturation,
++                    "%SHARPNESS%", sharpness);
++
++    fprintf(stdout, "Content-type: application/soap+xml\r\n");
++    fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
++
++    return cat("stdout", "imaging_service_files/GetImagingSettings.xml", 8,
++                    "%BRIGHTNESS%", brightness,
++                    "%CONTRAST%", contrast,
++                    "%COLOR_SATURATION%", color_saturation,
++                    "%SHARPNESS%", sharpness);
++}
++
++int imaging_set_imaging_settings()
++{
++    char const *brightness = NULL;
++    char const *color_saturation = NULL;
++    char const *contrast = NULL;
++    char const *sharpness = NULL;
++    int brightness_value = 0;
++    int color_saturation_value = 0;
++    int contrast_value = 0;
++    int sharpness_value = 0;
++    char sys_command[MAX_LEN];
++    ezxml_t node;
++
++    if (service_ctx.imaging_node.imaging_ctrl == NULL)
++    {
++        send_fault("imaging_service", "Receiver", "ter:ActionNotSupported", "ter:terNoImagingForSource", "terNoImagingForSource", "The requested VideoSource does not support imaging settings");
++        log_debug("imaging_ctrl is NULL");
++        return -1;
++    }
++
++    node = get_element_ptr(NULL, "VideoSourceToken", "Body");
++    if (node == NULL)
++    {
++        send_fault("imaging_service", "Sender", "ter:InvalidArgVal", "ter:terNoSource", "terNoSource", "The requested VideoSource does not exist");
++        return -2;
++    }
++
++    node = get_element_ptr(NULL, "ImagingSettings", "Body");
++    if (node != NULL)
++    {
++        brightness = get_element_in_element("Brightness", node);
++        color_saturation = get_element_in_element("ColorSaturation", node);
++        // contrast = get_element_in_element("Contrast", node);
++        // sharpness = get_element_in_element("Sharpness", node);
++    }
++
++    contrast = get_element("Contrast", "Body");
++    sharpness = get_element("Sharpness", "Body");
++
++    if (brightness != NULL)
++    {
++        brightness_value = atof(brightness);
++        log_debug("brightness_value = %d", brightness_value);
++
++        sprintf(sys_command, "%s set_brightness %d", service_ctx.imaging_node.imaging_ctrl, brightness_value);
++        log_debug("'sys_command': %s", sys_command);
++        system(sys_command);
++    }
++
++    if (color_saturation != NULL)
++    {
++        color_saturation_value = atof(color_saturation);
++        log_debug("color_saturation_value = %d", color_saturation_value);
++
++        sprintf(sys_command, "%s set_color_saturation %d", service_ctx.imaging_node.imaging_ctrl, color_saturation_value);
++        log_debug("'sys_command': %s", sys_command);
++        system(sys_command);
++    }
++
++    if (contrast != NULL)
++    {
++        contrast_value = atof(contrast);
++        log_debug("contrast_value = %d", contrast_value);
++
++        sprintf(sys_command, "%s set_contrast %d", service_ctx.imaging_node.imaging_ctrl, contrast_value);
++        log_debug("'sys_command': %s", sys_command);
++        system(sys_command);
++    }
++
++    if (sharpness != NULL)
++    {
++        sharpness_value = atof(sharpness);
++        log_debug("sharpness_value = %d", sharpness_value);
++
++        sprintf(sys_command, "%s set_sharpness %d", service_ctx.imaging_node.imaging_ctrl, sharpness_value);
++        log_debug("'sys_command': %s", sys_command);
++        system(sys_command);
++    }
++
++    long size = cat(NULL, "imaging_service_files/SetImagingSettings.xml", 0);
++
++    fprintf(stdout, "Content-type: application/soap+xml\r\n");
++    fprintf(stdout, "Content-Length: %ld\r\n\r\n", size);
++
++    return cat("stdout", "imaging_service_files/SetImagingSettings.xml", 0);
++}
++
++int imaging_unsupported(const char *method)
++{
++    if (service_ctx.adv_fault_if_unknown == 1)
++        send_action_failed_fault("imaging_service", -1);
++    else
++        send_empty_response("timg", (char *)method);
++    return -1;
++}
+diff --git a/imaging_service.h b/imaging_service.h
+new file mode 100644
+index 0000000..8e5240c
+--- /dev/null
++++ b/imaging_service.h
+@@ -0,0 +1,13 @@
++#ifndef IMAGING_SERVICE_H
++#define IMAGING_SERVICE_H
++
++int imaging_get_current_preset();
++int imaging_set_current_preset();
++int imaging_get_options();
++int imaging_get_service_capabilities();
++int imaging_get_imaging_settings();
++int imaging_set_imaging_settings();
++
++int imaging_unsupported(const char *method);
++
++#endif // IMAGING_SERVICE_H
+\ No newline at end of file
+diff --git a/imaging_service_files/GetCurrentPreset.xml b/imaging_service_files/GetCurrentPreset.xml
+new file mode 100644
+index 0000000..b8b9bf9
+--- /dev/null
++++ b/imaging_service_files/GetCurrentPreset.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++    xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++    xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++    xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++    xmlns:xmime="http://tempuri.org/xmime.xsd"
++    xmlns:xop="http://www.w3.org/2004/08/xop/include"
++    xmlns:tt="http://www.onvif.org/ver10/schema"
++    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
++    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++    xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
++    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
++    <SOAP-ENV:Body>
++        <timg:GetCurrentPresetResponse></timg:GetCurrentPresetResponse>
++    </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
+\ No newline at end of file
+diff --git a/imaging_service_files/GetImagingSettings.xml b/imaging_service_files/GetImagingSettings.xml
+new file mode 100644
+index 0000000..81c2bfb
+--- /dev/null
++++ b/imaging_service_files/GetImagingSettings.xml
+@@ -0,0 +1,37 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++    xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++    xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++    xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++    xmlns:xmime="http://tempuri.org/xmime.xsd"
++    xmlns:xop="http://www.w3.org/2004/08/xop/include"
++    xmlns:tt="http://www.onvif.org/ver10/schema"
++    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
++    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++    xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
++    xmlns:c14n="http://www.w3.org/2001/10/xml-exc-c14n#"
++    xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
++    xmlns:saml1="urn:oasis:names:tc:SAML:1.0:assertion"
++    xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion"
++    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
++    <SOAP-ENV:Body>
++        <timg:GetImagingSettingsResponse>
++            <timg:ImagingSettings>
++                <tt:Brightness>%BRIGHTNESS%</tt:Brightness>
++                <tt:ColorSaturation>%COLOR_SATURATION%</tt:ColorSaturation>
++                <tt:Contrast>%CONTRAST%</tt:Contrast>
++                <tt:Sharpness>%SHARPNESS%</tt:Sharpness>
++            </timg:ImagingSettings>
++        </timg:GetImagingSettingsResponse>
++    </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
+\ No newline at end of file
+diff --git a/imaging_service_files/GetOptions.xml b/imaging_service_files/GetOptions.xml
+new file mode 100644
+index 0000000..434df03
+--- /dev/null
++++ b/imaging_service_files/GetOptions.xml
+@@ -0,0 +1,45 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++   xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++   xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++   xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++   xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++   xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++   xmlns:xmime="http://tempuri.org/xmime.xsd"
++   xmlns:xop="http://www.w3.org/2004/08/xop/include"
++   xmlns:tt="http://www.onvif.org/ver10/schema"
++   xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++   xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++   xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
++   xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++   xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++   xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
++   xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++   xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++   xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++   xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
++   <SOAP-ENV:Body>
++      <timg:GetOptionsResponse>
++         <timg:ImagingOptions>
++            <tt:Brightness>
++               <tt:Min>%BRIGHTNESS_MIN%</tt:Min>
++               <tt:Max>%BRIGHTNESS_MAX%</tt:Max>
++            </tt:Brightness>
++            <tt:ColorSaturation>
++               <tt:Min>%COLOR_SATURATION_MIN%</tt:Min>
++               <tt:Max>%COLOR_SATURATION_MAX%</tt:Max>
++            </tt:ColorSaturation>
++            <tt:Sharpness>
++               <tt:Min>%SHARPNESS_MIN%</tt:Min>
++               <tt:Max>%SHARPNESS_MAX%</tt:Max>
++            </tt:Sharpness>
++            <tt:Contrast>
++               <tt:Min>%CONTRAST_MIN%</tt:Min>
++               <tt:Max>%CONTRAST_MAX%</tt:Max>
++            </tt:Contrast>
++         </timg:ImagingOptions>
++      </timg:GetOptionsResponse>
++   </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
+\ No newline at end of file
+diff --git a/imaging_service_files/GetServiceCapabilities.xml b/imaging_service_files/GetServiceCapabilities.xml
+new file mode 100644
+index 0000000..a0587dc
+--- /dev/null
++++ b/imaging_service_files/GetServiceCapabilities.xml
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++    xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++    xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++    xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++    xmlns:xmime="http://tempuri.org/xmime.xsd"
++    xmlns:xop="http://www.w3.org/2004/08/xop/include"
++    xmlns:tt="http://www.onvif.org/ver10/schema"
++    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
++    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++    xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
++    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
++    <SOAP-ENV:Body>
++        <timg:GetServiceCapabilitiesResponse>
++            <timg:Capabilities ImageStabilization="false" Presets="false" AdaptablePreset="false"></timg:Capabilities>
++        </timg:GetServiceCapabilitiesResponse>
++    </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
+\ No newline at end of file
+diff --git a/imaging_service_files/SetCurrentPreset.xml b/imaging_service_files/SetCurrentPreset.xml
+new file mode 100644
+index 0000000..9cef215
+--- /dev/null
++++ b/imaging_service_files/SetCurrentPreset.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++    xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++    xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++    xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++    xmlns:xmime="http://tempuri.org/xmime.xsd"
++    xmlns:xop="http://www.w3.org/2004/08/xop/include"
++    xmlns:tt="http://www.onvif.org/ver10/schema"
++    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
++    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++    xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
++    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
++    <SOAP-ENV:Body>
++        <timg:SetCurrentPresetResponse></timg:SetCurrentPresetResponse>
++    </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
+\ No newline at end of file
+diff --git a/imaging_service_files/SetImagingSettings.xml b/imaging_service_files/SetImagingSettings.xml
+new file mode 100644
+index 0000000..0a0bba8
+--- /dev/null
++++ b/imaging_service_files/SetImagingSettings.xml
+@@ -0,0 +1,26 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope"
++    xmlns:SOAP-ENC="http://www.w3.org/2003/05/soap-encoding"
++    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++    xmlns:chan="http://schemas.microsoft.com/ws/2005/02/duplex"
++    xmlns:wsa5="http://www.w3.org/2005/08/addressing"
++    xmlns:wsnt="http://docs.oasis-open.org/wsn/b-2"
++    xmlns:wsrfbf="http://docs.oasis-open.org/wsrf/bf-2"
++    xmlns:xmime="http://tempuri.org/xmime.xsd"
++    xmlns:xop="http://www.w3.org/2004/08/xop/include"
++    xmlns:tt="http://www.onvif.org/ver10/schema"
++    xmlns:wstop="http://docs.oasis-open.org/wsn/t-1"
++    xmlns:tds="http://www.onvif.org/ver10/device/wsdl"
++    xmlns:tev="http://www.onvif.org/ver10/events/wsdl"
++    xmlns:tptz="http://www.onvif.org/ver20/ptz/wsdl"
++    xmlns:trt="http://www.onvif.org/ver10/media/wsdl"
++    xmlns:timg="http://www.onvif.org/ver20/imaging/wsdl"
++    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
++    xmlns:xenc="http://www.w3.org/2001/04/xmlenc#"
++    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
++    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
++    <SOAP-ENV:Body>
++        <timg:SetImagingSettingsResponse></timg:SetImagingSettingsResponse>
++    </SOAP-ENV:Body>
++</SOAP-ENV:Envelope>
+\ No newline at end of file
+diff --git a/media_service_files/GetVideoSources.xml b/media_service_files/GetVideoSources.xml
+index 984c713..1ff846a 100644
+--- a/media_service_files/GetVideoSources.xml
++++ b/media_service_files/GetVideoSources.xml
+@@ -25,10 +25,9 @@
+                 <tt:Framerate>60</tt:Framerate>
+                 <tt:Resolution>
+                     <tt:Width>%WIDTH%</tt:Width>
+                     <tt:Height>%HEIGHT%</tt:Height>
+                 </tt:Resolution>
+-                <tt:Imaging/>
+             </trt:VideoSources>
+         </trt:GetVideoSourcesResponse>
+     </SOAP-ENV:Body>
+ </SOAP-ENV:Envelope>
+diff --git a/onvif_simple_server.c b/onvif_simple_server.c
+index 21a490e..c165a66 100644
+--- a/onvif_simple_server.c
++++ b/onvif_simple_server.c
+@@ -246,10 +246,11 @@ int main(int argc, char ** argv)
+ 
+     // Check if the service name is sent as a last argument
+     if (argc > 1) {
+         tmp = argv[argc - 1];
+         if ((strstr(tmp, "device_service") != NULL) ||
++            (strstr(tmp, "imaging_service") != NULL) ||
+                 (strstr(tmp, "media_service") != NULL) ||
+                 (strstr(tmp, "ptz_service") != NULL) ||
+                 (strstr(tmp, "events_service") != NULL)) {
+             tmp = argv[argc - 1];
+         } else {
+@@ -443,10 +444,39 @@ int main(int argc, char ** argv)
+             } else if (strcasecmp(method, "GetNetworkInterfaces") == 0) {
+                 device_get_network_interfaces();
+             } else {
+                 device_unsupported(method);
+             }
++        } else if (strcasecmp("imaging_service", prog_name) == 0) {
++            if (strcasecmp(method, "GetServiceCapabilities") == 0)
++            {
++                imaging_get_service_capabilities();
++            }
++            else if (strcasecmp(method, "GetImagingSettings") == 0)
++            {
++                imaging_get_imaging_settings();
++            }
++            else if (strcasecmp(method, "SetImagingSettings") == 0)
++            {
++                imaging_set_imaging_settings();
++            }
++            else if (strcasecmp(method, "GetCurrentPreset") == 0)
++            {
++                imaging_get_current_preset();
++            }
++            else if (strcasecmp(method, "SetCurrentPreset") == 0)
++            {
++                imaging_set_current_preset();
++            }
++            else if (strcasecmp(method, "GetOptions") == 0)
++            {
++                imaging_get_options();
++            }
++            else
++            {
++                imaging_unsupported(method);
++            }
+         } else if (strcasecmp("media_service", prog_name) == 0) {
+             if (strcasecmp(method, "GetServiceCapabilities") == 0) {
+                 media_get_service_capabilities();
+             } else if (strcasecmp(method, "GetVideoSources") == 0) {
+                 media_get_video_sources();
+diff --git a/onvif_simple_server.h b/onvif_simple_server.h
+index 3dbc3b8..823f8ee 100644
+--- a/onvif_simple_server.h
++++ b/onvif_simple_server.h
+@@ -36,10 +36,14 @@ typedef enum {
+     JPEG,
+     MPEG4,
+     H264
+ } stream_type;
+ 
++typedef struct {
++    char *imaging_ctrl;
++} imaging_node_t;
++
+ typedef struct {
+     char *name;
+     int  width;
+     int  height;
+     char *url;
+@@ -94,10 +98,12 @@ typedef struct {
+     int adv_synology_nvr;
+ 
+     stream_profile_t *profiles;
+     int profiles_num;
+ 
++    imaging_node_t imaging_node;
++
+     char **scopes;
+     int scopes_num;
+ 
+     ptz_node_t ptz_node;
+     event_t *events;
+-- 
+2.34.1
+

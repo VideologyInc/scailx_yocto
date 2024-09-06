@@ -1,0 +1,51 @@
+From 4cea6ae8c2f58f9f6ce4e876fd6dec6d02e345e6 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Mon, 2 Sep 2024 14:57:08 +0200
+Subject: [PATCH 1/4] fix makefile
+
+---
+ .gitignore |  1 +
+ Makefile   | 13 +++++++------
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+ create mode 100644 .gitignore
+
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..5761abc
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1 @@
++*.o
+diff --git a/Makefile b/Makefile
+index 460d44e..f85abbc 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,18 +1,19 @@
+ # Set HAVE_MBEDTLS variable if you want to use MBEDTLS instead of TOMCRYPT
+ 
+ OBJECTS_O = onvif_simple_server.o device_service.o media_service.o ptz_service.o events_service.o fault.o conf.o utils.o log.o ezxml_wrapper.o ezxml/ezxml.o
+ OBJECTS_N = onvif_notify_server.o conf.o utils.o log.o ezxml_wrapper.o ezxml/ezxml.o
+ OBJECTS_W = wsd_simple_server.o utils.o log.o ezxml_wrapper.o ezxml/ezxml.o
++INCLUDE = -ffunction-sections -fdata-sections -lrt
++
+ ifdef HAVE_MBEDTLS
+-INCLUDE = -DHAVE_MBEDTLS -Iextras/mbedtls/include -ffunction-sections -fdata-sections -lrt
+-LIBS_O = -Wl,--gc-sections extras/mbedtls/library/libmbedcrypto.a -lpthread -lrt
+-LIBS_N = -Wl,--gc-sections extras/mbedtls/library/libmbedcrypto.a -lpthread -lrt
++INCLUDE += -DHAVE_MBEDTLS -Imbedtls
++LIBS_O = -Wl,--gc-sections -l:libmbedcrypto.a -lpthread -lrt
++LIBS_N = -Wl,--gc-sections -l:libmbedcrypto.a -lpthread -lrt
+ else
+-INCLUDE = -Iextras/libtomcrypt/src/headers -ffunction-sections -fdata-sections -lrt
+-LIBS_O = -Wl,--gc-sections extras/libtomcrypt/libtomcrypt.a -lpthread -lrt
+-LIBS_N = -Wl,--gc-sections extras/libtomcrypt/libtomcrypt.a -lpthread -lrt
++LIBS_O = -Wl,--gc-sections -l:libtomcrypt.a -lpthread -lrt
++LIBS_N = -Wl,--gc-sections -l:libtomcrypt.a -lpthread -lrt
+ endif
+ LIBS_W = -Wl,--gc-sections
+ 
+ ifeq ($(STRIP), )
+     STRIP=echo
+-- 
+2.34.1
+

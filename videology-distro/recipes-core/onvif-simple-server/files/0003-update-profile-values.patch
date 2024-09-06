@@ -1,0 +1,343 @@
+From df39d1ddb7aeaaf1b925cafc93d4d915bc59be4c Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Tue, 3 Sep 2024 17:26:30 +0200
+Subject: [PATCH 3/4] update profile values
+
+---
+ ...CompatibleVideoEncoderConfigurations_high.xml |  8 ++++----
+ ...tCompatibleVideoEncoderConfigurations_low.xml |  8 ++++----
+ media_service_files/GetProfile_high.xml          |  8 ++++----
+ media_service_files/GetProfile_low.xml           |  8 ++++----
+ media_service_files/GetProfiles_both.xml         | 16 ++++++++--------
+ media_service_files/GetProfiles_high.xml         |  8 ++++----
+ .../GetVideoEncoderConfigurationOptions.xml      |  8 ++++----
+ .../GetVideoEncoderConfiguration_high.xml        |  2 +-
+ .../GetVideoEncoderConfiguration_low.xml         |  2 +-
+ .../GetVideoEncoderConfigurations_both.xml       |  4 ++--
+ .../GetVideoEncoderConfigurations_high.xml       |  2 +-
+ media_service_files/GetVideoSources.xml          |  2 +-
+ 12 files changed, 38 insertions(+), 38 deletions(-)
+
+diff --git a/media_service_files/GetCompatibleVideoEncoderConfigurations_high.xml b/media_service_files/GetCompatibleVideoEncoderConfigurations_high.xml
+index aeca602..0721990 100644
+--- a/media_service_files/GetCompatibleVideoEncoderConfigurations_high.xml
++++ b/media_service_files/GetCompatibleVideoEncoderConfigurations_high.xml
+@@ -27,18 +27,18 @@
+                 <tt:Encoding>H264</tt:Encoding>
+                 <tt:Resolution>
+                     <tt:Width>%WIDTH_HIGH%</tt:Width>
+                     <tt:Height>%HEIGHT_HIGH%</tt:Height>
+                 </tt:Resolution>
+-                <tt:Quality>0</tt:Quality>
++                <tt:Quality>100</tt:Quality>
+                 <tt:RateControl>
+-                    <tt:FrameRateLimit>0</tt:FrameRateLimit>
++                    <tt:FrameRateLimit>60</tt:FrameRateLimit>
+                     <tt:EncodingInterval>0</tt:EncodingInterval>
+-                    <tt:BitrateLimit>0</tt:BitrateLimit>
++                    <tt:BitrateLimit>32000</tt:BitrateLimit>
+                 </tt:RateControl>
+                 <tt:H264>
+-                    <tt:GovLength>40</tt:GovLength>
++                    <tt:GovLength>0</tt:GovLength>
+                     <tt:H264Profile>High</tt:H264Profile>
+                 </tt:H264>
+                 <tt:Multicast>
+                     <tt:Address>
+                         <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetCompatibleVideoEncoderConfigurations_low.xml b/media_service_files/GetCompatibleVideoEncoderConfigurations_low.xml
+index 9b3043c..4be462a 100644
+--- a/media_service_files/GetCompatibleVideoEncoderConfigurations_low.xml
++++ b/media_service_files/GetCompatibleVideoEncoderConfigurations_low.xml
+@@ -27,18 +27,18 @@
+                 <tt:Encoding>H264</tt:Encoding>
+                 <tt:Resolution>
+                     <tt:Width>%WIDTH_LOW%</tt:Width>
+                     <tt:Height>%HEIGHT_LOW%</tt:Height>
+                 </tt:Resolution>
+-                <tt:Quality>0</tt:Quality>
++                <tt:Quality>100</tt:Quality>
+                 <tt:RateControl>
+-                    <tt:FrameRateLimit>0</tt:FrameRateLimit>
++                    <tt:FrameRateLimit>60</tt:FrameRateLimit>
+                     <tt:EncodingInterval>0</tt:EncodingInterval>
+-                    <tt:BitrateLimit>0</tt:BitrateLimit>
++                    <tt:BitrateLimit>32000</tt:BitrateLimit>
+                 </tt:RateControl>
+                 <tt:H264>
+-                    <tt:GovLength>40</tt:GovLength>
++                    <tt:GovLength>0</tt:GovLength>
+                     <tt:H264Profile>Main</tt:H264Profile>
+                 </tt:H264>
+                 <tt:Multicast>
+                     <tt:Address>
+                         <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetProfile_high.xml b/media_service_files/GetProfile_high.xml
+index 1ce5c97..d2a9108 100644
+--- a/media_service_files/GetProfile_high.xml
++++ b/media_service_files/GetProfile_high.xml
+@@ -39,18 +39,18 @@
+                     <tt:Encoding>H264</tt:Encoding>
+                     <tt:Resolution>
+                         <tt:Width>%WIDTH%</tt:Width>
+                         <tt:Height>%HEIGHT%</tt:Height>
+                     </tt:Resolution>
+-                    <tt:Quality>0</tt:Quality>
++                    <tt:Quality>100</tt:Quality>
+                     <tt:RateControl>
+-                        <tt:FrameRateLimit>0</tt:FrameRateLimit>
++                        <tt:FrameRateLimit>60</tt:FrameRateLimit>
+                         <tt:EncodingInterval>0</tt:EncodingInterval>
+-                        <tt:BitrateLimit>0</tt:BitrateLimit>
++                        <tt:BitrateLimit>32000</tt:BitrateLimit>
+                     </tt:RateControl>
+                     <tt:H264>
+-                        <tt:GovLength>40</tt:GovLength>
++                        <tt:GovLength>0</tt:GovLength>
+                         <tt:H264Profile>High</tt:H264Profile>
+                     </tt:H264>
+                     <tt:Multicast>
+                         <tt:Address>
+                             <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetProfile_low.xml b/media_service_files/GetProfile_low.xml
+index 3cbabd0..242ce96 100644
+--- a/media_service_files/GetProfile_low.xml
++++ b/media_service_files/GetProfile_low.xml
+@@ -39,18 +39,18 @@
+                     <tt:Encoding>H264</tt:Encoding>
+                     <tt:Resolution>
+                         <tt:Width>%WIDTH%</tt:Width>
+                         <tt:Height>%HEIGHT%</tt:Height>
+                     </tt:Resolution>
+-                    <tt:Quality>0</tt:Quality>
++                    <tt:Quality>100</tt:Quality>
+                     <tt:RateControl>
+-                        <tt:FrameRateLimit>0</tt:FrameRateLimit>
++                        <tt:FrameRateLimit>60</tt:FrameRateLimit>
+                         <tt:EncodingInterval>0</tt:EncodingInterval>
+-                        <tt:BitrateLimit>0</tt:BitrateLimit>
++                        <tt:BitrateLimit>32000</tt:BitrateLimit>
+                     </tt:RateControl>
+                     <tt:H264>
+-                        <tt:GovLength>40</tt:GovLength>
++                        <tt:GovLength>0</tt:GovLength>
+                         <tt:H264Profile>Main</tt:H264Profile>
+                     </tt:H264>
+                     <tt:Multicast>
+                         <tt:Address>
+                             <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetProfiles_both.xml b/media_service_files/GetProfiles_both.xml
+index a2bdcac..d139b73 100644
+--- a/media_service_files/GetProfiles_both.xml
++++ b/media_service_files/GetProfiles_both.xml
+@@ -39,18 +39,18 @@
+                     <tt:Encoding>H264</tt:Encoding>
+                     <tt:Resolution>
+                         <tt:Width>%VEC_WIDTH_HIGH%</tt:Width>
+                         <tt:Height>%VEC_HEIGHT_HIGH%</tt:Height>
+                     </tt:Resolution>
+-                    <tt:Quality>0</tt:Quality>
++                    <tt:Quality>100</tt:Quality>
+                     <tt:RateControl>
+-                        <tt:FrameRateLimit>0</tt:FrameRateLimit>
++                        <tt:FrameRateLimit>60</tt:FrameRateLimit>
+                         <tt:EncodingInterval>0</tt:EncodingInterval>
+-                        <tt:BitrateLimit>0</tt:BitrateLimit>
++                        <tt:BitrateLimit>32000</tt:BitrateLimit>
+                     </tt:RateControl>
+                     <tt:H264>
+-                        <tt:GovLength>40</tt:GovLength>
++                        <tt:GovLength>0</tt:GovLength>
+                         <tt:H264Profile>High</tt:H264Profile>
+                     </tt:H264>
+                     <tt:Multicast>
+                         <tt:Address>
+                             <tt:Type>IPv4</tt:Type>
+@@ -134,18 +134,18 @@
+                     <tt:Encoding>H264</tt:Encoding>
+                     <tt:Resolution>
+                         <tt:Width>%VEC_WIDTH_LOW%</tt:Width>
+                         <tt:Height>%VEC_HEIGHT_LOW%</tt:Height>
+                     </tt:Resolution>
+-                    <tt:Quality>0</tt:Quality>
++                    <tt:Quality>100</tt:Quality>
+                     <tt:RateControl>
+-                        <tt:FrameRateLimit>0</tt:FrameRateLimit>
++                        <tt:FrameRateLimit>60</tt:FrameRateLimit>
+                         <tt:EncodingInterval>0</tt:EncodingInterval>
+-                        <tt:BitrateLimit>0</tt:BitrateLimit>
++                        <tt:BitrateLimit>32000</tt:BitrateLimit>
+                     </tt:RateControl>
+                     <tt:H264>
+-                        <tt:GovLength>40</tt:GovLength>
++                        <tt:GovLength>0</tt:GovLength>
+                         <tt:H264Profile>Main</tt:H264Profile>
+                     </tt:H264>
+                     <tt:Multicast>
+                         <tt:Address>
+                             <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetProfiles_high.xml b/media_service_files/GetProfiles_high.xml
+index bc04ec9..f59b028 100644
+--- a/media_service_files/GetProfiles_high.xml
++++ b/media_service_files/GetProfiles_high.xml
+@@ -39,18 +39,18 @@
+                     <tt:Encoding>H264</tt:Encoding>
+                     <tt:Resolution>
+                         <tt:Width>%VEC_WIDTH_HIGH%</tt:Width>
+                         <tt:Height>%VEC_HEIGHT_HIGH%</tt:Height>
+                     </tt:Resolution>
+-                    <tt:Quality>0</tt:Quality>
++                    <tt:Quality>100</tt:Quality>
+                     <tt:RateControl>
+-                        <tt:FrameRateLimit>0</tt:FrameRateLimit>
++                        <tt:FrameRateLimit>60</tt:FrameRateLimit>
+                         <tt:EncodingInterval>0</tt:EncodingInterval>
+-                        <tt:BitrateLimit>0</tt:BitrateLimit>
++                        <tt:BitrateLimit>32000</tt:BitrateLimit>
+                     </tt:RateControl>
+                     <tt:H264>
+-                        <tt:GovLength>40</tt:GovLength>
++                        <tt:GovLength>0</tt:GovLength>
+                         <tt:H264Profile>High</tt:H264Profile>
+                     </tt:H264>
+                     <tt:Multicast>
+                         <tt:Address>
+                             <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetVideoEncoderConfigurationOptions.xml b/media_service_files/GetVideoEncoderConfigurationOptions.xml
+index 5ccc189..6bea22f 100644
+--- a/media_service_files/GetVideoEncoderConfigurationOptions.xml
++++ b/media_service_files/GetVideoEncoderConfigurationOptions.xml
+@@ -22,28 +22,28 @@
+     <SOAP-ENV:Body>
+         <trt:GetVideoEncoderConfigurationOptionsResponse>
+             <trt:Options>
+                 <tt:QualityRange>
+                     <tt:Min>0</tt:Min>
+-                    <tt:Max>100</tt:Max>
++                    <tt:Max>0</tt:Max>
+                 </tt:QualityRange>
+                 <tt:H264>
+                     <tt:ResolutionsAvailable>
+                         <tt:Width>%WIDTH%</tt:Width>
+                         <tt:Height>%HEIGHT%</tt:Height>
+                     </tt:ResolutionsAvailable>
+                     <tt:GovLengthRange>
+                         <tt:Min>0</tt:Min>
+-                        <tt:Max>40</tt:Max>
++                        <tt:Max>0</tt:Max>
+                     </tt:GovLengthRange>
+                     <tt:FrameRateRange>
+                         <tt:Min>0</tt:Min>
+-                        <tt:Max>20</tt:Max>
++                        <tt:Max>0</tt:Max>
+                     </tt:FrameRateRange>
+                     <tt:EncodingIntervalRange>
+                         <tt:Min>0</tt:Min>
+-                        <tt:Max>3</tt:Max>
++                        <tt:Max>0</tt:Max>
+                     </tt:EncodingIntervalRange>
+                     <tt:H264ProfilesSupported>%PROFILE%</tt:H264ProfilesSupported>
+                 </tt:H264>
+             </trt:Options>
+         </trt:GetVideoEncoderConfigurationOptionsResponse>
+diff --git a/media_service_files/GetVideoEncoderConfiguration_high.xml b/media_service_files/GetVideoEncoderConfiguration_high.xml
+index 75cb6b8..4d672a7 100644
+--- a/media_service_files/GetVideoEncoderConfiguration_high.xml
++++ b/media_service_files/GetVideoEncoderConfiguration_high.xml
+@@ -34,11 +34,11 @@
+                     <tt:FrameRateLimit>0</tt:FrameRateLimit>
+                     <tt:EncodingInterval>0</tt:EncodingInterval>
+                     <tt:BitrateLimit>0</tt:BitrateLimit>
+                 </tt:RateControl>
+                 <tt:H264>
+-                    <tt:GovLength>40</tt:GovLength>
++                    <tt:GovLength>0</tt:GovLength>
+                     <tt:H264Profile>High</tt:H264Profile>
+                 </tt:H264>
+                 <tt:Multicast>
+                     <tt:Address>
+                     <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetVideoEncoderConfiguration_low.xml b/media_service_files/GetVideoEncoderConfiguration_low.xml
+index 93490a1..58027d5 100644
+--- a/media_service_files/GetVideoEncoderConfiguration_low.xml
++++ b/media_service_files/GetVideoEncoderConfiguration_low.xml
+@@ -34,11 +34,11 @@
+                     <tt:FrameRateLimit>0</tt:FrameRateLimit>
+                     <tt:EncodingInterval>0</tt:EncodingInterval>
+                     <tt:BitrateLimit>0</tt:BitrateLimit>
+                 </tt:RateControl>
+                 <tt:H264>
+-                    <tt:GovLength>40</tt:GovLength>
++                    <tt:GovLength>0</tt:GovLength>
+                     <tt:H264Profile>Main</tt:H264Profile>
+                 </tt:H264>
+                 <tt:Multicast>
+                     <tt:Address>
+                     <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetVideoEncoderConfigurations_both.xml b/media_service_files/GetVideoEncoderConfigurations_both.xml
+index 7f4055d..32f873a 100644
+--- a/media_service_files/GetVideoEncoderConfigurations_both.xml
++++ b/media_service_files/GetVideoEncoderConfigurations_both.xml
+@@ -34,11 +34,11 @@
+                     <tt:FrameRateLimit>0</tt:FrameRateLimit>
+                     <tt:EncodingInterval>0</tt:EncodingInterval>
+                     <tt:BitrateLimit>0</tt:BitrateLimit>
+                 </tt:RateControl>
+                 <tt:H264>
+-                    <tt:GovLength>40</tt:GovLength>
++                    <tt:GovLength>0</tt:GovLength>
+                     <tt:H264Profile>High</tt:H264Profile>
+                 </tt:H264>
+                 <tt:Multicast>
+                     <tt:Address>
+                     <tt:Type>IPv4</tt:Type>
+@@ -62,11 +62,11 @@
+                     <tt:FrameRateLimit>0</tt:FrameRateLimit>
+                     <tt:EncodingInterval>0</tt:EncodingInterval>
+                     <tt:BitrateLimit>0</tt:BitrateLimit>
+                 </tt:RateControl>
+                 <tt:H264>
+-                    <tt:GovLength>40</tt:GovLength>
++                    <tt:GovLength>0</tt:GovLength>
+                     <tt:H264Profile>Main</tt:H264Profile>
+                 </tt:H264>
+                 <tt:Multicast>
+                     <tt:Address>
+                     <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetVideoEncoderConfigurations_high.xml b/media_service_files/GetVideoEncoderConfigurations_high.xml
+index ff6f8ad..43fb6c3 100644
+--- a/media_service_files/GetVideoEncoderConfigurations_high.xml
++++ b/media_service_files/GetVideoEncoderConfigurations_high.xml
+@@ -34,11 +34,11 @@
+                     <tt:FrameRateLimit>0</tt:FrameRateLimit>
+                     <tt:EncodingInterval>0</tt:EncodingInterval>
+                     <tt:BitrateLimit>0</tt:BitrateLimit>
+                 </tt:RateControl>
+                 <tt:H264>
+-                    <tt:GovLength>40</tt:GovLength>
++                    <tt:GovLength>0</tt:GovLength>
+                     <tt:H264Profile>High</tt:H264Profile>
+                 </tt:H264>
+                 <tt:Multicast>
+                     <tt:Address>
+                     <tt:Type>IPv4</tt:Type>
+diff --git a/media_service_files/GetVideoSources.xml b/media_service_files/GetVideoSources.xml
+index db690da..984c713 100644
+--- a/media_service_files/GetVideoSources.xml
++++ b/media_service_files/GetVideoSources.xml
+@@ -20,11 +20,11 @@
+                    xmlns:wsc="http://docs.oasis-open.org/ws-sx/ws-secureconversation/200512"
+                    xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+     <SOAP-ENV:Body>
+         <trt:GetVideoSourcesResponse>
+             <trt:VideoSources token="VideoSourceToken">
+-                <tt:Framerate>20</tt:Framerate>
++                <tt:Framerate>60</tt:Framerate>
+                 <tt:Resolution>
+                     <tt:Width>%WIDTH%</tt:Width>
+                     <tt:Height>%HEIGHT%</tt:Height>
+                 </tt:Resolution>
+                 <tt:Imaging/>
+-- 
+2.34.1
+

@@ -1,0 +1,14 @@
+[Unit]
+Description=Onvif Simple Server
+Wants=network-online.target
+After=scailx-ai-portal.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c 'source /etc/onvif_simple_server.conf; IFS=$(ip route | grep default | awk "{ print \$5 }"); wsd_simple_server -d 1 -f -i $IFS -x http://%s:"$port"/onvif/device_service -n "$manufacturer" -m "$model" -p /tmp/wsd_server.pid'
+Restart=on-failure
+StartLimitInterval=40s
+StartLimitBurst=4
+
+[Install]
+WantedBy=multi-user.target
