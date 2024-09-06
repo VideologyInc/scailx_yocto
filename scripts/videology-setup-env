@@ -1,14 +1,14 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 source ~/.bashrc
 
 # Kobus: use local cache if available
-# if [ -d "/work/share" ]; then
-# 	export DL_DIR="/work/share/downloads"
-#     export SSTATE_DIR="/work/share/sstate-cache"
-#     # export PERSISTENT_DIR="/work/share/yocto_persistent"
-#     export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE SCAILX_SOURCES"
-# fi
+if [ -d "/work/share" ]; then
+	export DL_DIR="/work/share/downloads"
+    export SSTATE_DIR="/work/share/sstate-cache"
+    # export PERSISTENT_DIR="/work/share/yocto_persistent"
+    export BB_ENV_PASSTHROUGH_ADDITIONS="DL_DIR SSTATE_DIR BB_GENERATE_MIRROR_TARBALLS PACKAGE_FEED_GPG_PASSPHRASE_FILE SCAILX_SOURCES"
+fi
 
 [ -e "/work/share/scailx-ppa-key-pass.txt" ] && export PACKAGE_FEED_GPG_PASSPHRASE_FILE="/work/share/scailx-ppa-key-pass.txt"
 if git ls-remote --exit-code -q git@github.com:VideologyInc/scailx-portal.git; then
