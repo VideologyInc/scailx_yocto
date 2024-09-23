@@ -82,5 +82,7 @@
         "defconfig": "makefile",
         "*.conf": "bitbake",
         "*.inc": "bitbake"
-    }
+    },
+    "python.languageServer": "None",
+    "C_Cpp.intelliSenseEngine": "disabled"
 }
