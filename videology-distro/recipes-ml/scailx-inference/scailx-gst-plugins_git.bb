@@ -11,7 +11,7 @@ B = "${WORKDIR}/build"
 
 PKGCONFIG = "infer gstosd events test mqttsink apps"
 DEPENDS += "gstreamer1.0 opencv gstreamer1.0-plugins-bad libsoup-2.4 gstreamer1.0-rtsp-server json-glib tensorflow-lite tensorflow-lite-vx-delegate tvm paho-mqtt-c flatbuffers flatbuffers-native protobuf protobuf-native"
-RDEPENDS:${PN} += "python3-core gstreamer1.0-plugins-bad-webrtc onvif-simple-server"
+RDEPENDS:${PN} += "python3-core gstreamer1.0-plugins-bad-webrtc"
 
 inherit pkgconfig meson use-imx-headers
 
