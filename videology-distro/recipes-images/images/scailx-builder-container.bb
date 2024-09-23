@@ -6,10 +6,12 @@ SUMMARY = "Basic container image"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384361b4de20420"
 
-IMAGE_FSTYPES = "container oci"
-inherit image
+IMAGE_FSTYPES = "container docker-archive.xz"
 inherit core-image
 inherit image-oci
+
+# get rid of 'rootfs' tag
+IMAGE_NAME_SUFFIX ?= ""
 
 inherit kernel_devel
 
@@ -19,6 +21,10 @@ IMAGE_FEATURES = " \
     tools-sdk \
     ssh-server-openssh \
     tools-debug \
+    dev-pkgs staticdev-pkgs \
+    package-management \
+    ssh-server-openssh \
+    hwcodecs \
 "
 IMAGE_LINGUAS = ""
 NO_RECOMMENDATIONS = "1"
@@ -33,6 +39,7 @@ IMAGE_INSTALL = " \
 "
 
 IMAGE_INSTALL += " \
+    scailx-ppa-key \
     packagegroup-fsl-gstreamer1.0 \
     packagegroup-imx-ml \
     packagegroup-fsl-tools-gpu \
@@ -74,10 +81,19 @@ IMAGE_INSTALL += " \
     imx-gpu-viv-tools \
     imx-gpu-viv-demos \
     python3-pyserial \
+    libsoup-2.4 \
+    json-glib \
+    tvm \
+    openssl \
+    paho-mqtt-c \
+    flatbuffers \
+    protobuf \
     gst-variable-rtsp-server \
     python3-ar0234 \
     curl \
     git \
+    nano \
+    ca-certificates \
     ser2net \
     ffmpeg \
     python3-pycairo \
