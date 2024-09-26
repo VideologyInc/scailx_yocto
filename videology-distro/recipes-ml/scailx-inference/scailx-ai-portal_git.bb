@@ -20,12 +20,12 @@ do_install(){
     install -d ${D}${systemd_system_unitdir}
     cp -r ${S}/* ${D}
     install -m 0644 ${WORKDIR}/scailx-ai-portal.service ${D}${systemd_system_unitdir}
-    install -m 0644 ${WORKDIR}/pipeline.json ${D}${sysconfdir}/scailx-ai-portal/settings/pipeline.json
+    install -m 0644 ${WORKDIR}/pipeline.json ${D}${sysconfdir}/scailx-ai-portal/settings/pipeline-stream.json
 }
 
 FILES:${PN} += "${prefix}/${PN} ${sysconfdir}/scailx-ai-portal ${systemd_system_unitdir}"
 inherit systemd
 SYSTEMD_SERVICE:${PN} = "scailx-ai-portal.service"
 # SYSTEMD_AUTO_ENABLE = "disable"
-CONFFILES:${PN} += "${sysconfdir}/scailx-ai-portal/settings/pipeline.json"
+CONFFILES:${PN} += "${sysconfdir}/scailx-ai-portal/settings/pipeline-stream.json"
 INSANE_SKIP:${PN} += "installed-vs-shipped"
