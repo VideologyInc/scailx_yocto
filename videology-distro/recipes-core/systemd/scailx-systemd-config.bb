@@ -11,12 +11,14 @@ inherit allarch
 
 SRC_URI += "file://99-watchdog.conf"
 SRC_URI += "file://99-shutdown.conf"
+SRC_URI += "file://50-scailx-eth-auto-linklocal.network"
 
 S = "${WORKDIR}"
 
 do_install() {
    	install -D -m0644 "${WORKDIR}/99-watchdog.conf" "${D}${systemd_unitdir}/system.conf.d/99-watchdog.conf"
    	install -D -m0644 "${WORKDIR}/99-shutdown.conf" "${D}${systemd_unitdir}/system.conf.d/99-shutdown.conf"
+    install -D -m0644 "${WORKDIR}/50-scailx-eth-auto-linklocal.network" "${D}${systemd_unitdir}/network/50-scailx-eth-auto-linklocal.network"
 }
 
 FILES:${PN} = "${systemd_unitdir}/"
