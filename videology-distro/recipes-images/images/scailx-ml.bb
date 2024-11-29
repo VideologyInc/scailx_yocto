@@ -41,6 +41,7 @@ IMAGE_INSTALL += " \
     dtc \
     lsof \
     i2c-tools \
+    serial-xfer \
     pyhailort \
     hailo-pci \
     hailortcli \
