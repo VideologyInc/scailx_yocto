@@ -1,0 +1,21 @@
+From db5028b7cb467cc67418ab471c76e9065ff73313 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Fri, 29 Nov 2024 14:07:11 +0100
+Subject: [PATCH] include-missing-cstdint
+
+---
+ core/hailo/libs/postprocesses/common/labels/imagenet.hpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/core/hailo/libs/postprocesses/common/labels/imagenet.hpp b/core/hailo/libs/postprocesses/common/labels/imagenet.hpp
+index 8685dc9..7969075 100644
+--- a/core/hailo/libs/postprocesses/common/labels/imagenet.hpp
++++ b/core/hailo/libs/postprocesses/common/labels/imagenet.hpp
+@@ -4,6 +4,7 @@
+ **/
+ #pragma once
+ #include <map>
++#include <cstdint>
+ namespace common
+ {
+     static std::map<uint16_t, std::string> imagenet_labels = {
