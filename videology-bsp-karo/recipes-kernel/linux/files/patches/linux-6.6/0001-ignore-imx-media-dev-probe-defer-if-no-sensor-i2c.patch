@@ -1,0 +1,46 @@
+From ff04db66ae0c1c1aa059822e9fa0fa97c72a1a33 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Fri, 22 Nov 2024 17:32:34 +0100
+Subject: [PATCH] ignore imx-media-dev probe defer if no sensor i2c
+
+---
+ drivers/staging/media/imx/imx8-media-dev.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/media/imx/imx8-media-dev.c b/drivers/staging/media/imx/imx8-media-dev.c
+index 534fa5a4cd14..013b2223b67a 100644
+--- a/drivers/staging/media/imx/imx8-media-dev.c
++++ b/drivers/staging/media/imx/imx8-media-dev.c
+@@ -960,7 +960,7 @@ static int register_sensor_entities(struct mxc_md *mxc_md)
+ 	struct device_node *parent = mxc_md->pdev->dev.of_node;
+ 	struct device_node *node, *ep, *rem;
+ 	struct v4l2_fwnode_endpoint endpoint;
+-	struct i2c_client *client;
++	// struct i2c_client *client;
+ 	struct v4l2_async_connection *asd;
+ 	int index = 0;
+ 	int ret;
+@@ -1025,13 +1025,13 @@ static int register_sensor_entities(struct mxc_md *mxc_md)
+ 		/*
+ 		 * Need to wait sensor driver probed for the first time
+ 		 */
+-		client = of_find_i2c_device_by_node(rem);
+-		if (!client) {
+-			v4l2_info(&mxc_md->v4l2_dev,
+-				  "Can't find i2c client device for %s\n",
+-				  of_node_full_name(rem));
+-			return -EPROBE_DEFER;
+-		}
++		// client = of_find_i2c_device_by_node(rem);
++		// if (!client) {
++		// 	v4l2_info(&mxc_md->v4l2_dev,
++		// 		  "Can't find i2c client device for %s\n",
++		// 		  of_node_full_name(rem));
++		// 	return -EPROBE_DEFER;
++		// }
+ 
+ 		mxc_md->sensor[index].fwnode = of_fwnode_handle(rem);
+ 		asd = v4l2_async_nf_add_fwnode(
+-- 
+2.34.1
+
