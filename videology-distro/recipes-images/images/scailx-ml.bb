@@ -64,12 +64,14 @@ IMAGE_INSTALL += " \
     nodejs \
     nodejs-npm \
     git \
+    wget \
     go2rtc \
     gputop \
     ser2net \
     ffmpeg \
     python3-pycairo \
     python3-pip \
+    python3-virtualenv \
     python3-periphery \
     ${DOCKER} \
 "
@@ -100,3 +102,7 @@ cleanup_dirs () {
     rm -rf ${IMAGE_ROOTFS}/usr/lib/python3.10/site-packages/torch/test/
 }
 
+ROOTFS_POSTPROCESS_COMMAND:append = " ;pip_is_pip3; "
+pip_is_pip3 () {
+    ln -s -T ${bindir}/pip3 ${IMAGE_ROOTFS}${bindir}/pip
+}
