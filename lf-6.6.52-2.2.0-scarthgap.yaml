@@ -1,0 +1,76 @@
+header:
+    version: 14
+
+target: core-image-minimal
+repos:
+  # fsl-community-bsp-base:
+  #   branch: scarthgap
+  #   commit: 84df0b1ff416c6739472f7f7eadff04fa90d38f6
+  #   url: https://github.com/Freescale/fsl-community-bsp-base
+  meta-arm:
+    branch: scarthgap
+    commit: 950a4afce46a359def2958bd9ae33fc08ff9bb0d
+    url: https://git.yoctoproject.org/meta-arm
+    layers:
+      meta-arm-toolchain: ''
+      meta-arm: ''
+  meta-browser:
+    branch: ''
+    commit: dc31889c0899971def535dc1c040edf18bc16691
+    url: https://github.com/OSSystems/meta-browser
+  meta-clang:
+    branch: scarthgap
+    commit: 2b7433611d80f6d0ee1b04156fa91fc73d3c2665
+    url: https://github.com/kraj/meta-clang
+  meta-freescale:
+    branch: scarthgap
+    commit: 0627128b341cfb2bef7a0832ce8cac0ce1127f13
+    url: https://github.com/Freescale/meta-freescale
+  # meta-freescale-3rdparty:
+  #   branch: scarthgap
+  #   commit: 6c063450d464eb2f380443c7d9af1b94ce9b9d75
+  #   url: https://github.com/Freescale/meta-freescale-3rdparty
+  meta-freescale-distro:
+    branch: scarthgap
+    commit: b9d6a5d9931922558046d230c1f5f4ef6ee72345
+    url: https://github.com/Freescale/meta-freescale-distro
+  meta-imx:
+    branch: scarthgap-6.6.52-2.2.0
+    commit: refs/tags/rel_imx_6.6.52_2.2.0
+    url: https://github.com/nxp-imx/meta-imx
+  # meta-nxp-connectivity:
+  #   commit: refs/tags/rel_imx_6.6.52_2.2.0
+  #   branch: imx_matter_2024_q3-post
+  #   url: https://github.com/nxp-imx/meta-nxp-connectivity
+  # meta-nxp-demo-experience:
+  #   commit: refs/tags/rel_imx_6.6.52_2.2.0
+  #   branch: scarthgap-6.6.52-2.2.0
+  #   url: https://github.com/nxp-imx-support/meta-nxp-demo-experience
+  meta-openembedded:
+    branch: scarthgap
+    commit: 72018ca1b1a471226917e8246e8bbf9a374ccf97
+    layers:
+      meta-filesystems: ''
+      meta-multimedia: ''
+      meta-networking: ''
+    url: https://github.com/openembedded/meta-openembedded
+  # meta-qt6:
+  #   branch: '6.8'
+  #   commit: 586a6cb5aec755803a3be3cec359baafe89d6432
+  #   url: https://github.com/YoeDistro/meta-qt6
+  meta-security:
+    branch: scarthgap
+    commit: 459d837338ca230254baa2994f870bf6eb9d0139
+    url: https://git.yoctoproject.org/meta-security
+  # meta-timesys:
+  #   branch: scarthgap
+  #   commit: 4dc3f4bdfde4a86904b6e1a3d58df4696e7a63fa
+  #   url: https://github.com/TimesysGit/meta-timesys
+  meta-virtualization:
+    branch: scarthgap
+    commit: 6f3c1d8f90947408a6587be222fec575a1ca5195
+    url: https://git.yoctoproject.org/meta-virtualization
+  poky:
+    branch: scarthgap
+    commit: 200d12b6a58ad961d60a7774ca0f7a9d29498724
+    url: https://git.yoctoproject.org/poky

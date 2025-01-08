@@ -6,22 +6,31 @@
 # SPDX-License-Identifier: MIT
 #
 header:
-  version: 11
+  version: 14
   includes:
-    - nxp-imx-nanbield.yaml
-    - kas/nanbield.yml
-    - lf-6.6.3_1.0.0-nanbield.yaml
-    - kas/go-lts-mixins.yml
+    - nxp-imx-scarthgap.yaml
+    - kas/scarthgap.yml
+    - lf-6.6.36-2.1.0-scarthgap.yaml
+    # - kas/go-lts-mixins.yml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
     - kas/layers/meta-hailo.yml
     - kas/layers/meta-aws.yml
+    - kas/layers/meta-webserver.yml
 
 repos:
   scailx:
     layers:
       videology-bsp-karo:
       videology-distro:
+  meta-imx:
+    # use latest branch commit.
+    commit: 6678028145763e90524d4e3ddf6b021224c9656f
+  meta-swupdate:
+    # Fix top before image-linkname removal
+    commit: 3421a7063a58e4e027130326ab3acccbe3230b30
+  meta-browser:
+    commit: 40ef1d0799124a36b22df11a7562868c0edb23b1
 
 bblayers_conf_header:
   standard: |
@@ -35,7 +44,8 @@ target:
 
 local_conf_header:
   distro: |
-    SCAILX_VERSION="0.9.3"
+    SCAILX_VERSION="0.10.3"
+    PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
     DEPLOY_DIR = "${TOPDIR}/deploy"
