@@ -1,0 +1,22 @@
+# SPDX-License-Identifier: MIT
+
+header:
+  version: 14
+
+repos:
+  meta-hailo:
+    url: https://github.com/hailo-ai/meta-hailo.git
+    branch: kirkstone
+    commit: 3db366e8014ff9c16e13ea5d0945b93e143fde8d
+    layers:
+      meta-hailo-accelerator:
+      meta-hailo-libhailort:
+      meta-hailo-tappas:
+    patches:
+      patch0:
+        path: kas/layers/hailo-kirkstone.patch
+        repo: scailx
+
+local_conf_header:
+  hailo: |
+    HAILORT_OFFLINE_BUILD_ENABLE="0"

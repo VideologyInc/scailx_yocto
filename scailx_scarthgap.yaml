@@ -14,7 +14,7 @@ header:
     # - kas/go-lts-mixins.yml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
-    - kas/layers/meta-hailo.yml
+    - kas/layers/meta-hailo-kirkstone.yml
     - kas/layers/meta-aws.yml
     - kas/layers/meta-webserver.yml
 

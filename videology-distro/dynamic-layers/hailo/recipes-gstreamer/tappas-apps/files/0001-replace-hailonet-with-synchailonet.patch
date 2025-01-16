@@ -1,0 +1,115 @@
+From 751f20e65766b58376fb90ce65881086f2dd53d6 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Tue, 3 Dec 2024 12:43:21 +0100
+Subject: [PATCH] replace-hailonet-with-synchailonet
+
+---
+ .../imx8/cascading_networks/face_detection_and_landmarks.sh | 4 ++--
+ .../object_detection_and_pose_estimation.sh                 | 4 ++--
+ apps/h8/gstreamer/imx8/depth_estimation/depth_estimation.sh | 2 +-
+ apps/h8/gstreamer/imx8/detection/detection.sh               | 2 +-
+ .../license_plate_recognition/license_plate_recognition.sh  | 6 +++---
+ 5 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/apps/h8/gstreamer/imx8/cascading_networks/face_detection_and_landmarks.sh b/apps/h8/gstreamer/imx8/cascading_networks/face_detection_and_landmarks.sh
+index 056c84c..e765929 100755
+--- a/apps/h8/gstreamer/imx8/cascading_networks/face_detection_and_landmarks.sh
++++ b/apps/h8/gstreamer/imx8/cascading_networks/face_detection_and_landmarks.sh
+@@ -98,13 +98,13 @@ fi
+ 
+ FACE_DETECTION_PIPELINE="videoscale qos=false n-threads=3 ! \
+     queue leaky=no max-size-buffers=3 max-size-bytes=0 max-size-time=0 ! \
+-    hailonet hef-path=$detection_hef_path scheduling-algorithm=1 vdevice-key=$DEFAULT_VDEVICE_KEY ! \
++    synchailonet hef-path=$detection_hef_path scheduling-algorithm=1 vdevice-key=$DEFAULT_VDEVICE_KEY ! \
+     queue leaky=no max-size-buffers=3 max-size-bytes=0 max-size-time=0 ! \
+     hailofilter so-path=$detection_postprocess_so function-name=lightface qos=false ! \
+     queue leaky=no max-size-buffers=3 max-size-bytes=0 max-size-time=0"
+ 
+ FACIAL_LANDMARKS_PIPELINE="queue leaky=no max-size-buffers=3 max-size-bytes=0 max-size-time=0 ! \
+-    hailonet hef-path=$landmarks_hef_path scheduling-algorithm=1 vdevice-key=$DEFAULT_VDEVICE_KEY ! \
++    synchailonet hef-path=$landmarks_hef_path scheduling-algorithm=1 vdevice-key=$DEFAULT_VDEVICE_KEY ! \
+     queue leaky=no max-size-buffers=3 max-size-bytes=0 max-size-time=0 ! \
+     hailofilter function-name=facial_landmarks_merged so-path=$landmarks_postprocess_so qos=false ! \
+     queue leaky=no max-size-buffers=3 max-size-bytes=0 max-size-time=0"
+diff --git a/apps/h8/gstreamer/imx8/cascading_networks/object_detection_and_pose_estimation.sh b/apps/h8/gstreamer/imx8/cascading_networks/object_detection_and_pose_estimation.sh
+index b1ed9d1..8962175 100755
+--- a/apps/h8/gstreamer/imx8/cascading_networks/object_detection_and_pose_estimation.sh
++++ b/apps/h8/gstreamer/imx8/cascading_networks/object_detection_and_pose_estimation.sh
+@@ -107,7 +107,7 @@ fi
+ 
+ OBJECT_DETECTION_PIPELINE="videoscale qos=false ! \
+     queue leaky=no max-size-buffers=10 max-size-bytes=0 max-size-time=0 ! \
+-    hailonet hef-path=$detection_hef_path scheduling-algorithm=1 scheduler-threshold=5 nms-score-threshold=0.3 nms-iou-threshold=0.45 output-format-type=HAILO_FORMAT_TYPE_FLOAT32 \
++    synchailonet hef-path=$detection_hef_path scheduling-algorithm=1 scheduler-threshold=5 nms-score-threshold=0.3 nms-iou-threshold=0.45 output-format-type=HAILO_FORMAT_TYPE_FLOAT32 \
+     scheduler-timeout-ms=100 vdevice-key=$DEFAULT_VDEVICE_KEY ! \
+     queue leaky=no max-size-buffers=10 max-size-bytes=0 max-size-time=0 ! \
+     hailofilter name=detection so-path=$detection_postprocess_so qos=false function-name=yolov5 ! \
+@@ -115,7 +115,7 @@ OBJECT_DETECTION_PIPELINE="videoscale qos=false ! \
+ 
+ LANDMARKS_PIPELINE="videoscale qos=false ! \
+     queue leaky=no max-size-buffers=10 max-size-bytes=0 max-size-time=0 ! \
+-    hailonet hef-path=$pose_estimation_hef_path scheduling-algorithm=1 scheduler-threshold=5 \
++    synchailonet hef-path=$pose_estimation_hef_path scheduling-algorithm=1 scheduler-threshold=5 \
+     scheduler-timeout-ms=100 vdevice-key=$DEFAULT_VDEVICE_KEY ! \
+     queue leaky=no max-size-buffers=10 max-size-bytes=0 max-size-time=0 ! \
+     hailofilter name=pose-estimation so-path=$landmarks_postprocess_so config-path=$json_config_path \
+diff --git a/apps/h8/gstreamer/imx8/depth_estimation/depth_estimation.sh b/apps/h8/gstreamer/imx8/depth_estimation/depth_estimation.sh
+index fef300e..5960a0f 100755
+--- a/apps/h8/gstreamer/imx8/depth_estimation/depth_estimation.sh
++++ b/apps/h8/gstreamer/imx8/depth_estimation/depth_estimation.sh
+@@ -92,7 +92,7 @@ PIPELINE="gst-launch-1.0 \
+     queue max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+     videoscale ! \
+     queue max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+-    hailonet hef-path=$hef_path ! \
++    synchailonet hef-path=$hef_path ! \
+     queue max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+     hailofilter so-path=$post_so qos=false ! \
+     queue max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+diff --git a/apps/h8/gstreamer/imx8/detection/detection.sh b/apps/h8/gstreamer/imx8/detection/detection.sh
+index 6239183..dfb2485 100755
+--- a/apps/h8/gstreamer/imx8/detection/detection.sh
++++ b/apps/h8/gstreamer/imx8/detection/detection.sh
+@@ -63,7 +63,7 @@ parse_args $@
+ PIPELINE="gst-launch-1.0 \
+     v4l2src device=$input_source ! video/x-raw,format=YUY2,width=1280,height=720,framerate=30/1 ! \
+     queue leaky=downstream max-size-buffers=5 max-size-bytes=0 max-size-time=0 ! \
+-    hailonet hef-path=$hef_path ! \
++    synchailonet hef-path=$hef_path ! \
+     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+     hailofilter function-name=$network_name config-path=$json_config_path so-path=$postprocess_so qos=false ! \
+     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+diff --git a/apps/h8/gstreamer/imx8/license_plate_recognition/license_plate_recognition.sh b/apps/h8/gstreamer/imx8/license_plate_recognition/license_plate_recognition.sh
+index d9d6111..a9a9cce 100755
+--- a/apps/h8/gstreamer/imx8/license_plate_recognition/license_plate_recognition.sh
++++ b/apps/h8/gstreamer/imx8/license_plate_recognition/license_plate_recognition.sh
+@@ -129,7 +129,7 @@ function create_lp_detection_pipeline() {
+                 agg1. \
+                 cropper1. ! \
+                     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+-                    hailonet hef-path=$LICENSE_PLATE_DETECTION_HEF vdevice-key=1 scheduling-algorithm=1 ! \
++                    synchailonet hef-path=$LICENSE_PLATE_DETECTION_HEF vdevice-key=1 scheduling-algorithm=1 ! \
+                     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+                     hailofilter so-path=$LICENSE_PLATE_DETECTION_POST_SO config-path=$license_plate_json_config_path function-name=$LICENSE_PLATE_DETECTION_POST_FUNC qos=false ! \
+                     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+@@ -142,7 +142,7 @@ function create_lp_detection_pipeline() {
+                 agg2. \
+                 cropper2. ! \
+                     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+-                    hailonet hef-path=$LICENSE_PLATE_OCR_HEF vdevice-key=1 scheduling-algorithm=1 ! \
++                    synchailonet hef-path=$LICENSE_PLATE_OCR_HEF vdevice-key=1 scheduling-algorithm=1 ! \
+                     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+                     hailofilter so-path=$LICENSE_PLATE_OCR_POST_SO qos=false ! \
+                     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+@@ -154,7 +154,7 @@ create_lp_detection_pipeline $@
+ PIPELINE="${debug_stats_export} gst-launch-1.0 ${stats_element} \
+     $source_element ! \
+     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+-    hailonet hef-path=$VEHICLE_DETECTION_HEF vdevice-key=1 scheduling-algorithm=1 ! \
++    synchailonet hef-path=$VEHICLE_DETECTION_HEF vdevice-key=1 scheduling-algorithm=1 ! \
+     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+     hailofilter so-path=$VEHICLE_DETECTION_POST_SO config-path=$car_json_config_path function-name=$VEHICLE_DETECTION_POST_FUNC qos=false ! \
+     queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+-- 
+2.34.1
+

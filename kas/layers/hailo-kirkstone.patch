@@ -1,0 +1,46 @@
+From 34c92270adbc768c29142de3fc27d1de1abe5593 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Tue, 7 Jan 2025 17:20:43 +0100
+Subject: [PATCH] hailo layerseries-compat
+
+---
+ meta-hailo-accelerator/conf/layer.conf | 2 +-
+ meta-hailo-libhailort/conf/layer.conf  | 2 +-
+ meta-hailo-tappas/conf/layer.conf      | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/meta-hailo-accelerator/conf/layer.conf b/meta-hailo-accelerator/conf/layer.conf
+index a74232f..94ede16 100644
+--- a/meta-hailo-accelerator/conf/layer.conf
++++ b/meta-hailo-accelerator/conf/layer.conf
+@@ -10,4 +10,4 @@ BBFILE_PATTERN_meta-hailo-accelerator = "^${LAYERDIR}/"
+ BBFILE_PRIORITY_meta-hailo-accelerator = "8"
+ 
+ LAYERDEPENDS_meta-hailo-accelerator = "core"
+-LAYERSERIES_COMPAT_meta-hailo-accelerator = "kirkstone"
++LAYERSERIES_COMPAT_meta-hailo-accelerator = "kirkstone nanbield scarthgap"
+diff --git a/meta-hailo-libhailort/conf/layer.conf b/meta-hailo-libhailort/conf/layer.conf
+index e9e0ceb..447f974 100644
+--- a/meta-hailo-libhailort/conf/layer.conf
++++ b/meta-hailo-libhailort/conf/layer.conf
+@@ -10,4 +10,4 @@ BBFILE_PATTERN_meta-hailo-libhailort = "^${LAYERDIR}/"
+ BBFILE_PRIORITY_meta-hailo-libhailort = "8"
+ 
+ LAYERDEPENDS_meta-hailo-libhailort = "core"
+-LAYERSERIES_COMPAT_meta-hailo-libhailort = "kirkstone"
++LAYERSERIES_COMPAT_meta-hailo-libhailort = "kirkstone nanbield scarthgap"
+diff --git a/meta-hailo-tappas/conf/layer.conf b/meta-hailo-tappas/conf/layer.conf
+index 8e8f46b..dcbe73e 100644
+--- a/meta-hailo-tappas/conf/layer.conf
++++ b/meta-hailo-tappas/conf/layer.conf
+@@ -12,6 +12,6 @@ BBFILE_PRIORITY_meta-hailo-tappas = "8"
+ LICENSE_PATH = "${LAYERDIR}/licenses/"
+ 
+ LAYERDEPENDS_meta-hailo-tappas = "core meta-hailo-libhailort"
+-LAYERSERIES_COMPAT_meta-hailo-tappas = "kirkstone"
++LAYERSERIES_COMPAT_meta-hailo-tappas = "kirkstone nanbield scarthgap"
+ 
+ CORE_IMAGE_EXTRA_INSTALL:append = " packagegroup-hailo-tappas${@bb.utils.contains('HAILO_TARGET', 'core-image-hailo', '', '-dev-pkg', d)}"
+-- 
+2.34.1
+
