@@ -6,7 +6,7 @@
 SUMMARY = "Videology BSP device-tree overlays"
 LICENSE = "MIT"
 SRC_URI = "git://github.com/VideologyInc/scailx-devicetrees.git;protocol=https;branch=main"
-SRCREV = "d0ff5cf31f2c62a176925424c96c6195324cf27b"
+SRCREV = "0294fb74e68b2a7b0ca20ff0187a08b2ef3cbe6a"
 
 inherit devicetree
 
