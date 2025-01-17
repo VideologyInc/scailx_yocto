@@ -6,7 +6,7 @@ After=syslog.target network.target
 Type=simple
 TimeoutStartSec=10m
 ExecStartPre=setup_jupyter.sh
-WorkingDirectory=/opt/jupyter/env
+WorkingDirectory=/opt/jupyter
 ExecStart=/opt/jupyter/env/bin/jupyter-lab --no-browser --allow-root --ip=0.0.0.0 --notebook-dir=/opt/jupyter/notebooks
 Restart=on-failure
 StartLimitInterval=40s
