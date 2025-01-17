@@ -1,0 +1,16 @@
+[Unit]
+Description=Jupyter Notebook server
+After=syslog.target network.target
+
+[Service]
+Type=simple
+TimeoutStartSec=10m
+ExecStartPre=setup_jupyter.sh
+WorkingDirectory=/opt/jupyter/env
+ExecStart=/opt/jupyter/env/bin/jupyter-lab --no-browser --allow-root --ip=0.0.0.0 --notebook-dir=/opt/jupyter/notebooks
+Restart=on-failure
+StartLimitInterval=40s
+StartLimitBurst=4
+
+[Install]
+WantedBy=multi-user.target

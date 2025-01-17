@@ -72,7 +72,7 @@ IMAGE_INSTALL += " \
     ninja \
     nodejs \
     nodejs-npm \
-    go \
+    go go-runtime\
     nginx \
     fluentbit \
     htop \

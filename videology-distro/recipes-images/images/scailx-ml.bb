@@ -22,6 +22,7 @@ CONFLICT_DISTRO_FEATURES = "directfb"
 OPENCV_PKGS       ?= ""
 OPENCV_PKGS:imxgpu = " \
     opencv-apps \
+    libopenvg-imx \
     python3-opencv \
 "
 
@@ -75,6 +76,8 @@ IMAGE_INSTALL += " \
     python3-periphery \
     ${DOCKER} \
 "
+
+IMAGE_INSTALL += " scailx-notebooks "
 
 IMAGE_INSTALL += " ${@bb.utils.contains('SCAILX_SOURCES', 'yes', 'scailx-gst-plugins scailx-ai-portal', '', d)} "
 
