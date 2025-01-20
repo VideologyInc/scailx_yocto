@@ -7,6 +7,9 @@ Restart=on-failure
 ExecStartPre=/usr/bin/go2rtc-create-cams-config.py
 ExecStart=/usr/bin/go2rtc -config /etc/default/go2rtc.yaml -config /tmp/cam_config.yaml
 RestartPreventExitStatus=255
+Restart=on-failure
+StartLimitInterval=40s
+StartLimitBurst=4
 
 [Install]
 WantedBy=multi-user.target
