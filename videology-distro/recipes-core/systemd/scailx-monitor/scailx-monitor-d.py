@@ -49,6 +49,7 @@ class LEDDaemon:
         return ret
 
     def run(self):
+        startup=0
         div=4
         self.send("READY=1\n")
         while True:
@@ -58,6 +59,10 @@ class LEDDaemon:
                 else:
                     exit(1)
             else:
+                if startup == 0:
+                    logger.info("All services started")
+                    os.system("sync")               # sync filesystems to prevent overlay blanks after first boot.
+                    startup=1
                 # emit watchdog notification
                 logger.debug("emit notification")
                 self.send("WATCHDOG=1\n")
@@ -65,9 +70,9 @@ class LEDDaemon:
                     self.ready = True
                     self.send("READY=1\n")
 
-            for i in range (div):
-                self.toggle_led()
-                time.sleep(self.interval/div/2)
+                for i in range (div):
+                    self.toggle_led()
+                    time.sleep(self.interval/div/2)
 
 if __name__ == "__main__":
     # get watchdog environment variables
