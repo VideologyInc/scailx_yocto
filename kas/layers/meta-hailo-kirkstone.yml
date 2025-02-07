@@ -7,7 +7,7 @@ repos:
   meta-hailo:
     url: https://github.com/hailo-ai/meta-hailo.git
     branch: kirkstone
-    commit: 3db366e8014ff9c16e13ea5d0945b93e143fde8d
+    commit: 3a2665df39d1464e1808b5c95a8ce44994fae8b5
     layers:
       meta-hailo-accelerator:
       meta-hailo-libhailort:

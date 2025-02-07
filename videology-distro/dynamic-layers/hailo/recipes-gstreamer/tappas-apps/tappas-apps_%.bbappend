@@ -21,6 +21,4 @@ do_install:append() {
     rm -rf  ${D}${INSTALL_DIR}/cascading_networks
     rm -rf  ${D}${INSTALL_DIR}/depth_estimation/depth_estimation.sh
     rm -rf  ${D}${INSTALL_DIR}/detection/detection.sh
-    rm -rf  ${D}${INSTALL_DIR}/license_plate_recognition
-    rm -rf  ${D}${INSTALL_DIR}/license_plate_recognition/license_plate_recognition.sh
 }
