@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT-0
+#
+# Enable DHCP on Wifi networks.
+# Route metric 200 so wifi is tertiary to Ethernet.
+
+[Match]
+Type=wlan
+WLANInterfaceType=station
+
+[Network]
+DHCP=yes
+LinkLocalAddressing=yes
+
+[DHCP]
+UseMTU=yes
+RouteMetric=200

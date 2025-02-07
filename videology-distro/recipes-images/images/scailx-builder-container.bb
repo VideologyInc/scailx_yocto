@@ -105,6 +105,10 @@ IMAGE_INSTALL += " \
     nano \
     ca-certificates \
     ser2net \
+    fluentbit \
+    networkmanager \
+    iwd \
+    impala \
     ffmpeg \
     python3-pycairo \
     python3-pip \
