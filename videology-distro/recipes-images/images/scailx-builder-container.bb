@@ -106,7 +106,6 @@ IMAGE_INSTALL += " \
     ca-certificates \
     ser2net \
     fluentbit \
-    networkmanager \
     iwd \
     impala \
     ffmpeg \
