@@ -1,0 +1,13 @@
+header:
+  version: 14
+
+repos:
+  meta-lts-mixins-rust-scarthgap:
+    url: https://github.com/lmp-mirrors/meta-lts-mixins
+    branch:
+     scarthgap/rust
+    commit: 1793a1b8fc92cf8688c72b7fd4181e3a2f5ade55
+    patches:
+      patch0:
+        path: kas/lts-scarthgap-rust-lirsvg.patch
+        repo: scailx

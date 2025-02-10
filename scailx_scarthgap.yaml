@@ -17,6 +17,7 @@ header:
     - kas/layers/meta-hailo-kirkstone.yml
     - kas/layers/meta-aws.yml
     - kas/layers/meta-webserver.yml
+    - kas/lts-mixins-rust-scarthgap.yml
 
 repos:
   scailx:
