@@ -9,6 +9,7 @@ SRCREV = "a4885c2c3abce58074d04878bba0d72105642a9b"
 GO_IMPORT = "github.com/AlexxIT/go2rtc"
 SRC_URI = "git://${GO_IMPORT};branch=master;protocol=https"
 SRC_URI += "file://0001-remove-non-scailx-inputs.patch;patchdir=src/${GO_IMPORT}"
+SRC_URI += "file://0002-allow-src-with-spaces-from-api.patch;patchdir=src/${GO_IMPORT}"
 
 PV = "1.9.4"
 GO_EXTRA_LDFLAGS = "-s -w"
