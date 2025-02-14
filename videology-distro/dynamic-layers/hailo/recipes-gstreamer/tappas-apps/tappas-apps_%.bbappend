@@ -11,14 +11,17 @@ FILESEXTRAPATHS:append := ":${THISDIR}/files:"
 SRC_URI += "file://imx8_detection.sh"
 SRC_URI += "file://imx8_face_detection_and_landmarks.sh"
 SRC_URI += "file://imx8_depth_estimation.sh"
+SRC_URI += "file://imx8_license_plate_recognition.sh"
 
 do_install:append() {
     install -m 0755 ${WORKDIR}/imx8_detection.sh ${D}${INSTALL_DIR}/detection/
     install -m 0755 ${WORKDIR}/imx8_depth_estimation.sh ${D}${INSTALL_DIR}/depth_estimation/
     install -m 0755 ${WORKDIR}/imx8_face_detection_and_landmarks.sh ${D}${INSTALL_DIR}/cascading_networks/
+    install -m 0755 ${WORKDIR}/imx8_license_plate_recognition.sh ${D}${INSTALL_DIR}/license_plate_recognition/
 
     # remove unmodified scripts that dont work
     rm -rf  ${D}${INSTALL_DIR}/cascading_networks
     rm -rf  ${D}${INSTALL_DIR}/depth_estimation/depth_estimation.sh
     rm -rf  ${D}${INSTALL_DIR}/detection/detection.sh
+    rm -rf  ${D}${INSTALL_DIR}/license_plate_recognition/license_plate_recognition.sh
 }

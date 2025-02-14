@@ -71,7 +71,7 @@ PIPELINE="gst-launch-1.0 \
     hailooverlay ! \
     queue leaky=downstream max-size-buffers=5 max-size-bytes=0 max-size-time=0 ! \
     videoconvert ! \
-    fpsdisplaysink video-sink=autovideosink name=hailo_display sync=false text-overlay=false ${additional_parameters}"
+    unixfdsink socket-path="/tmp/stream2webrtc/detection_stream" wait-for-connection=true ${additional_parameters}"
 
 echo "Running $network_name"
 echo ${PIPELINE}
