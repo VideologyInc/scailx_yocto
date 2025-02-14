@@ -103,6 +103,7 @@ IMAGE_INSTALL += " \
     curl \
     git \
     nano \
+    micro \
     ca-certificates \
     ser2net \
     fluentbit \
