@@ -107,6 +107,12 @@ do_add_scailx_ssh_keys () {
 }
 IMAGE_PREPROCESS_COMMAND += ";do_add_scailx_ssh_keys;"
 
+do_add_libgstpython() {
+    # for some reason plugin loader fails to load libgstpython.so, but ading it to preload works.
+    echo $(find /usr/lib /lib -type f -name "libgstpython.so*") >> /etc/ld.so.preload
+}
+IMAGE_PREPROCESS_COMMAND += ";do_add_libgstpython;"
+
 do_blacklist_imx8_media_dev () {
 	# blacklist imx8_media_dev module
     echo "blacklist imx8_media_dev" > ${IMAGE_ROOTFS}${sysconfdir}/modprobe.d/imx8_media_dev.conf
