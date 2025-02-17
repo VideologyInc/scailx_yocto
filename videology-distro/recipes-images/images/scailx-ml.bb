@@ -68,6 +68,7 @@ IMAGE_INSTALL += " \
     git \
     wget \
     go2rtc \
+    stream2webrtc \
     gputop \
     ser2net \
     ffmpeg \
