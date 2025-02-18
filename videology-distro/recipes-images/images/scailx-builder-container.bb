@@ -91,6 +91,7 @@ IMAGE_INSTALL += " \
     imx-gpu-viv-tools \
     imx-gpu-viv-demos \
     python3-pyserial \
+    gst-plugin-webrtc \
     libsoup-2.4 \
     json-glib \
     tvm \
