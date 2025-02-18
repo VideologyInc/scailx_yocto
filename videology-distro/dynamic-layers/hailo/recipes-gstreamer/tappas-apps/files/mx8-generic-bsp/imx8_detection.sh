@@ -16,6 +16,10 @@ function init_variables() {
     postprocess_so=$DEFAULT_POSTPROCESS_SO
     network_name=$DEFAULT_NETWORK_NAME
     input_source=$DEFAULT_VIDEO_SOURCE
+    cam=$(ls /dev/video-i*)
+    if [ -n "$cam" ]; then
+        input_source=$cam
+    fi
     hef_path=$DEFAULT_HEF_PATH
     json_config_path=$DEFAULT_JSON_CONFIG_PATH 
 
@@ -71,7 +75,7 @@ PIPELINE="gst-launch-1.0 \
     hailooverlay ! \
     queue leaky=downstream max-size-buffers=5 max-size-bytes=0 max-size-time=0 ! \
     videoconvert ! \
-    unixfdsink socket-path="/tmp/stream2webrtc/detection_stream" wait-for-connection=true ${additional_parameters}"
+    fpsdisplaysink video-sink=autovideosink name=hailo_display sync=false text-overlay=false ${additional_parameters}"
 
 echo "Running $network_name"
 echo ${PIPELINE}

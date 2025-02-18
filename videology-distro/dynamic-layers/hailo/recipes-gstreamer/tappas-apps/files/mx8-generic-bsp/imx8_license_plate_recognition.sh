@@ -45,7 +45,10 @@ function init_variables() {
     readonly LPR_OCR_SINK="$RESOURCES_DIR/liblpr_ocrsink.so"
 
     input_source=$DEFAULT_VIDEO_SOURCE
-
+    cam=$(ls /dev/video-i*)
+    if [ -n "$cam" ]; then
+        input_source=$cam
+    fi
     print_gst_launch_only=false
     additional_parameters=""
     stats_element=""
@@ -75,6 +78,7 @@ function print_usage() {
     echo "Options:"
     echo "  -h --help                  Show this help"
     echo "  --show-fps                 Print fps"
+    echo "  --use-cam                  Run with camera input instead of video"
     echo "  --print-gst-launch         Print the ready gst-launch command without running it"
     echo "  --print-device-stats       Print the power and temperature measured"
     exit 0
@@ -92,6 +96,14 @@ function parse_args() {
         elif [ "$1" = "--show-fps" ]; then
             echo "Printing fps"
             additional_parameters="-v | grep -e hailo_display -e hailodevicestats"
+        elif [ "$1" = "--use-cam" ]; then
+            cam=$(ls /dev/video-i*)
+            if [ -n "$cam" ]; then
+                echo "Using camera "
+                input_source=$cam
+            else    
+                echo "No camera found, using default video source"
+            fi
         else
             echo "Received invalid argument: $1. See expected arguments below:"
             print_usage
@@ -116,7 +128,12 @@ function load_file_to_cache() {
 
 init_variables $@
 parse_args $@
-source_element="v4l2src device=/dev/video0 ! video/x-raw,format=YUY2,width=1920,height=1080,framerate=30/1 "
+# if input_source container /dev/video, use v4l2src, otherwise use multifilesrc
+if [[ $input_source =~ "/dev/video" ]]; then
+    source_element="v4l2src device=$input_source ! video/x-raw,format=YUY2,width=1920,height=1080,framerate=30/1 "
+else
+    source_element="multifilesrc location=$input_source name=src_0 loop=true ! rawvideoparse format=yuy2 width=1920 height=1080 framerate=30/1 "
+fi
 internal_offset=true
 load_file_to_cache
 

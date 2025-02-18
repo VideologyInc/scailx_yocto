@@ -10,11 +10,14 @@ function init_variables() {
     readonly RESOURCES_DIR="${CURRENT_DIR}/resources"
     readonly POSTPROCESS_DIR="/usr/lib/hailo-post-processes"
     readonly DEFAULT_POST_SO="$POSTPROCESS_DIR/libdepth_estimation.so"
-    # readonly DEFAULT_VIDEO_SOURCE="$RESOURCES_DIR/instance_segmentation.mp4"
-    readonly DEFAULT_VIDEO_SOURCE="/dev/video0"
+    readonly DEFAULT_VIDEO_SOURCE="$RESOURCES_DIR/instance_segmentation.mp4"
     readonly DEFAULT_HEF_PATH="$RESOURCES_DIR/fast_depth.hef"
 
     input_source=$DEFAULT_VIDEO_SOURCE
+    cam=$(ls /dev/video-i*)
+    if [ -n "$cam" ]; then
+        input_source=$cam
+    fi
     hef_path=$DEFAULT_HEF_PATH
     post_so=$DEFAULT_POST_SO
     print_gst_launch_only=false
@@ -96,7 +99,7 @@ PIPELINE="gst-launch-1.0 \
     queue max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
     videoconvert ! \
     queue max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-    unixfdsink socket-path="/tmp/stream2webrtc/depth_stream" wait-for-connection=true ${additional_parameters}"
+    fpsdisplaysink video-sink=$video_sink_element name=hailo_display sync=false text-overlay=false ${additional_parameters}"
 
 echo "Running"
 echo ${PIPELINE}
