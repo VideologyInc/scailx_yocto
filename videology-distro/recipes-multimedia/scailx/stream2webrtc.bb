@@ -22,4 +22,4 @@ do_install() {
 
 FILES:${PN} = "${systemd_system_unitdir}/ ${bindir} ${libdir}/gstreamer-1.0/python/"
 
-RDEPENDS:${PN} = "python3-watchdog python3-requests python3-termcolor python3-argparse"
+RDEPENDS:${PN} = "python3-watchdog python3-requests python3-termcolor"

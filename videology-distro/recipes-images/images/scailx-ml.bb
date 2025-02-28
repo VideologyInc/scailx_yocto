@@ -67,6 +67,7 @@ IMAGE_INSTALL += " \
     nodejs-npm \
     git \
     wget \
+    xvinfo \
     go2rtc \
     stream2webrtc \
     gputop \

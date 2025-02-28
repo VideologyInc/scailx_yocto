@@ -7,6 +7,7 @@ deltask merge_delta_config
 SRC_URI:append = " file://scailx-kmeta;type=kmeta;destsuffix=scailx-kmeta "
 
 SRC_URI:append = " file://of-configfs.patch "
+SRC_URI:append = " file://suppress-rcu-pointer.patch "
 
 PV:scailx = "${LINUX_VERSION}"
 

@@ -1,0 +1,25 @@
+From cda756448e298d684ec914517956afaf093ec103 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Tue, 18 Feb 2025 17:08:00 +0100
+Subject: [PATCH 4/4] suppress rcu-pointer
+
+---
+ fs/file.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/file.c b/fs/file.c
+index ca984655a187..5db600ee7708 100644
+--- a/fs/file.c
++++ b/fs/file.c
+@@ -540,7 +540,7 @@ static int alloc_fd(unsigned start, unsigned end, unsigned flags)
+ #if 1
+ 	/* Sanity check */
+ 	if (rcu_access_pointer(fdt->fd[fd]) != NULL) {
+-		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
++		/* printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd); */
+ 		rcu_assign_pointer(fdt->fd[fd], NULL);
+ 	}
+ #endif
+-- 
+2.34.1
+

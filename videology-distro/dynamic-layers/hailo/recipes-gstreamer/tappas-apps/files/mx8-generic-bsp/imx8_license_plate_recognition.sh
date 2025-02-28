@@ -45,7 +45,7 @@ function init_variables() {
     readonly LPR_OCR_SINK="$RESOURCES_DIR/liblpr_ocrsink.so"
 
     input_source=$DEFAULT_VIDEO_SOURCE
-    cam=$(ls /dev/video-i*)
+    cam=$(set -- `ls /dev/video-i*` ; echo $1)
     if [ -n "$cam" ]; then
         input_source=$cam
     fi
@@ -97,7 +97,7 @@ function parse_args() {
             echo "Printing fps"
             additional_parameters="-v | grep -e hailo_display -e hailodevicestats"
         elif [ "$1" = "--use-cam" ]; then
-            cam=$(ls /dev/video-i*)
+            cam=$(set -- `ls /dev/video-i*` ; echo $1)
             if [ -n "$cam" ]; then
                 echo "Using camera "
                 input_source=$cam

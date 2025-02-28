@@ -14,7 +14,7 @@ function init_variables() {
     readonly DEFAULT_HEF_PATH="$RESOURCES_DIR/fast_depth.hef"
 
     input_source=$DEFAULT_VIDEO_SOURCE
-    cam=$(ls /dev/video-i*)
+    cam=$(set -- `ls /dev/video-i*` ; echo $1)
     if [ -n "$cam" ]; then
         input_source=$cam
     fi

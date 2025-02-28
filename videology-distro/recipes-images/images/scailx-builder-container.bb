@@ -75,6 +75,7 @@ IMAGE_INSTALL += " \
     go go-runtime\
     nginx \
     fluentbit \
+    zabbix \
     htop \
     clang \
     i2c-tools \
