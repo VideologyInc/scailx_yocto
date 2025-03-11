@@ -24,7 +24,7 @@ def create_link(socketpath):
     # Construct the API URL with query parameter
     params = {
         "name": quote(name),
-        "src": f"exec:gst-launch-1.0 -q unixfdsrc socket-path={socketpath} ! imxvideoconvert_g2d ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink"
+        "src": f"exec:gst-launch-1.0 -q unixfdsrc socket-path={socketpath} ! imxvideoconvert_ocl ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink"
     }
     url = f"http://{HOST}:{PORT}/api/streams"
     response = requests.put(url, params=params)
@@ -47,6 +47,30 @@ def del_link(socketpath):
     if response.status_code != 200:
         print(f"Failed to delete stream {name} from webrtc server. {response.status_code}")
 
+def cleanup_stale_streams(socket_dir):
+    """
+    Clean up stale streams by removing entries from the API that don't have
+    corresponding socket files in the socket_dir.
+    """
+    url = f"http://{HOST}:{PORT}/api/streams"
+    try:
+        response = requests.get(url)
+        if response.status_code != 200:
+            print(colored(f"Failed to get stream list. Status code: {response.status_code}", 'yellow'))
+            return
+
+        streams = response.json()
+        for name in streams.keys():
+            # Check if it's a 6-character hex name (matching our UUID format)
+            if name and len(name) == 6 and all(c in '0123456789abcdef' for c in name.lower()):
+                # Check if the socket file exists
+                socket_path = os.path.join(socket_dir, name)
+                if not os.path.exists(socket_path):
+                    print(f"Cleaning up stale stream: {name}")
+                    del_link(socket_path)
+    except Exception as e:
+        print(colored(f"Error in cleanup_stale_streams: {e}", 'yellow'))
+
 class ScailxWebSink(Gst.Bin):
     '''
     A GStreamer bin that wraps unixfdsink element with automatic socket path
@@ -58,11 +82,11 @@ class ScailxWebSink(Gst.Bin):
                       "Unix domain socket file descriptor sink element for web streaming",
                       "Kobus")
 
-    FORMATS = "{RGB16,RGBx,RGBA,BGRA,BGRx,BGR16,ARGB,ABGR,xRGB,xBGR,I420,NV12,UYVY,YUY2,YVYU,YV12,NV16,NV21}"
+    FORMATS = "{RGBx,RGBA,I420,NV12,YUY2}"
     __gsttemplates__ = Gst.PadTemplate.new("sink",
                                            Gst.PadDirection.SINK,
                                            Gst.PadPresence.ALWAYS,
-                                           Gst.Caps.from_string(f"video/x-raw,format={FORMATS}"))
+                                        Gst.Caps.from_string(f"video/x-raw,format={FORMATS}"))
 
     __protocols__ = ("scailxweb",)
     __uritype__ = Gst.URIType.SINK
@@ -127,10 +151,12 @@ class ScailxWebSink(Gst.Bin):
         return Gst.Bin.do_change_state(self, transition)
 
     def start(self):
+        # Clean up stale streams before creating a new one
+        cleanup_stale_streams(self.socket_dir)
         create_link(self._unixfdsink.get_property("socket-path"))
 
     def stop(self):
         del_link(self._unixfdsink.get_property("socket-path"))
 
 GObject.type_register(ScailxWebSink)
-__gstelementfactory__ = (ScailxWebSink.GST_PLUGIN_NAME, Gst.Rank.PRIMARY + 1, ScailxWebSink)
+__gstelementfactory__ = (ScailxWebSink.GST_PLUGIN_NAME, Gst.Rank.PRIMARY, ScailxWebSink)

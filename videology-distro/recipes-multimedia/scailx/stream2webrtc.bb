@@ -8,18 +8,13 @@ PV = "1.0.0"
 
 inherit allarch systemd
 
-SRC_URI += "file://stream2webrtc.service "
 SRC_URI += "file://scailxwebsink.py"
 S = "${WORKDIR}"
 
-SYSTEMD_SERVICE:${PN} = "stream2webrtc.service"
-SYSTEMD_AUTO_ENABLE = "enable"
 do_install() {
-   	install -D -m0644 "${WORKDIR}/stream2webrtc.service" "${D}${systemd_system_unitdir}/stream2webrtc.service"
-	install -D -m0755 "${WORKDIR}/stream2webrtc.py" "${D}${bindir}/stream2webrtc.py"
 	install -D -m0755 "${WORKDIR}/scailxwebsink.py" "${D}${libdir}/gstreamer-1.0/python/scailxwebsink.py"
 }
 
-FILES:${PN} = "${systemd_system_unitdir}/ ${bindir} ${libdir}/gstreamer-1.0/python/"
+FILES:${PN} = "${libdir}/gstreamer-1.0/python/"
 
 RDEPENDS:${PN} = "python3-watchdog python3-requests python3-termcolor"
