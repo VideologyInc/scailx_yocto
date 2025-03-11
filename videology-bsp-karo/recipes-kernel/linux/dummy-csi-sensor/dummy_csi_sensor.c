@@ -229,15 +229,21 @@ static int sensor_get_selection(struct v4l2_subdev* sd, struct v4l2_subdev_state
 static int sensor_set_stream(struct v4l2_subdev* sd, int enable)
 {
     /*
-     * Don't need to do anything here, just assume the source is streaming
-     * already.
-     */
+    * Don't need to do anything here, just assume the source is streaming
+    * already.
+    */
+    return 0;
+}
+
+static int sensor__s_power(struct v4l2_subdev *sd, int on)
+{
     return 0;
 }
 
 static const struct v4l2_subdev_core_ops sensor_core_ops = {
     .subscribe_event = v4l2_ctrl_subdev_subscribe_event,
     .unsubscribe_event = v4l2_event_subdev_unsubscribe,
+    .s_power = sensor__s_power,
 };
 
 static const struct v4l2_subdev_video_ops sensor_video_ops = {
@@ -260,6 +266,15 @@ static const struct v4l2_subdev_ops sensor_subdev_ops = {
 
 static const struct v4l2_subdev_internal_ops sensor_internal_ops = {
     .open = sensor_open,
+};
+
+static int sensor_link_setup(struct media_entity *entity, const struct media_pad *local, const struct media_pad *remote, u32 flags)
+{
+    return 0;
+}
+
+static const struct media_entity_operations sensor_sd_media_ops = {
+    .link_setup = sensor_link_setup,
 };
 
 /* Initialize control handlers */
@@ -384,6 +399,7 @@ static int sensor_probe(struct platform_device *pdev)
     /* Initialize subdev */
     sensor->sd.internal_ops = &sensor_internal_ops;
     sensor->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE | V4L2_SUBDEV_FL_HAS_EVENTS;
+    sensor->sd.entity.ops = &sensor_sd_media_ops;
     sensor->sd.entity.function = MEDIA_ENT_F_CAM_SENSOR;
 
     /* Initialize source pads */
