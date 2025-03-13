@@ -17,4 +17,4 @@ do_install() {
 
 FILES:${PN} = "${libdir}/gstreamer-1.0/python/"
 
-RDEPENDS:${PN} = "python3-watchdog python3-requests python3-termcolor"
+RDEPENDS:${PN} = "python3-watchdog python3-requests python3-termcolor gstreamer1.0-plugins-bad"
