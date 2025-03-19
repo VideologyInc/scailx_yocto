@@ -70,7 +70,7 @@ IMAGE_INSTALL += " \
     wget \
     xvinfo \
     go2rtc \
-    stream2webrtc \
+    libwebsink \
     gputop \
     ser2net \
     ffmpeg \
