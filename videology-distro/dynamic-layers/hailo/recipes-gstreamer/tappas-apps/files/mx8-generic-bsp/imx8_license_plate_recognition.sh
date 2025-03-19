@@ -3,6 +3,9 @@ set -e
 
 CURRENT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 ${CURRENT_DIR}/resources/get_reqs.sh || echo couldnt get reqs.
+${CURRENT_DIR}/resources/get_reqs.sh || echo couldnt get reqs.
+
+q_elem="queue max-size-buffers=3 max-size-bytes=0 max-size-time=0"
 
 function init_variables() {
     print_help_if_needed $@
@@ -17,14 +20,10 @@ function init_variables() {
     readonly DEFAULT_LICENSE_PLATE_JSON_CONFIG_PATH="$RESOURCES_DIR/configs/yolov4_license_plate.json"
     readonly DEFAULT_VEHICLE_JSON_CONFIG_PATH="$RESOURCES_DIR/configs/yolov5_vehicle_detection.json"
 
-    # Default Video
-    readonly DEFAULT_VIDEO_SOURCE="$RESOURCES_DIR/lpr.raw"
-
     # Vehicle Detection Macros
     readonly VEHICLE_DETECTION_HEF="$RESOURCES_DIR/yolov5m_vehicles_no_ddr_yuy2.hef"
     readonly VEHICLE_DETECTION_POST_SO="$POSTPROCESS_DIR/libyolo_post.so"
     readonly VEHICLE_DETECTION_POST_FUNC="yolov5_vehicles_only"
-
 
     # License Plate Detection Macros
     readonly LICENSE_PLATE_DETECTION_HEF="$RESOURCES_DIR/tiny_yolov4_license_plates_yuy2.hef"
@@ -44,11 +43,8 @@ function init_variables() {
     readonly LPR_OVERLAY="$RESOURCES_DIR/liblpr_overlay.so"
     readonly LPR_OCR_SINK="$RESOURCES_DIR/liblpr_ocrsink.so"
 
-    input_source=$DEFAULT_VIDEO_SOURCE
-    cam=$(set -- `ls /dev/video-i*` ; echo $1)
-    if [ -n "$cam" ]; then
-        input_source=$cam
-    fi
+    cams=$(ls /dev/video-i*)
+    input_source="$RESOURCES_DIR/lpr.mp4"
     print_gst_launch_only=false
     additional_parameters=""
     stats_element=""
@@ -101,7 +97,7 @@ function parse_args() {
             if [ -n "$cam" ]; then
                 echo "Using camera "
                 input_source=$cam
-            else    
+            else
                 echo "No camera found, using default video source"
             fi
         else
@@ -114,80 +110,49 @@ function parse_args() {
     done
 }
 
-function load_file_to_cache() {
-    # Loading the file to the cache is required after every reboot when using iMX8 based machines
-    # This file is an indication that we already loaded the file to the cache
-    if [ ! -f "$FILE_LOADED_TO_CACHE_PATH" ]; then
-        load_file_to_cache_pipeline="$source_element ! fakesink sync=false"
-        eval "gst-launch-1.0 $load_file_to_cache_pipeline"
-
-        # Indicate that the file is already loaded
-        touch "$FILE_LOADED_TO_CACHE_PATH"
-    fi
-}
-
 init_variables $@
 parse_args $@
 # if input_source container /dev/video, use v4l2src, otherwise use multifilesrc
 if [[ $input_source =~ "/dev/video" ]]; then
-    source_element="v4l2src device=$input_source ! video/x-raw,format=YUY2,width=1920,height=1080,framerate=30/1 "
+    source_element="v4l2src device=/dev/video-isi-csi0 ! video/x-raw,format=YUY2,width=1920,height=1080,framerate=30/1 "
 else
-    source_element="multifilesrc location=$input_source name=src_0 loop=true ! rawvideoparse format=yuy2 width=1920 height=1080 framerate=30/1 "
+    source_element="filesrc name=src_0 location=$input_source ! qtdemux ! h264parse ! avdec_h264 ! videoconvert ! video/x-raw,format=YUY2 "
 fi
 internal_offset=true
-load_file_to_cache
 
 
 function create_lp_detection_pipeline() {
-    pipeline_1="queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+    pipeline_1="$q_elem ! \
                 hailocropper so-path=$LICENSE_PLATE_CROP_SO function-name=$LICENSE_PLATE_DETECTION_CROP_FUNC internal-offset=$internal_offset drop-uncropped-buffers=true name=cropper1 \
-                hailoaggregator name=agg1 \
-                cropper1. ! \
-                    queue leaky=no max-size-buffers=50 max-size-bytes=0 max-size-time=0 ! \
-                agg1. \
-                cropper1. ! \
-                    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+                hailoaggregator name=agg1 cropper1. !  $q_elem ! agg1. cropper1. ! $q_elem ! \
                     hailonet hef-path=$LICENSE_PLATE_DETECTION_HEF vdevice-group-id=1 scheduling-algorithm=1 ! \
-                    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+                    $q_elem ! \
                     hailofilter so-path=$LICENSE_PLATE_DETECTION_POST_SO config-path=$license_plate_json_config_path function-name=$LICENSE_PLATE_DETECTION_POST_FUNC qos=false ! \
-                    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-                agg1. \
-                agg1. ! queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+                    $q_elem ! \
+                agg1. agg1. ! $q_elem ! \
                 hailocropper so-path=$LICENSE_PLATE_CROP_SO function-name=$LICENSE_PLATE_OCR_CROP_FUNC internal-offset=$internal_offset drop-uncropped-buffers=true name=cropper2 \
-                hailoaggregator name=agg2 \
-                cropper2. ! \
-                    queue leaky=no max-size-buffers=50 max-size-bytes=0 max-size-time=0 ! \
-                agg2. \
-                cropper2. ! \
-                    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+                hailoaggregator name=agg2 cropper2. ! $q_elem ! agg2. cropper2. ! \
+                    $q_elem ! \
                     hailonet hef-path=$LICENSE_PLATE_OCR_HEF vdevice-group-id=1 scheduling-algorithm=1 ! \
-                    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+                    $q_elem ! \
                     hailofilter so-path=$LICENSE_PLATE_OCR_POST_SO qos=false ! \
-                    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-                agg2. \
-                agg2. ! queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0"
+                    $q_elem ! agg2. agg2. ! $q_elem"
 }
 create_lp_detection_pipeline $@
 
-PIPELINE="${debug_stats_export} gst-launch-1.0 ${stats_element} \
-    $source_element ! \
-    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-    hailonet hef-path=$VEHICLE_DETECTION_HEF vdevice-group-id=1 scheduling-algorithm=1 ! \
-    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-    hailofilter so-path=$VEHICLE_DETECTION_POST_SO config-path=$car_json_config_path function-name=$VEHICLE_DETECTION_POST_FUNC qos=false ! \
-    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-    hailotracker name=hailo_tracker keep-past-metadata=true kalman-dist-thr=.5 iou-thr=.6 keep-tracked-frames=2 keep-lost-frames=2 ! \
-    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-    tee name=$tee_name \
-    $tee_name. ! \
-    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
-    videobox top=1 bottom=1 ! \
-    queue leaky=no max-size-buffers=30 max-size-bytes=0 max-size-time=0 ! \
+# output_elm="xvimagesink name=hailo_display sync=$sync_pipeline"
+output_elm="autovideosink name=hailo_display sync=$sync_pipeline"
+
+PIPELINE="$source_element ! $q_elem ! \
+    hailonet hef-path=$VEHICLE_DETECTION_HEF vdevice-group-id=1 scheduling-algorithm=1 ! $q_elem ! \
+    hailofilter so-path=$VEHICLE_DETECTION_POST_SO config-path=$car_json_config_path function-name=$VEHICLE_DETECTION_POST_FUNC qos=false ! $q_elem ! \
+    hailotracker name=hailo_tracker keep-past-metadata=true kalman-dist-thr=.5 iou-thr=.6 keep-tracked-frames=2 keep-lost-frames=2 ! $q_elem ! \
+    tee name=$tee_name $tee_name. ! $q_elem ! \
+    videobox top=1 bottom=1 ! $q_elem ! \
     hailooverlay line-thickness=3 font-thickness=1 qos=false ! \
     hailofilter use-gst-buffer=true so-path=$LPR_OVERLAY qos=false ! \
-    unixfdsink socket-path="/tmp/stream2webrtc/cam_lpr_stream" wait-for-connection=true\
-    $tee_name. ! \
-    $pipeline_1 ! \
+    $output_elm \
+    $tee_name. ! $pipeline_1 ! \
     hailofilter use-gst-buffer=true so-path=$LPR_OCR_SINK qos=false ! \
     fakesink sync=false async=false  ${additional_parameters}"
 
@@ -198,4 +163,4 @@ if [ "$print_gst_launch_only" = true ]; then
     exit 0
 fi
 
-eval ${PIPELINE}
+eval ${debug_stats_export} gst-launch-1.0 ${stats_element} ${PIPELINE}
