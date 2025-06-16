@@ -6,7 +6,7 @@ repos:
     url: https://github.com/lmp-mirrors/meta-lts-mixins
     branch:
      scarthgap/rust
-    commit: 1793a1b8fc92cf8688c72b7fd4181e3a2f5ade55
+    commit: a8046d5ec53b1856169ac795aa87cb0d5db84c04
     patches:
       patch0:
         path: kas/lts-scarthgap-rust-lirsvg.patch
