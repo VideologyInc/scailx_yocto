@@ -1,0 +1,14 @@
+[Unit]
+Description=GStreamer Daemon
+StartLimitBurst=3
+StartLimitIntervalSec=30
+After=network.target
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+RuntimeDirectory=gstd
+ExecStart=gstd --enable-http-protocol --http-address=0.0.0.0 -u --unix-base-path=/run/gstd/gstd_unix_sckt
+
+[Install]
+WantedBy=default.target
