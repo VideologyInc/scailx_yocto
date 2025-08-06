@@ -24,6 +24,9 @@ repos:
     layers:
       videology-bsp-karo:
       videology-distro:
+  meta-aws:
+    # pin met-aws to a specific commit
+    commit: bcc5564c351d0cb2ffb0bfb4b8044c26562d8ff8
   meta-swupdate:
     # Fix top before image-linkname removal
     commit: 3421a7063a58e4e027130326ab3acccbe3230b30
