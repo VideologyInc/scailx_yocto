@@ -1,6 +1,6 @@
 [Unit]
 Description=go2rtc service
-After=imx8-isp.service
+After=isp-imx-scailx.service
 
 [Service]
 Restart=on-failure

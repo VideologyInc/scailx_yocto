@@ -48,11 +48,13 @@
     },
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}/poky/bitbake/lib",
-        "${workspaceFolder}/poky/meta/lib"
+        "${workspaceFolder}/poky/meta/lib",
+        "${workspaceFolder}\\poky\\meta\\lib"
     ],
     "python.analysis.extraPaths": [
         "${workspaceFolder}/poky/bitbake/lib",
-        "${workspaceFolder}/poky/meta/lib"
+        "${workspaceFolder}/poky/meta/lib",
+        "${workspaceFolder}\\poky\\meta\\lib"
     ],
     "[python]": {
         "diffEditor.ignoreTrimWhitespace": false,

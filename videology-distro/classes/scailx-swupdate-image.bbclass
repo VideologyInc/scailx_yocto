@@ -51,7 +51,7 @@ APTGET_EXTRA_PACKAGES += " u-boot-tools "
 
 IMAGE_NAME_SUFFIX ?= "-${SCAILX_VERSION}-img"
 
-IMAGE_FSTYPES = "squashfs"
+IMAGE_FSTYPES = "squashfs boot-devicetrees"
 
 do_fetch[depends] += "virtual/bootloader:do_deploy"
 
@@ -136,6 +136,14 @@ ROOTFS_POSTPROCESS_COMMAND += ";do_scailx_fix_ssh_check_keys;"
 
 inherit swupdate-image
 do_swuimage[stamp-extra-info] = "${IMAGE_LINK_NAME}"
+
+# U-Boot mxsboot generation for NAND
+# PREFERRED_PROVIDER_virtual/dtb:do_populate_sysroot
+do_image_boot_devicetrees[depends] += "autoconf-archive-native:do_populate_sysroot"
+IMAGE_CMD:boot-devicetrees() {
+    tar --sort=name --format=posix --numeric-owner -czf ${IMGDEPLOYDIR}/devicetrees.tgz -C ${IMAGE_ROOTFS}/boot devicetree
+}
+
 
 # SWUPDATE_SIGNING : if set, the SWU is signed. There are 3 allowed values: RSA, CMS, CUSTOM. This value determines used signing mechanism.
 # SWUPDATE_SIGN_TOOL : instead of using openssl, use SWUPDATE_SIGN_TOOL to sign the image. A typical use case is together with a hardware key. It is available if SWUPDATE_SIGNING is set to CUSTOM
