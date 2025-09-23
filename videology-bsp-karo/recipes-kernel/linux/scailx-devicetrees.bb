@@ -16,20 +16,18 @@ COMPATIBLE_MACHINE = ".*(mx8).*"
 
 RM_WORK_EXCLUDE += "${PN}"
 
-do_deploy:append() {
-	cd ${DEPLOYDIR}
-	install -m 0644 ${WORKDIR}/git/cam-overlays ${DEPLOYDIR}/devicetree
-	tar czf ${DEPLOYDIR}/devicetrees.tgz *
+pkg_postinst:${PN} () {
+    echo "0x40 lvds2mipi.dtbo"      >> $D/boot/devicetree/cam-overlays
+    echo "0x38 vid_isp_ar0234.dtbo" >> $D/boot/devicetree/cam-overlays
+    echo "0x36 os08a20.dtbo"        >> $D/boot/devicetree/cam-overlays
+    echo "0x57 sony-mipi.dtbo"      >> $D/boot/devicetree/cam-overlays
 }
 
 do_install:append(){
-	install -d ${D}${sysconfdir}
-	install -m 0644 ${WORKDIR}/git/cam-overlays ${D}${sysconfdir}/cam-overlays
 	install -d ${D}${exec_prefix}/src/${PN}
 	cp -rf ${WORKDIR}/git/* ${D}${exec_prefix}/src/${PN}/
 	rm -rf ${D}${exec_prefix}/src/${PN}/include
 }
-DEPENDS += "autoconf-archive-native"
 
 FILES:${PN}-dbg += "${exec_prefix}/src/${PN}"
 FILES:${PN} += "${sysconfdir}/cam-overlays"
