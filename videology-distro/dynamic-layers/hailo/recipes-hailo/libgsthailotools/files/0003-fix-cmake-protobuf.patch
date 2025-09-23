@@ -1,0 +1,33 @@
+From 43c3672451fb33e6baa18fb3a9555cf3b93d9de1 Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Tue, 23 Sep 2025 11:46:32 +0200
+Subject: [PATCH] fix cmake protobuf on fedora.
+
+---
+ hailort/cmake/external/protobuf.cmake | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/hailort/cmake/external/protobuf.cmake b/hailort/cmake/external/protobuf.cmake
+index 1503920..98ea9e5 100644
+--- a/hailort/cmake/external/protobuf.cmake
++++ b/hailort/cmake/external/protobuf.cmake
+@@ -41,7 +41,15 @@ if(NOT protobuf_POPULATED)
+         if(WIN32)
+             set(PROTOBUF_CONFIG_DIR ${PROTOBUF_INSTALL_DIR}/cmake)
+         else()
+-            set(PROTOBUF_CONFIG_DIR ${PROTOBUF_INSTALL_DIR}/lib/cmake/protobuf)
++            set(PROTOBUF_CONFIG_DIR ${PROTOBUF_INSTALL_DIR}/${CMAKE_INSTALL_LIBDIR}/cmake/protobuf)
++            # Minimal fallback to handle mismatches (e.g., Yocto forcing lib): try lib64, then lib
++            if(NOT EXISTS "${PROTOBUF_CONFIG_DIR}/protobuf-config.cmake")
++                if(EXISTS "${PROTOBUF_INSTALL_DIR}/lib64/cmake/protobuf/protobuf-config.cmake")
++                    set(PROTOBUF_CONFIG_DIR ${PROTOBUF_INSTALL_DIR}/lib64/cmake/protobuf)
++                elseif(EXISTS "${PROTOBUF_INSTALL_DIR}/lib/cmake/protobuf/protobuf-config.cmake")
++                    set(PROTOBUF_CONFIG_DIR ${PROTOBUF_INSTALL_DIR}/lib/cmake/protobuf)
++                endif()
++            endif()
+         endif()
+ 
+         # Include host protobuf for protoc (https://stackoverflow.com/questions/53651181/cmake-find-protobuf-package-in-custom-directory)
+-- 
+2.51.0
+
