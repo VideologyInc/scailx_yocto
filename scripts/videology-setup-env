@@ -26,7 +26,7 @@ if [ "$1" ]; then
 fi
 
 ubuntu=$(grep -q '22.04' /etc/os-release && echo yes)
-fedora=$(grep -q 'fedora.39' /etc/os-release && echo yes)
+fedora=$(grep -q 'fedora.41' /etc/os-release && echo yes)
 export KAS_WORK_DIR
 
 source .venv/bin/activate && echo "using python $(python --version)" || echo "No virtualenv found. using local"

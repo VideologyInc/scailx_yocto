@@ -12,8 +12,8 @@ repos:
     commit: 950a4afce46a359def2958bd9ae33fc08ff9bb0d
     url: https://git.yoctoproject.org/meta-arm
     layers:
-      meta-arm-toolchain: ''
-      meta-arm: ''
+      meta-arm-toolchain:
+      meta-arm:
   meta-browser:
     branch: ''
     commit: dc31889c0899971def535dc1c040edf18bc16691
@@ -50,9 +50,9 @@ repos:
     branch: scarthgap
     commit: 72018ca1b1a471226917e8246e8bbf9a374ccf97
     layers:
-      meta-filesystems: ''
-      meta-multimedia: ''
-      meta-networking: ''
+      meta-filesystems:
+      meta-multimedia:
+      meta-networking:
     url: https://github.com/openembedded/meta-openembedded
   # meta-qt6:
   #   branch: '6.8'
@@ -72,5 +72,5 @@ repos:
     url: https://git.yoctoproject.org/meta-virtualization
   poky:
     branch: scarthgap
-    commit: 200d12b6a58ad961d60a7774ca0f7a9d29498724
+    commit: 31b2c45764702e0dfac4661db686f48374cee787
     url: https://git.yoctoproject.org/poky
