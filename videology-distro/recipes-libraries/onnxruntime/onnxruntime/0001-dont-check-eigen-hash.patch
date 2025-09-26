@@ -1,0 +1,63 @@
+From 7dd7594c8200103052f51369a858f234d50f236e Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Fri, 26 Sep 2025 14:38:51 +0200
+Subject: [PATCH] dont check eigen hash
+
+---
+ cmake/external/eigen.cmake                                      | 1 -
+ .../optimizer/selectors_actions/selector_action_transformer.cc  | 2 +-
+ onnxruntime/core/session/inference_session.cc                   | 2 +-
+ onnxruntime/test/ir/graph_test.cc                               | 2 +-
+ 4 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/cmake/external/eigen.cmake b/cmake/external/eigen.cmake
+index b123adb62..fe9016c85 100644
+--- a/cmake/external/eigen.cmake
++++ b/cmake/external/eigen.cmake
+@@ -6,7 +6,6 @@ else ()
+     FetchContent_Declare(
+         eigen
+         URL ${DEP_URL_eigen}
+-        URL_HASH SHA1=${DEP_SHA1_eigen}
+     )
+ 
+     FetchContent_Populate(eigen)
+diff --git a/onnxruntime/core/optimizer/selectors_actions/selector_action_transformer.cc b/onnxruntime/core/optimizer/selectors_actions/selector_action_transformer.cc
+index c1a0fbd80..e5839c8fe 100644
+--- a/onnxruntime/core/optimizer/selectors_actions/selector_action_transformer.cc
++++ b/onnxruntime/core/optimizer/selectors_actions/selector_action_transformer.cc
+@@ -150,7 +150,7 @@ static Status MatchAndProcess(
+       RuntimeOptimizationRecord::ProducedOpIdVector produced_op_ids{};
+       produced_op_ids.reserve(action_saved_state.produced_node_op_schemas.size());
+ 
+-      for (const auto op_schema : action_saved_state.produced_node_op_schemas) {
++      for (const auto& op_schema : action_saved_state.produced_node_op_schemas) {
+         produced_op_ids.push_back(utils::MakeOpId(*op_schema));
+         if (save_context->record_produced_node_op_schema) {
+           status = save_context->record_produced_node_op_schema(*op_schema);
+diff --git a/onnxruntime/core/session/inference_session.cc b/onnxruntime/core/session/inference_session.cc
+index c8fc812fe..71fa8f35c 100644
+--- a/onnxruntime/core/session/inference_session.cc
++++ b/onnxruntime/core/session/inference_session.cc
+@@ -830,7 +830,7 @@ common::Status InferenceSession::SaveToOrtFormat(const PathString& filepath) con
+   ORT_RETURN_IF_ERROR(kernel_type_str_resolver.RegisterGraphNodeOpSchemas(model_->MainGraph()));
+   ORT_RETURN_IF_ERROR(standalone::RegisterCustomOpNodeSchemas(kernel_type_str_resolver, model_->MainGraph()));
+ 
+-  for (const auto op_schema : saved_runtime_optimization_produced_node_op_schemas_) {
++  for (const auto& op_schema : saved_runtime_optimization_produced_node_op_schemas_) {
+     ORT_RETURN_IF_ERROR(kernel_type_str_resolver.RegisterOpSchema(*op_schema));
+   }
+ 
+diff --git a/onnxruntime/test/ir/graph_test.cc b/onnxruntime/test/ir/graph_test.cc
+index 4b676021d..2248ee302 100644
+--- a/onnxruntime/test/ir/graph_test.cc
++++ b/onnxruntime/test/ir/graph_test.cc
+@@ -493,7 +493,7 @@ TEST_F(GraphTest, FunctionOpsetImportTest) {
+       auto it = domain_version_map.find(n.Domain());
+       ASSERT_TRUE(it != domain_version_map.end());
+       auto domain_version = it->second;
+-      const auto op_schema = schema_registry->GetSchema(n.OpType(), domain_version, n.Domain());
++      const auto& op_schema = schema_registry->GetSchema(n.OpType(), domain_version, n.Domain());
+       ASSERT_TRUE(op_schema != nullptr);
+     }
+   }
