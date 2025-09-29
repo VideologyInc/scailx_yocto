@@ -10,7 +10,7 @@ header:
   includes:
     - nxp-imx-scarthgap.yaml
     - kas/scarthgap.yml
-    - lf-6.6.52-2.2.0-scarthgap.yaml
+    - lf-6.6.52-2.2.1-scarthgap.yaml
     # - kas/go-lts-mixins.yml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
@@ -54,7 +54,7 @@ target:
 
 local_conf_header:
   distro: |
-    SCAILX_VERSION="0.12.0"
+    SCAILX_VERSION="0.12.3"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
