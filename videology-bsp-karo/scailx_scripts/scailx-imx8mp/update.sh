@@ -65,6 +65,7 @@ if [ $1 == "preinst" ]; then
     [ -f /tmp/storage/initrd_log_fatal ] && mv -f /tmp/storage/initrd_log_fatal /tmp/storage/old_initrd_log_fatal
     mkdir -p /tmp/storage/bsp/$UPDATE_SLOT/mounts
     [ -d /tmp/storage/overlay/upper/etc ] && (mkdir -p /tmp/storage/config/persist/; cp -fr -t /tmp/storage/config/persist/ /tmp/storage/overlay/upper/etc)
+    [ -f /tmp/storage/overlay/upper/root/.bash_history ] && (mkdir -p /tmp/storage/config/persist/root/; cp -fr -t /tmp/storage/config/persist/root/ /tmp/storage/overlay/upper/root/.bash_history)
     # [ -d /tmp/storage/overlay/upper/etc/ssh ] && (mkdir -p /tmp/storage/config/persist/etc/; cp -fr -t /tmp/storage/config/persist/etc/ /tmp/storage/overlay/upper/etc/ssh)
     # [ -f /tmp/storage/overlay/upper/etc/hostname ] && (mkdir -p /tmp/storage/config/persist/etc/; cp -fr -t /tmp/storage/config/persist/etc/ /tmp/storage/overlay/upper/etc/hostname)
     rm -rf /tmp/storage/overlay/backup*
