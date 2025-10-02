@@ -15,3 +15,12 @@ PV:scailx = "${LINUX_VERSION}"
 
 SCMVERSION = "n"
 LINUX_VERSION_EXTENSION = ""
+
+# generate compile_commands.json for clangd
+do_compile:append() {
+    # Generate compile_commands.json after kernel compilation
+    bbnote "Generating compile_commands.json using kernel script"
+    python3 ${S}/scripts/clang-tools/gen_compile_commands.py \
+            -d ${B} \
+            -o ${S}/compile_commands.json
+}
