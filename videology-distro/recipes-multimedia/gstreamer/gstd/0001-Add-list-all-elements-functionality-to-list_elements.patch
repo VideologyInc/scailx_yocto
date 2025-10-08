@@ -1,0 +1,116 @@
+From e21cc269cabedd2c23882047e0d32cebd76e392b Mon Sep 17 00:00:00 2001
+From: Kobus Goosen <kgoosen@videologyinc.com>
+Date: Wed, 8 Oct 2025 14:17:14 +0200
+Subject: [PATCH] Add list-all-elements functionality to list_elements function
+
+---
+ gst_client/gst_client.c |  4 +--
+ libgstd/gstd_parser.c   | 59 ++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 60 insertions(+), 3 deletions(-)
+
+diff --git a/gst_client/gst_client.c b/gst_client/gst_client.c
+index 6bf9699..5a2e20b 100644
+--- a/gst_client/gst_client.c
++++ b/gst_client/gst_client.c
+@@ -146,8 +146,8 @@ static GstdClientCmd cmds[] = {
+   {"list_pipelines", gstd_client_cmd_socket, "List the existing pipelines",
+       "list_pipelines"},
+   {"list_elements", gstd_client_cmd_socket,
+-        "List the elements in a given pipeline",
+-      "list_elements <pipe>"},
++        "List the elements in a given pipeline, or all registry elements if no pipeline specified",
++      "list_elements [pipe|all]"},
+   {"list_properties", gstd_client_cmd_socket,
+         "List the properties of an element in a given pipeline",
+       "list_properties <pipe> <element>"},
+diff --git a/libgstd/gstd_parser.c b/libgstd/gstd_parser.c
+index 821984e..e416a7b 100644
+--- a/libgstd/gstd_parser.c
++++ b/libgstd/gstd_parser.c
+@@ -26,6 +26,8 @@
+ #include "gstd_pipeline.h"
+ #include "gstd_session.h"
+ #include "gstd_state.h"
++#include "gstd_json_builder.h"
++#include "gstd_iformatter.h"
+ 
+ #include "gstd_parser.h"
+ 
+@@ -65,6 +67,7 @@ static GstdReturnCode gstd_parser_element_get (GstdSession *, gchar *,
+     gchar *, gchar **);
+ static GstdReturnCode gstd_parser_list_pipelines (GstdSession *, gchar *,
+     gchar *, gchar **);
++static GstdReturnCode gstd_list_all_elements (gchar **);
+ static GstdReturnCode gstd_parser_list_elements (GstdSession *, gchar *,
+     gchar *, gchar **);
+ static GstdReturnCode gstd_parser_list_properties (GstdSession *, gchar *,
+@@ -561,6 +564,58 @@ gstd_parser_list_pipelines (GstdSession * session, gchar * action, gchar * args,
+ 
+   return ret;
+ }
++static GstdReturnCode
++gstd_list_all_elements (gchar ** response)
++{
++  GstRegistry *registry;
++  GList *features, *iter;
++  GstdIFormatter *formatter;
++  GValue value = G_VALUE_INIT;
++
++  registry = gst_registry_get();
++  features = gst_registry_get_feature_list(registry, GST_TYPE_ELEMENT_FACTORY);
++
++  formatter = g_object_new(GSTD_TYPE_JSON_BUILDER, NULL);
++  gstd_iformatter_begin_object(formatter);
++  gstd_iformatter_set_member_name(formatter, "nodes");
++  gstd_iformatter_begin_array(formatter);
++
++  for (iter = features; iter; iter = g_list_next(iter)) {
++    GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
++    const gchar *name = gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory));
++    const gchar *klass = gst_element_factory_get_klass(factory);
++    const gchar *description = gst_element_factory_get_description(factory);
++    guint rank = gst_plugin_feature_get_rank(GST_PLUGIN_FEATURE(factory));
++
++    gstd_iformatter_begin_object(formatter);
++
++    gstd_iformatter_set_member_name(formatter, "name");
++    gstd_iformatter_set_string_value(formatter, name);
++
++    gstd_iformatter_set_member_name(formatter, "klass");
++    gstd_iformatter_set_string_value(formatter, klass ? klass : "");
++
++    gstd_iformatter_set_member_name(formatter, "description");
++    gstd_iformatter_set_string_value(formatter, description ? description : "");
++
++    gstd_iformatter_set_member_name(formatter, "rank");
++    g_value_init(&value, G_TYPE_UINT);
++    g_value_set_uint(&value, rank);
++    gstd_iformatter_set_value(formatter, &value);
++    g_value_unset(&value);
++
++    gstd_iformatter_end_object(formatter);
++  }
++
++  gstd_iformatter_end_array(formatter);
++  gstd_iformatter_end_object(formatter);
++  gstd_iformatter_generate(formatter, response);
++
++  gst_plugin_feature_list_free(features);
++  g_object_unref(formatter);
++
++  return GSTD_EOK;
++}
+ 
+ static GstdReturnCode
+ gstd_parser_list_elements (GstdSession * session, gchar * action, gchar * args,
+@@ -570,7 +625,9 @@ gstd_parser_list_elements (GstdSession * session, gchar * action, gchar * args,
+   gchar *uri;
+ 
+   g_return_val_if_fail (GSTD_IS_SESSION (session), GSTD_NULL_ARGUMENT);
+-  g_return_val_if_fail (args, GSTD_NULL_ARGUMENT);
++  /* If no args provided or args is "all", list all registry elements */
++  if (!args || !*args || !g_strcmp0(args, "all"))
++    return gstd_list_all_elements(response);
+ 
+   uri = g_strdup_printf ("/pipelines/%s/elements/", args);
+   ret = gstd_parser_parse_raw_cmd (session, (gchar *) "read", uri, response);
