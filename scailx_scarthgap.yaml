@@ -32,6 +32,18 @@ repos:
     commit: 3421a7063a58e4e027130326ab3acccbe3230b30
   meta-browser:
     commit: 40ef1d0799124a36b22df11a7562868c0edb23b1
+  scailx-sony:
+    branch: master
+    url: https://github.com/VideologyInc/scailx_sony_sensors.git
+    commit: fc4cf8584c20885188e6dcc029b9c0f4fd31bf5b
+    layers:
+      framos-layer:
+  meta-scailx-flir:
+    branch: master
+    url: git@github.com:VideologyInc/meta-scailx-flir.git
+    commit: 89bc668c292ce5df97844ed9d8c50e79f9315356
+    layers:
+      meta-scailx-flir:
 
   # meta-nxp-avb:
   #   branch: real-time-edge-scarthgap
@@ -54,7 +66,7 @@ target:
 
 local_conf_header:
   distro: |
-    SCAILX_VERSION="0.12.3"
+    SCAILX_VERSION="0.12.5"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"

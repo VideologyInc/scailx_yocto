@@ -26,7 +26,7 @@ if [ "$1" ]; then
 fi
 
 ubuntu=$(grep -q '22.04' /etc/os-release && echo yes)
-fedora=$(grep -q 'fedora.41' /etc/os-release && echo yes)
+fedora=$(grep -q 'fedora.4' /etc/os-release && echo yes)
 export KAS_WORK_DIR
 
 source .venv/bin/activate && echo "using python $(python --version)" || echo "No virtualenv found. using local"
@@ -40,6 +40,7 @@ fi
 
 # if running known distro, use poky/oe-init-build-env
 if [ "$ubuntu" ] || [ "$fedora" ]; then
+    [ -f "poky/buildtools/environment-setup-x86_64-pokysdk-linux" ] && source poky/buildtools/environment-setup-x86_64-pokysdk-linux
     source "$KAS_WORK_DIR/poky/oe-init-build-env" "$KAS_WORK_DIR/build"
 else
     kas checkout "$KASFILE"

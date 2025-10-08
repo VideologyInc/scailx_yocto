@@ -64,13 +64,12 @@ IMAGE_INSTALL += " \
     packagegroup-imx-core-tools \
     packagegroup-imx-security \
     curl \
-    nodejs \
-    nodejs-npm \
+    bun \
     git \
     wget \
     xvinfo \
     go2rtc \
-    libwebsink \
+    gst-plugin-websink \
     gputop \
     ser2net \
     ffmpeg \
@@ -83,7 +82,7 @@ IMAGE_INSTALL += " \
 
 IMAGE_INSTALL += " scailx-notebooks "
 
-IMAGE_INSTALL += " ${@bb.utils.contains('SCAILX_SOURCES', 'yes', 'scailx-gst-plugins scailx-ai-portal', '', d)} "
+# IMAGE_INSTALL += " ${@bb.utils.contains('SCAILX_SOURCES', 'yes', 'scailx-gst-plugins scailx-ai-portal', '', d)} "
 
 IMAGE_INSTALL += " ${@bb.utils.contains('DISTRO_FEATURES', 'wifi', 'impala', '', d)} "
 

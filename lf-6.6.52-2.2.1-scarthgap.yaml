@@ -72,5 +72,5 @@ repos:
     url: https://git.yoctoproject.org/meta-virtualization
   poky:
     branch: scarthgap
-    commit: 31b2c45764702e0dfac4661db686f48374cee787
+    commit: eae801c832ab1a8d5ef970c58db9dc1fea47fa3b
     url: https://git.yoctoproject.org/poky
