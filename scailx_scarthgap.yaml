@@ -35,7 +35,7 @@ repos:
   scailx-sony:
     branch: master
     url: https://github.com/VideologyInc/scailx_sony_sensors.git
-    commit: fc4cf8584c20885188e6dcc029b9c0f4fd31bf5b
+    commit: 8ed874bcd9eae77db562d0d38a72911476338925
     layers:
       framos-layer:
   meta-scailx-flir:
