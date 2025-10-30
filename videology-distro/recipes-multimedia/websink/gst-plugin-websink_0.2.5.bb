@@ -1,13 +1,13 @@
 SUMMARY = "GStreamer Rust plugin webrtc"
 DESCRIPTION = "Rust plugin for webrtcbin"
-HOMEPAGE = "https://github.com/KobusG/websink"
+HOMEPAGE = "https://github.com/videologyinc/websink"
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=b3a0d536af8ffb9b047ff986b81105c3"
 
 inherit pkgconfig cargo cargo-update-recipe-crates
 
 SRC_URI = "git://github.com/videologyinc/websink.git;protocol=https;branch=master"
-SRCREV = "8bd623446a799ed2b34956fd35cdf9b74dd511f6"
+SRCREV = "c9c61f38431d56507e141fc040019d3e3440ca15"
 SRC_URI += "file://websink_wrapper.py"
 
 S = "${WORKDIR}/git"
