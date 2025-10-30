@@ -66,6 +66,9 @@ IMAGE_INSTALL += " \
     packagegroup-imx-security \
     curl \
     bun \
+    libqmi \
+    modemmanager \
+    networkmanager \
     git \
     wget \
     xvinfo \

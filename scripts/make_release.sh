@@ -17,3 +17,5 @@ for f in $(find deploy/images/ -name "*${SCAILX_VERSION}-oci.tar"); do
     echo "Uploading $name to ghcr.io with tag $SCAILX_VERSION"
     skopeo copy oci-archive:/work/scailx_yocto/build/$f docker://ghcr.io/videologyinc/${name}:$SCAILX_VERSION
 done
+
+gh release create "v${SCAILX_VERSION}" --repo videologyinc/scailx-yocto --title "v${SCAILX_VERSION}" --generate-notes 
