@@ -41,6 +41,7 @@ IMAGE_INSTALL = " \
         openssh-sftp-server \
         bash \
         busybox \
+        imx-test \
         wget curl \
         coreutils \
         cmake \
@@ -85,8 +86,7 @@ IMAGE_INSTALL += " \
     lsof \
     meson \
     ninja \
-    nodejs \
-    nodejs-npm \
+    bun \
     go go-runtime\
     nginx \
     fluentbit \
@@ -142,6 +142,8 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     firmware-nxp-wifi \
     packagegroup-meta-python \
     gstreamer1.0-python \
+    libcxx-dev libcxx-staticdev compiler-rt-dev libstdc++-dev libc6-dbg isp-imx-dbg \
+    boost-dbg gcc-runtime-dbg glibc-mtrace-dbg imx-gpu-g2d-dev libg2d-dbg libjsoncpp-dbg libdrm-dev libgcc-dev libstdc++-dev libtinyxml2-dbg linux-imx-headers-dbg \
 "
 
 do_add_scailx_version () {
