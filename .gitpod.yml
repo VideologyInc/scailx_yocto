@@ -1,7 +1,0 @@
-image:
-  file: .gitpod.dockerfile
-tasks:
-  - name: kas
-    # before: source setup-environment build
-    # init: bitbake -e linux-imx > linux_env
-    command: kas checkout scailx.yaml

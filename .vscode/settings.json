@@ -78,6 +78,7 @@
     "bitbake.sshTarget": "root@zoomblock-test.local",
     "search.useIgnoreFiles": false,
     "files.associations": {
+        "flake.lock": "json",
         ".config": "makefile",
         "*defconfig": "Makefile",
         "sw-description": "libconfig",

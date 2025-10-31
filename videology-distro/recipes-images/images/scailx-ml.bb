@@ -49,6 +49,7 @@ IMAGE_INSTALL += " \
     libgsthailo \
     libhailort \
     hailo-firmware \
+    tappas-apps \
     v4l-utils \
     media-ctl \
     ca-certificates \

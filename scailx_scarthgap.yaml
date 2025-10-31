@@ -11,11 +11,9 @@ header:
     - nxp-imx-scarthgap.yaml
     - kas/scarthgap.yml
     - lf-6.6.52-2.2.1-scarthgap.yaml
-    # - kas/go-lts-mixins.yml
     - kas/layers/meta-swupdate.yml
     - kas/layers/meta-security.yml
     - kas/layers/meta-hailo-kirkstone.yml
-    - kas/layers/meta-aws.yml
     - kas/layers/meta-webserver.yml
     - kas/lts-mixins-rust-scarthgap.yml
 
@@ -24,9 +22,6 @@ repos:
     layers:
       videology-bsp-karo:
       videology-distro:
-  meta-aws:
-    # pin met-aws to a specific commit
-    commit: bcc5564c351d0cb2ffb0bfb4b8044c26562d8ff8
   meta-swupdate:
     # Fix top before image-linkname removal
     commit: 3421a7063a58e4e027130326ab3acccbe3230b30
@@ -40,8 +35,8 @@ repos:
       framos-layer:
   meta-scailx-flir:
     branch: master
-    url: git@github.com:VideologyInc/meta-scailx-flir.git
-    commit: 89bc668c292ce5df97844ed9d8c50e79f9315356
+    url: https://github.com/VideologyInc/meta-scailx-flir.git
+    commit: 4a655a77c1a929a0dfd9a42f0bb4eed14f611a72
     layers:
       meta-scailx-flir:
 
@@ -66,7 +61,7 @@ target:
 
 local_conf_header:
   distro: |
-    SCAILX_VERSION="0.12.5"
+    SCAILX_VERSION="0.13.0"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"

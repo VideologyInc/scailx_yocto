@@ -9,13 +9,6 @@ echo "scailx version: $SCAILX_VERSION"
 bitbake scailx-ml scailx-builder-container scailx-container-base && \
 "$script_dir/sync_packages.sh" && \
 bitbake scailx-builder-container -c do_populate_sdk && \
-rclone sync deploy/sdk/ scailx-storage:scailx-ppa/scailx/6.6-scarthgap/deploy/sdk/ --progress --transfers 64 --checkers 64 --checksum
-
-# find release images
-for f in $(find deploy/images/ -name "*$SCAILX_VERSION*" -type f); do 
-    echo "Uploading $f to scailx-storage"
-    rclone copy $f scailx-storage:scailx-ppa/scailx/6.6-scarthgap/$(dirname $f) --progress --transfers 64 --checkers 64 --checksum
-done
 
 # upload containers to ghcr.io
 for f in $(find deploy/images/ -name "*${SCAILX_VERSION}-oci.tar"); do
