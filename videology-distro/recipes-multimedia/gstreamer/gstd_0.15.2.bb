@@ -28,7 +28,7 @@ EXTRA_OEMESON = "-Dwith-gstd-runstatedir=/run \
                 "
 
 SYSTEMD_SERVICE:${PN} = "gstd.service"
-SYSTEMD_AUTO_ENABLE = "disable"
+SYSTEMD_AUTO_ENABLE = "enable"
 FILES:${PN} += "${systemd_user_unitdir}"
 
 # -Denable-python=false
