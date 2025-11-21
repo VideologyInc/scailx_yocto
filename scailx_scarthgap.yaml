@@ -60,6 +60,10 @@ target:
   - scailx-ml
 
 local_conf_header:
+# Sets the total number of threads BitBake can use for the build
+  threads: |
+    BB_NUMBER_THREADS = "4"
+    PARALLEL_MAKE = "-j 16"
   distro: |
     SCAILX_VERSION="0.13.0"
     PACKAGE_CLASSES = "package_ipk"
