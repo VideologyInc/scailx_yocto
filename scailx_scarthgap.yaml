@@ -34,11 +34,12 @@ repos:
     layers:
       framos-layer:
   meta-scailx-flir:
-#    branch: master
-    branch: AB#2003-boson-gray16-fix
+    branch: master
+#    branch: AB#2003-boson-gray16-fix
     url: https://github.com/VideologyInc/meta-scailx-flir.git
 #    commit: 4a655a77c1a929a0dfd9a42f0bb4eed14f611a72
-    commit: cfef593cf86c24ad32fac36706946a2c8b285916
+#    commit: cfef593cf86c24ad32fac36706946a2c8b285916
+    commit: ad991dbf0780b63f7c2fbef6528075c2b07c21ba
     layers:
       meta-scailx-flir:
 
@@ -67,7 +68,7 @@ local_conf_header:
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 16"
   distro: |
-    SCAILX_VERSION="0.13.6"
+    SCAILX_VERSION="0.13.7"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
