@@ -5,6 +5,22 @@ import re
 import glob
 import tempfile
 import shutil
+from pathlib import Path
+
+from vdlg_lvds.v4l2_detect_formats import camera_to_gst_list
+
+"""
+
+File:   go2rtc-create-cams-config.py
+
+2026.0226.  Fixed crashing if not /dev/video? detected.
+2026.0226.  Added known camera popular resolution, framerate and format list. 
+
+2026.0302.  Added Zoom Block camera format full list (resolution, fps, formats) from Visca commands.
+
+By:			Kobus (in 2025 and before) and jye@videologyinc.com
+
+"""
 
 # Currently supports 4 camera types:
 # global shutter = AR0234   => ar0234
@@ -65,11 +81,16 @@ def detect_camera_by_name(cam):
 # Given camera name, return its width, height and gst string.
 # To Do, for ZoomBlock cameras connected through LVDS2MIPI port, still need to detect and get camera gst info using gst-device-monitor ;-)
 # Or with a more complex way, get its format using v4l2-ctl --list-formats-ext and "translate" to gst strings ;-)
-def get_camera_gst(name):
+def get_camera_gst(name, vdev):
 
-    info_list = (
-        camera_gst_dict[name] if name in camera_gst_dict else camera_gst_dict["ar0234"]
-    )
+    # For Zoom Block camera through LVDS board, use newly created info list (from Visca commands).
+    if name=="zoomblock" or name=="boson":
+        cam_real_path = Path(vdev).resolve()
+        info_list = camera_to_gst_list(str(cam_real_path))
+    else:
+        info_list = (
+            camera_gst_dict[name] if name in camera_gst_dict else camera_gst_dict["ar0234"]
+        )
 
     return info_list
 
@@ -92,7 +113,7 @@ with open("/var/tmp/cam_config_new.yaml", "w") as f:
         # Get camera name and matching gst info
         name = detect_camera_by_name(cam)
 
-        info_list = get_camera_gst(name)
+        info_list = get_camera_gst(name, vdev)
 
         # VPU quality settings: qp above35 gives a grainy image. Below 20 the bitrate starts getting excessive.
         # Parse all resolutions and formats of the camera, may be >=2 ;-) 
