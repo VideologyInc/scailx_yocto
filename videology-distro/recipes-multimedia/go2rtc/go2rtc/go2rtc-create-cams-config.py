@@ -91,7 +91,7 @@ def detect_camera_by_name(cam):
 def get_camera_gst(name, vdev):
 
     # For Zoom Block camera through LVDS board, use newly created info list (from Visca commands).
-    if name=="zoomblock" or name=="boson":
+    if name=="zoomblock" or name=="boson" or name=="usb":
         cam_real_path = Path(vdev).resolve()
         info_list = camera_to_gst_list(str(cam_real_path))
     else:
@@ -105,7 +105,7 @@ def get_camera_gst(name, vdev):
 with open("/var/tmp/cam_config_new.yaml", "w") as f:
     print(f'Start get camera config from device tree path to file {f.name}')
     config = {"streams": {}}
-    # itterate over cam overlays in /proc/device-tree/chosen/overlays/
+    # iterate over cam overlays in /proc/device-tree/chosen/overlays/
     for camfile in glob.iglob("/proc/device-tree/chosen/overlays/cam*"):
         cam = os.path.basename(camfile)
         camlist = re.findall(r"cam(\d+)-(\w+)", cam)
@@ -127,6 +127,21 @@ with open("/var/tmp/cam_config_new.yaml", "w") as f:
         for info in info_list:
             width, height, format_str, gst_str = info
             config["streams"][f"{cam}_{width}x{height}_{format_str}"] = f"exec:gst-launch-1.0 -q v4l2src device={vdev} ! {gst_str} ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink"
+
+    # Do the same for usb camera if any. Just one now ;-)
+    usb_list = glob.glob("/dev/v4l/by-path/*")
+    if usb_list:
+        # Find first usb camera on the list.
+        for s in usb_list:
+            if "usb" in s:
+                vdev = str(Path(s).resolve())
+                name = "usb"
+
+                info_list = get_camera_gst(name, vdev)
+                for info in info_list:
+                    width, height, format_str, gst_str = info
+                    config["streams"][f"{name}_{width}x{height}_{format_str}"] = f"exec:gst-launch-1.0 -q v4l2src device={vdev} ! {gst_str} ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink"
+
 
     print(config)
     
