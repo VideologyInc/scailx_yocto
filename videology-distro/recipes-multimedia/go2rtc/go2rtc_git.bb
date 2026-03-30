@@ -30,6 +30,13 @@ SRC_URI += "file://go2rtc.yaml"
 SRC_URI += "file://go2rtc.service"
 SRC_URI += "file://go2rtc-create-cams-config.py"
 
+# New Boson AI model files
+SRC_URI += "file://boson/yolov8n_float16.tflite"
+SRC_URI += "file://boson/coco.txt"
+SRC_URI += "file://boson/thermal_yolov8n_320.tflite"
+SRC_URI += "file://boson/thermal.txt"
+	
+
 inherit systemd
 
 SYSTEMD_SERVICE:${PN} = "go2rtc.service"
@@ -43,10 +50,27 @@ do_install:append(){
 
     install -m 0755 ${WORKDIR}/go2rtc-create-cams-config.py ${D}${bindir}/
     rm -rf ${D}${bindir}/go2rtc_*
+
+    # Create new folder on Scailx device.
+    install -d ${D}/opt/imx8-isp/boson
+
+    # single file only
+    # install -m 0755 ${WORKDIR}/boson/coco.txt ${D}/opt/imx8-isp/boson/			
+
+    # Install multiple files in subfolder ~/go2rtc/boson to Scailx device.
+    for f in ${WORKDIR}/boson/*; do install -m 0755 $f ${D}/opt/imx8-isp/boson/ ; done
 }
 
 RDEPENDS:${PN} += "python3-core python3-pyyaml"
 FILES:${PN} += "${bindir}/go2rtc ${systemd_system_unitdir}/system ${confdir}"
+
+# Ensure the newly installed AI model files are included in the package (${PN})
+FILES:${PN} += "/opt/imx8-isp/boson/"
+FILES:${PN} += "/opt/imx8-isp/boson/yolov8n_float16.tflite"
+FILES:${PN} += "/opt/imx8-isp/boson/coco.txt"
+FILES:${PN} += "/opt/imx8-isp/boson/thermal_yolov8n_320.tflite"
+FILES:${PN} += "/opt/imx8-isp/boson/thermal.txt"
+
 INSANE_SKIP:${PN} += "already-stripped"
 INHIBIT_PACKAGE_STRIP = "1"
 
