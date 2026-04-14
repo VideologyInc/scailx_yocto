@@ -68,6 +68,8 @@ IMAGE_INSTALL += " \
     bun \
     libqmi \
     modemmanager \
+    mosquitto \
+    mosquitto-dev \
     networkmanager \
     git \
     wget \
