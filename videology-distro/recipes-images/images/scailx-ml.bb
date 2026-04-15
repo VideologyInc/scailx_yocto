@@ -30,6 +30,7 @@ OPENCV_PKGS:imxgpu = " \
 DOCKER ?= "docker docker-compose fuse-overlayfs "
 
 # slirp4netns
+# Added 3 mosquitto packages for Portal
 
 IMAGE_INSTALL += " \
     ${OPENCV_PKGS} \
@@ -68,6 +69,9 @@ IMAGE_INSTALL += " \
     bun \
     libqmi \
     modemmanager \
+    mosquitto \
+    mosquitto-dev \
+    mosquitto-clients \
     networkmanager \
     git \
     wget \
