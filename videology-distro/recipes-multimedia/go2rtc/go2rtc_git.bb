@@ -29,6 +29,7 @@ FILES:${PN} += "${bindir}/go2rtc"
 SRC_URI += "file://go2rtc.yaml"
 SRC_URI += "file://go2rtc.service"
 SRC_URI += "file://go2rtc-create-cams-config.py"
+SRC_URI += "file://create_cams_config.py"
 
 # New Boson AI model files
 SRC_URI += "file://boson/yolov8n_float16.tflite"
@@ -48,6 +49,7 @@ do_install:append(){
     install -d ${D}${sysconfdir}/default
     install -m 0644 ${WORKDIR}/go2rtc.yaml ${D}${sysconfdir}/default/
 
+    install -m 0755 ${WORKDIR}/create_cams_config.py ${D}${bindir}/
     install -m 0755 ${WORKDIR}/go2rtc-create-cams-config.py ${D}${bindir}/
     rm -rf ${D}${bindir}/go2rtc_*
 
