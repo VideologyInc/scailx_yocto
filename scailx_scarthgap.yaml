@@ -36,7 +36,9 @@ repos:
   meta-scailx-flir:
     branch: master
     url: https://github.com/VideologyInc/meta-scailx-flir.git
-    commit: ad991dbf0780b63f7c2fbef6528075c2b07c21ba
+#    commit: ad991dbf0780b63f7c2fbef6528075c2b07c21ba
+# Latest update of flir boson kernel on Boson 320 vs Boson 640 video formats.
+    commit: cd9469f6848ef3a3bbc110163ed181acdaf9502c
     layers:
       meta-scailx-flir:
 
@@ -65,7 +67,7 @@ local_conf_header:
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 16"
   distro: |
-    SCAILX_VERSION="0.13.11gray16"
+    SCAILX_VERSION="0.13.13"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
