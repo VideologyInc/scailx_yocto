@@ -5,7 +5,7 @@ import os
 import re
 from pathlib import Path
 
-from vdlg_lvds.v4l2_detect_formats import camera_to_gst_list
+from vdlg_lvds.v4l2_detect_formats import camera_to_gst_list, camera_to_setting_list
 
 """
 
@@ -17,6 +17,8 @@ File:   create_cams_config.py
 2026.0302.  Added Zoom Block camera format full list (resolution, fps, formats) from Visca commands.
 2026.0310.  Added more resolution formats for 3 Sony imx sensors from Framos driver repository xml files.
 2026.0420.  Moved camera detection logic to separate file create_cams_config.py, added type hints and refactored code.
+
+2026.0428.  Added functions to generate camera settings list compatible with Portal.
 
 By:			Kobus (in 2025 and before), jye@videologyinc.com and mmikhaliuk@piesoft.us
 
@@ -183,12 +185,50 @@ def get_camera_gst(name, vdev):
             if name in camera_gst_dict
             else camera_gst_dict["ar0234"]
         )
-
     return info_list
 
 
-def create_cam_config() -> list[tuple[str, str, int, int, int, str, str]]:
+# Given camera name, and device path, return its Portal pipeline component ["data"]["settings"] dict list;-)
+def get_camera_settings(name, vdev):
+    # For Zoom Block camera through LVDS board, use newly created info list (from Visca commands).
+    if name == "zoomblock" or name == "boson" or name == "usb":
+        cam_real_path = Path(vdev).resolve()
+        setting_list = camera_to_setting_list(str(cam_real_path))
+
+        return setting_list
+    else:
+        # For regular global shutter camera ar0234 and usb cameras, get its gst info from dict.
+        # Then convert to Portal node settings dict list.
+        info_list = (
+            camera_gst_dict[name]
+            if name in camera_gst_dict
+            else camera_gst_dict["ar0234"]
+        )
+        setiing_list = []
+        for info in info_list:
+            # Each info has 5 fields = (width, height, descr, gst, fps)
+            one = {}
+            one["format"] = "NV12" if info[2] == "default" else info[2]
+            one["fps"] = info[4]
+            one["resolution"] = f"{info[0]}x{info[1]}"
+            cam_real_path = Path(vdev).resolve()
+            one["device"] = str(cam_real_path)
+            setiing_list.append(one)
+
+        return setiing_list
+
+# Check whether one_list is a duplcate one in 2nd list of lists ;-)
+def is_duplicate(one_list, multi_list):
+    if multi_list==[]:
+        return False
+    for name, onels in multi_list:
+        if (one_list == onels):
+            return True
+    return False
+
+def create_cam_config() -> (list[tuple], list[dict]):
     cam_config = list[tuple[str, str, int, int, int, str, str]]()
+    cam_settings_list = []
     # iterate over cam overlays in /proc/device-tree/chosen/overlays/
     for camfile in glob.iglob("/proc/device-tree/chosen/overlays/cam*"):
         cam = os.path.basename(camfile)
@@ -205,6 +245,9 @@ def create_cam_config() -> list[tuple[str, str, int, int, int, str, str]]:
         name = detect_camera_by_name(cam)
 
         info_list = get_camera_gst(name, vdev)
+        settings_list = get_camera_settings(name, vdev)
+        if settings_list !=[]:
+            cam_settings_list.append((name, settings_list))
 
         # VPU quality settings: qp above35 gives a grainy image. Below 20 the bitrate starts getting excessive.
         # Parse all resolutions and formats of the camera, may be >=2 ;-)
@@ -225,6 +268,11 @@ def create_cam_config() -> list[tuple[str, str, int, int, int, str, str]]:
                 name = "usb"
 
                 info_list = get_camera_gst(name, vdev)
+                settings_list = get_camera_settings(name, vdev)
+                # Double check duplicate usb camera settings at same same device path.
+                if settings_list !=[] and (not is_duplicate(settings_list, cam_settings_list)):
+                    cam_settings_list.append((name, settings_list))
+
                 for info in info_list:
                     width, height, format_str, gst_str, fps = info
                     if fps is None:
@@ -232,17 +280,17 @@ def create_cam_config() -> list[tuple[str, str, int, int, int, str, str]]:
                     cam_config.append(
                         (name, vdev, width, height, fps, format_str, gst_str)
                     )
-    return cam_config
+    return cam_config, cam_settings_list
 
 
 def main():
     with open("/var/tmp/cam_config.json", "w") as f:
         print(f"Start get camera config from device tree path to file {f.name}")
-        cam_config = create_cam_config()
+        cam_config, cam_settings_list = create_cam_config()
 
-        print(cam_config)
+        print(cam_settings_list)
 
-        json.dump(cam_config, f, indent=4)
+        json.dump(cam_settings_list, f, indent=4)
 
 
 if __name__ == "__main__":
