@@ -51,6 +51,8 @@ do_install:append(){
 
     install -m 0755 ${WORKDIR}/create_cams_config.py ${D}${bindir}/
     install -m 0755 ${WORKDIR}/go2rtc-create-cams-config.py ${D}${bindir}/
+    install -m 0644 ${WORKDIR}/camera_dict.json ${D}${sysconfdir}/default/
+    install -m 0644 ${WORKDIR}/camera_gst_dict.json ${D}${sysconfdir}/default/
     rm -rf ${D}${bindir}/go2rtc_*
 
     # Create new folder on Scailx device.
@@ -75,5 +77,3 @@ FILES:${PN} += "/opt/imx8-isp/boson/thermal.txt"
 
 INSANE_SKIP:${PN} += "already-stripped"
 INHIBIT_PACKAGE_STRIP = "1"
-
-

@@ -17,6 +17,7 @@ File:   create_cams_config.py
 2026.0302.  Added Zoom Block camera format full list (resolution, fps, formats) from Visca commands.
 2026.0310.  Added more resolution formats for 3 Sony imx sensors from Framos driver repository xml files.
 2026.0420.  Moved camera detection logic to separate file create_cams_config.py, added type hints and refactored code.
+2026.04.28 Moved camera_dict and camera_gst_dict to separate json files
 
 By:			Kobus (in 2025 and before), jye@videologyinc.com and mmikhaliuk@piesoft.us
 
@@ -29,135 +30,12 @@ By:			Kobus (in 2025 and before), jye@videologyinc.com and mmikhaliuk@piesoft.us
 # imx series = imx          => imx
 
 # Camera key words in device tree and its regular names
-camera_dict = {
-    "AR0234": "ar0234",
-    "lvds2mipi": "zoomblock",
-    "flir": "boson",
-    "imx900": "imx900",
-    "imx678": "imx678",
-    "imx662": "imx662",
-}
+with open("/etc/default/camera_dict.json", "r") as f:
+    camera_dict = json.load(f)
 
 # Camera gst dict (high resolution, low resolution and format multiple settings tuples with 4 items each)
-camera_gst_dict = {
-    "ar0234": [
-        (
-            1920,
-            1080,
-            "default",
-            "video/x-raw,width=1920,height=1080,framerate=60/1",
-            60,
-        ),
-        (1280, 720, "default", "video/x-raw,width=1280,height=720,framerate=60/1", 60),
-    ],
-    "zoomblock": [
-        (
-            1920,
-            1080,
-            "default",
-            "video/x-raw,width=1920,height=1080,framerate=25/1",
-            25,
-        ),
-        (1280, 720, "default", "video/x-raw,width=1280,height=720,framerate=25/1", 25),
-    ],
-    "boson": [
-        (640, 512, "default", "video/x-raw,width=640,height=512,framerate=60/1", 60),
-        (320, 256, "default", "video/x-raw,width=320,height=256,framerate=60/1", 60),
-        (
-            640,
-            512,
-            "GRAY8",
-            "video/x-raw,width=640,height=512,framerate=60/1,format=GRAY8 ! videoconvert ! video/x-raw,format=NV12",
-            60,
-        ),
-        (
-            320,
-            256,
-            "GRAY8",
-            "video/x-raw,width=320,height=256,framerate=60/1,format=GRAY8 ! videoconvert ! video/x-raw,format=NV12",
-            60,
-        ),
-    ],
-    # imx sensors use their *.xml from framos-vvcam-module repository
-    "imx900": [
-        (
-            1920,
-            1080,
-            "default",
-            "video/x-raw,width=1920,height=1080,framerate=15/1,format=YUY2",
-            15,
-        ),
-        (
-            1280,
-            720,
-            "default",
-            "video/x-raw,width=1280,height=720,framerate=15/1,format=YUY2",
-            15,
-        ),
-        # Not supported by vpuenc_h264:
-        # (2048, 1536, "default", "video/x-raw,width=2048,height=1536,framerate=15/1,format=YUY2", 15),
-        (
-            1024,
-            768,
-            "default",
-            "video/x-raw,width=1024,height=768,framerate=15/1,format=YUY2",
-            15,
-        ),
-        (
-            1008,
-            704,
-            "default",
-            "video/x-raw,width=1008,height=704,framerate=15/1,format=YUY2",
-            15,
-        ),
-    ],
-    "imx678": [
-        (
-            1920,
-            1080,
-            "default",
-            "video/x-raw,width=1920,height=1080,framerate=30/1,format=NV12",
-            30,
-        ),
-        (
-            1280,
-            720,
-            "default",
-            "video/x-raw,width=1280,height=720,framerate=30/1,format=NV12",
-            30,
-        ),
-    ],
-    "imx662": [
-        (
-            1920,
-            1080,
-            "default",
-            "video/x-raw,width=1920,height=1080,framerate=60/1,format=YUY2",
-            60,
-        ),
-        (
-            1280,
-            720,
-            "default",
-            "video/x-raw,width=1280,height=720,framerate=60/1,format=YUY2",
-            60,
-        ),
-        (
-            960,
-            540,
-            "default",
-            "video/x-raw,width=960,height=540,framerate=60/1,format=YUY2",
-            60,
-        ),
-        (
-            640,
-            480,
-            "default",
-            "video/x-raw,width=640,height=480,framerate=60/1,format=YUY2",
-            60,
-        ),
-    ],
-}
+with open("/etc/default/camera_gst_dict.json", "r") as f:
+    camera_gst_dict = json.load(f)
 
 
 # Given camera name from device tree, find its matching regular name in camera_dict.
@@ -183,6 +61,13 @@ def get_camera_gst(name, vdev):
             if name in camera_gst_dict
             else camera_gst_dict["ar0234"]
         )
+
+    for info in info_list:
+        gst_str = info[3]
+        if len(info) == 4:
+            framerate = re.search(r"framerate=(\d+)/(\d+)", gst_str).group(1)
+            fps = int(framerate)
+            info.append(fps)
 
     return info_list
 
@@ -210,9 +95,6 @@ def create_cam_config() -> list[tuple[str, str, int, int, int, str, str]]:
         # Parse all resolutions and formats of the camera, may be >=2 ;-)
         for info in info_list:
             width, height, format_str, gst_str, fps = info
-            if fps is None:
-                framerate = re.search(r"framerate=(\d+)/(\d+)", gst_str).group(1)
-                fps = int(framerate)
             cam_config.append((cam, vdev, width, height, fps, format_str, gst_str))
 
     # Do the same for usb camera if any. Just one now ;-)
@@ -227,8 +109,6 @@ def create_cam_config() -> list[tuple[str, str, int, int, int, str, str]]:
                 info_list = get_camera_gst(name, vdev)
                 for info in info_list:
                     width, height, format_str, gst_str, fps = info
-                    if fps is None:
-                        fps = 30
                     cam_config.append(
                         (name, vdev, width, height, fps, format_str, gst_str)
                     )
@@ -236,7 +116,7 @@ def create_cam_config() -> list[tuple[str, str, int, int, int, str, str]]:
 
 
 def main():
-    with open("/var/tmp/cam_config.json", "w") as f:
+    with open("/var/tmp/cams_config.json", "w") as f:
         print(f"Start get camera config from device tree path to file {f.name}")
         cam_config = create_cam_config()
 
