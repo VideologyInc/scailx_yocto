@@ -1,0 +1,9 @@
+{
+  "AR0234": "ar0234",
+  "lvds2mipi": "zoomblock",
+  "flir": "boson",
+  "imx900": "imx900",
+  "imx678": "imx678",
+  "imx662": "imx662",
+  "usb" : "usb"
+}
