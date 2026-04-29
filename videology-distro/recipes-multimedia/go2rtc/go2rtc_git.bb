@@ -37,6 +37,9 @@ SRC_URI += "file://boson/coco.txt"
 SRC_URI += "file://boson/thermal_yolov8n_320.tflite"
 SRC_URI += "file://boson/thermal.txt"
 	
+# 2 New json files.
+SRC_URI += "file://camera_dict.json"
+SRC_URI += "file://camera_gst_dict.json"
 
 inherit systemd
 
@@ -51,6 +54,8 @@ do_install:append(){
 
     install -m 0755 ${WORKDIR}/create_cams_config.py ${D}${bindir}/
     install -m 0755 ${WORKDIR}/go2rtc-create-cams-config.py ${D}${bindir}/
+    install -m 0644 ${WORKDIR}/camera_dict.json ${D}${sysconfdir}/default/
+    install -m 0644 ${WORKDIR}/camera_gst_dict.json ${D}${sysconfdir}/default/
     rm -rf ${D}${bindir}/go2rtc_*
 
     # Create new folder on Scailx device.
