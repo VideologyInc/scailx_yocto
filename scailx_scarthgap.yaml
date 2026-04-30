@@ -30,7 +30,9 @@ repos:
   scailx-sony:
     branch: master
     url: https://github.com/VideologyInc/scailx_sony_sensors.git
-    commit: a2d0b865de418034068054fe19c0b1cd007fedd4
+#  Latest update from framos-vvcam-module => devtool modify-recipe command => bbappend file etc.
+    commit:  7530d4bf85bb1e0707bb74fae3b3825a374cacba
+#    commit: a2d0b865de418034068054fe19c0b1cd007fedd4
     layers:
       framos-layer:
   meta-scailx-flir:
@@ -67,7 +69,7 @@ local_conf_header:
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 16"
   distro: |
-    SCAILX_VERSION="0.13.14"
+    SCAILX_VERSION="0.13.15"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
