@@ -1,0 +1,13 @@
+{
+	"AEC Gain" : "0.0",
+	"AEC ExposureTime" : "0.03072",
+	"AEC Sensitivity" : "100",
+	"GAIN INPUT" : "1.22,1.0,1.0,3.1",
+	"Offset INPUT" : "-36,-38,-29",
+	"CPROC ON/OFF" : "1",
+	"Adjust brightness" : "-30",
+	"Adjust contrast" : "1.5",
+	"Adjust saturation" : "0.8",
+	"Adjust HUE" : "0"
+}
+
