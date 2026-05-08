@@ -81,6 +81,7 @@ IMAGE_INSTALL += " \
     gputop \
     ser2net \
     ffmpeg \
+    python3-lark \
     python3-pycairo \
     python3-pip \
     python3-virtualenv \

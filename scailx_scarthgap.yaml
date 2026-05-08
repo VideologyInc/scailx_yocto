@@ -5,6 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 #
+---
 header:
   version: 14
   includes:
@@ -30,28 +31,21 @@ repos:
   scailx-sony:
     branch: master
     url: https://github.com/VideologyInc/scailx_sony_sensors.git
-#  Latest update from framos-vvcam-module => devtool modify-recipe command => bbappend file etc.
-    commit:  7530d4bf85bb1e0707bb74fae3b3825a374cacba
-#    commit: a2d0b865de418034068054fe19c0b1cd007fedd4
+    # Latest update from framos-vvcam-module =>
+    # devtool modify-recipe command => bbappend file etc.
+    commit: 7530d4bf85bb1e0707bb74fae3b3825a374cacba
+    # commit: a2d0b865de418034068054fe19c0b1cd007fedd4
     layers:
       framos-layer:
   meta-scailx-flir:
     branch: master
     url: https://github.com/VideologyInc/meta-scailx-flir.git
-#    commit: ad991dbf0780b63f7c2fbef6528075c2b07c21ba
-# Latest update of flir boson kernel on Boson 320 vs Boson 640 video formats.
+    # commit: ad991dbf0780b63f7c2fbef6528075c2b07c21ba
+    # Latest update of flir boson kernel on
+    # Boson 320 vs Boson 640 video formats.
     commit: cd9469f6848ef3a3bbc110163ed181acdaf9502c
     layers:
       meta-scailx-flir:
-
-  # meta-nxp-avb:
-  #   branch: real-time-edge-scarthgap
-  #   url: https://github.com/NXP/meta-nxp-avb.git
-  #   commit: 26cbf1ef3ddebaeb76399dea497e6c2d31a90de1
-  # meta-real-time-edge:
-  #   branch: scarthgap
-  #   url: https://github.com/nxp-real-time-edge-sw/meta-real-time-edge.git
-  #   commit: refs/tags/Real-Time-Edge-v3.0-202412
 
 bblayers_conf_header:
   standard: |
@@ -64,12 +58,12 @@ target:
   - scailx-ml
 
 local_conf_header:
-# Sets the total number of threads BitBake can use for the build
+  # Sets the total number of threads BitBake can use for the build
   threads: |
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 16"
   distro: |
-    SCAILX_VERSION="0.13.15"
+    SCAILX_VERSION="0.13.16"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
