@@ -73,6 +73,8 @@ IMAGE_INSTALL += " \
     mosquitto-dev \
     mosquitto-clients \
     networkmanager \
+    nnstreamer-edge \
+    paho-mqtt-cpp \
     git \
     wget \
     xvinfo \
