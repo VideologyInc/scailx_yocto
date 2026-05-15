@@ -1,0 +1,15 @@
+[Unit]
+Description=GStreamer Daemon Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/gstd --enable-http-protocol --http-address=127.0.0.1 --http-port=5000
+Restart=on-failure
+RestartSec=2
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

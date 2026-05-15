@@ -69,12 +69,14 @@ IMAGE_INSTALL += " \
     bun \
     libqmi \
     modemmanager \
+    libmosquitto1 libmosquittopp1 \
     mosquitto \
     mosquitto-dev \
     mosquitto-clients \
     networkmanager \
     nnstreamer-edge \
     paho-mqtt-cpp \
+    portal \
     git \
     wget \
     xvinfo \

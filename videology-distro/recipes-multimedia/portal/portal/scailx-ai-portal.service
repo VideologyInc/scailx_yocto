@@ -1,0 +1,21 @@
+[Unit]
+Description=SCAiLX Portal Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+Environment="PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH"
+Environment="NODE_ENV=production"
+WorkingDirectory=/usr/scailx-ai-portal
+ExecStartPre=/bin/sleep 5
+ExecStart=bun run server.js
+Restart=always
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
