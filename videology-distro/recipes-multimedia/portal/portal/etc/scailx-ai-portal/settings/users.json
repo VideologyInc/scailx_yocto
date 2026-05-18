@@ -1,0 +1,10 @@
+[
+  {
+    "username": "admin",
+    "hashedPassword": "$argon2id$v=19$m=4,t=3,p=1$aaYAW3R++QO+Vab7I0iiouC0LdUpzP/pCcI0EbCEB8M$52I5JNWnnlvrVGN/7dwjx59f1vccPmqV22kc4I1Gp9w",
+    "id": "d8ca8b16-84be-43b8-820c-079b6ab55b0d",
+    "roles": [
+      "admin"
+    ]
+  }
+]

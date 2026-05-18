@@ -1,0 +1,16 @@
+[
+  {
+    "name": "GO2RTC",
+    "path": "go2rtc",
+    "originalPort": 1984,
+    "proxyPort": 3001,
+    "dev": true
+  },
+  {
+    "name": "SW Update",
+    "path": "sw-update",
+    "originalPort": 8080,
+    "proxyPort": 3002,
+    "dev": false
+  }
+]

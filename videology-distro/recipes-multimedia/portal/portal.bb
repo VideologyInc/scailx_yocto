@@ -5,24 +5,21 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 # Tell BitBake where to find the source
 S = "portal"
 
-# Sample local source file to compile: Reference the local file
-# SRC_URI = "file://helloworld.c"
-
-# Sample do_compile loop: Compiling the application
-# do_compile() {
-#    ${CC} ${CFLAGS} ${LDFLAGS} helloworld.c -o helloworld
-# }
-
-# Make sure gstd.service is properly installed in 3 places ;-)
+# Make sure scailx-ai-portal.service is properly installed in 
+# 3 places - SRC_URI, install and FILES:${PN} ;-)
 SRC_URI += "file://scailx-ai-portal.service"
 
 inherit systemd
 
 SYSTEMD_SERVICE:${PN} = "scailx-ai-portal.service"
 
-# Add everything under ~/usr => target: /usr recursively.
-
+# Add everything under ~/usr => target: /usr recursively in 3 places.
 SRC_URI += "file://usr"
+
+## ? Add empty folder ~/tmp/scailx-ai-portal to target in 2 places.
+
+# Add folder ~/etc/scailx-ai-portal with subfolders in 3 places.
+SRC_URI += "file://etc"
 
 # Installing the application
 do_install:append() {
@@ -34,14 +31,39 @@ do_install:append() {
     # Copy folder recursively
     cp -R ${WORKDIR}/usr/* ${D}${exec_prefix}/
 
-    # Change mod for executables and data files.	
+    # Change mod for executables and data files - folder + exec = 755, data files = 644 ;-)	
     find ${D}${exec_prefix}/bin/ -type d -exec chmod 755 {} +
-    find ${D}${exec_prefix}/lib/ -type f -exec chmod 644 {} +
-    find ${D}${exec_prefix}/scailx-ai-portal/ -type f -exec chmod 644 {} +
+    find ${D}${exec_prefix}/bin/ -type f -exec chmod 755 {} +
+    
+    find ${D}${exec_prefix}/lib/ -type d -exec chmod 755 {} +
+    find ${D}${exec_prefix}/lib/ -type f -exec chmod 755 {} +
 
+    find ${D}${exec_prefix}/scailx-ai-portal/ -type d -exec chmod 755 {} +
+    find ${D}${exec_prefix}/scailx-ai-portal/ -type f -exec chmod 755 {} +
+    
+    # Create ~/tmp/scailx-ai-portal on target
+    # install -d ${D}/tmp/scailx-ai-portal/
+    
+    # Create ~/etc on target
+    install -d ${D}${sysconfdir}
+    # Copy folder recursively
+    cp -R ${WORKDIR}/etc/* ${D}${sysconfdir}/
+
+    # Change mod for /etc folder and data files.	
+    find ${D}${sysconfdir}/scailx-ai-portal/ -type d -exec chmod 755 {} +
+    find ${D}${sysconfdir}/scailx-ai-portal/ -type f -exec chmod 644 {} +
+    
+    # Run touch to create 2 empty txt files
+    touch ${D}${sysconfdir}/scailx-ai-portal/usenpu.txt
+    touch ${D}${sysconfdir}/scailx-ai-portal/duration.txt
 }
 
-RDEPENDS:${PN} += "libmosquitto1 gstreamer1.0 glib-2.0 libcurl nnstreamer python3-core python3-pyyaml"
+RDEPENDS:${PN} += "libmosquitto1 gstreamer1.0 glib-2.0 json-glib libcurl nnstreamer python3-core python3-pyyaml"
 
+# Add target folders and files to the package.
 FILES:${PN} += "/usr/"
+# FILES:${PN} += "/tmp/"
+FILES:${PN} += "/etc/"
+FILES_${PN} += "${sysconfdir}/scailx-ai-portal/usenpu.txt"
+FILES_${PN} += "${sysconfdir}/scailx-ai-portal/duration.txt"
 
