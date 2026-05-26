@@ -1,0 +1,373 @@
+{
+  "components": [
+    {
+      "id": "local_camera0",
+      "type": "bin",
+      "position": {
+        "x": 1770,
+        "y": -420
+      },
+      "data": {
+        "type": "local_camera",
+        "category": "inputs",
+        "settings": {
+          "format": "MJPG",
+          "fps": 30,
+          "resolution": "640x480",
+          "device": "/dev/video0"
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "browser_preview0"
+        ],
+        "binRootId": "v4l2src0",
+        "binOutputNodeId": "videoconvert0",
+        "expanded": true,
+        "expandedWidth": 740,
+        "expandedHeight": 200
+      },
+      "style": {
+        "width": 740,
+        "height": 200
+      },
+      "measured": {
+        "width": 740,
+        "height": 200
+      },
+      "selected": false
+    },
+    {
+      "id": "v4l2src0",
+      "type": "element",
+      "parentId": "local_camera0",
+      "extent": "parent",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "inputs",
+        "type": "v4l2src",
+        "settings": {
+          "device": "/dev/video0"
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "capsfilter0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "capsfilter0",
+      "type": "element",
+      "parentId": "local_camera0",
+      "extent": "parent",
+      "position": {
+        "x": 350,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "capsfilter",
+        "settings": {
+          "caps": "video/x-raw,width=640,height=480,framerate=30/1"
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "videoconvert0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "videoconvert0",
+      "type": "element",
+      "parentId": "local_camera0",
+      "extent": "parent",
+      "position": {
+        "x": 600,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "videoconvert",
+        "initiallyOpen": false,
+        "outputIds": []
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "browser_preview0",
+      "type": "bin",
+      "position": {
+        "x": 2310,
+        "y": 85
+      },
+      "data": {
+        "type": "browser_preview",
+        "category": "outputs",
+        "settings": {},
+        "initiallyOpen": false,
+        "outputIds": [],
+        "binRootId": "perf0",
+        "binOutputNodeId": "tcpserversink0",
+        "expanded": true,
+        "expandedWidth": 2040,
+        "expandedHeight": 200
+      },
+      "style": {
+        "width": 2040,
+        "height": 200
+      },
+      "measured": {
+        "width": 2040,
+        "height": 200
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "perf0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 150,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "perf",
+        "initiallyOpen": false,
+        "outputIds": [
+          "videoconvert1"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "videoconvert1",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 400,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "videoconvert",
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "queue0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 650,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "queue",
+        "initiallyOpen": false,
+        "outputIds": [
+          "x264enc0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "x264enc0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 900,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "x264enc",
+        "settings": {
+          "tune": "zerolatency",
+          "speed-preset": "ultrafast",
+          "bframes": 0,
+          "rc-lookahead": 0,
+          "key-int-max": 60,
+          "bitrate": 3000
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "h264parse0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "h264parse0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 1150,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "h264parse",
+        "settings": {
+          "config-interval": 1
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "mpegtsmux0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "mpegtsmux0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 1400,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "mpegtsmux",
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue1"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "queue1",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 1650,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "processing",
+        "type": "queue",
+        "initiallyOpen": false,
+        "outputIds": [
+          "tcpserversink0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "tcpserversink0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 1900,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "data": {
+        "category": "outputs",
+        "type": "tcpserversink",
+        "settings": {
+          "host": "127.0.0.1"
+        },
+        "initiallyOpen": false,
+        "outputIds": []
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    }
+  ],
+  "inputId": "local_camera0"
+}
