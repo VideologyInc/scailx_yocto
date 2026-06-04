@@ -173,6 +173,8 @@ def create_cam_config() -> (list[tuple], list[dict]):
             if fps is None:
                 framerate = re.search(r"framerate=(\d+)/(\d+)", gst_str).group(1)
                 fps = int(framerate)
+            if name == "ar0234":
+                format_str += f"_fps={fps}"
             cam_config.append((cam+ "_" + str(camera_id), vdev, width, height, fps, format_str, gst_str))
 
     # Do the same for usb camera if any. Just one now ;-)

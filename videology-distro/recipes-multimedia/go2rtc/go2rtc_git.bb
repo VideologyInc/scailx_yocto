@@ -31,6 +31,9 @@ SRC_URI += "file://go2rtc.service"
 SRC_URI += "file://go2rtc-create-cams-config.py"
 SRC_URI += "file://create_cams_config.py"
 
+# New service to detect usb camera live.
+SRC_URI += "file://check_usb_live.service"
+
 # New Boson AI model files
 SRC_URI += "file://boson/yolov8n_float16.tflite"
 SRC_URI += "file://boson/coco.txt"
@@ -58,10 +61,12 @@ SRC_URI += "file://imx/vvget"
 inherit systemd
 
 SYSTEMD_SERVICE:${PN} = "go2rtc.service"
+SYSTEMD_SERVICE:${PN} += "check_usb_live.service"
 
 do_install:append(){
     install -d  ${D}${systemd_system_unitdir}
     install -m 0644 ${WORKDIR}/go2rtc.service ${D}${systemd_system_unitdir}
+    install -m 0644 ${WORKDIR}/check_usb_live.service ${D}${systemd_system_unitdir}
 
     install -d ${D}${sysconfdir}/default
     install -m 0644 ${WORKDIR}/go2rtc.yaml ${D}${sysconfdir}/default/
@@ -97,7 +102,7 @@ do_install:append(){
     for f in ${WORKDIR}/imx/*.sh; do install -m 0755 $f ${D}/opt/imx8-isp/imx/ ; done
 }
 
-RDEPENDS:${PN} += "python3-core python3-pyyaml"
+RDEPENDS:${PN} += "python3-core python3-pyyaml python3-linuxpy python3-v4l2py"
 FILES:${PN} += "${bindir}/go2rtc ${systemd_system_unitdir}/system ${confdir}"
 
 # Boson AI model files to non-standard target path need to be added here.
