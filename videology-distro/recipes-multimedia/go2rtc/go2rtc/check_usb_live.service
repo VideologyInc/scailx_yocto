@@ -1,0 +1,16 @@
+[Unit]
+Description=check usb live service
+# After=go2rtc.service
+
+[Service]
+Restart=on-failure
+ExecStartPre=sleep 1
+ExecStart=python3 "/usr/lib/python3.12/site-packages/vdlg_lvds/detect_cameras_live.py"
+
+RestartPreventExitStatus=1 255
+Restart=on-failure
+StartLimitInterval=120s
+StartLimitBurst=4
+
+[Install]
+WantedBy=multi-user.target
