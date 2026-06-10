@@ -1,0 +1,32 @@
+From 3b7db8d808ef8c213b9714871af4318d513667d6 Mon Sep 17 00:00:00 2001
+From: PingVideology <jye@videologyinc.com>
+Date: Fri, 5 Jun 2026 14:35:09 -0400
+Subject: [PATCH] Patched toml for license text and setuptools version.
+
+---
+ pyproject.toml | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/pyproject.toml b/pyproject.toml
+index cdf0f2c..f497a97 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -7,8 +7,7 @@
+ [project]
+ name = "linuxpy"
+ description = "Human friendly interface to linux subsystems using python"
+-license = "GPL-3.0-or-later"
+-license-files = ["LICENSE"]
++license = {text = "GPL-3.0-or-later"}
+ authors = [
+     { name = "Jose Tiago Macara Coutinho", email = "coutinhotiago@gmail.com" }
+ ]
+@@ -95,7 +94,7 @@ dev_no_qt = [
+ linuxpy-codegen = "linuxpy.codegen.cli:main"
+ 
+ [build-system]
+-requires = ["setuptools >= 77.0.3"]
++requires = ["setuptools >= 40.9.0"]
+ build-backend = "setuptools.build_meta"
+ 
+ [tool.setuptools.dynamic]
