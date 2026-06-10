@@ -4,11 +4,6 @@
 #   cam1_720p:  exec:gst-launch-1.0 -q v4l2src device=/dev/video1 ! video/x-raw,width=1280,height=720,framerate=60/1 !  vpuenc_h264 bitrate=16000 ! fdsink
 #   cam1_1080p: exec:gst-launch-1.0 -q v4l2src device=/dev/video1 ! video/x-raw,width=1920,height=1080,framerate=60/1 ! vpuenc_h264 bitrate=32000 ! fdsink
 
-streams:
-    boson_gray8_invert: exec:gst-launch-1.0 -q v4l2src device=/dev/video-isi-csi1 ! video/x-raw,width=320,height=256,framerate=60/1,format=GRAY8 ! videoconvert ! coloreffects preset=xray ! videoconvert ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink
-
-    boson_gray8_invert_yolov8:  exec:gst-launch-1.0 -q v4l2src device=/dev/video-isi-csi1 ! video/x-raw,format=GRAY8,width=320,height=256,framerate=60/1 ! videorate max-rate=10 ! video/x-raw,framerate=10/1 ! videoconvert ! coloreffects preset=xray ! queue leaky=2 max-size-buffers=10 ! videoscale method=0 ! video/x-raw,width=320,height=320 ! tee name=t t. ! queue leaky=2 max-size-buffers=10 ! videoconvert ! video/x-raw,format=RGB ! tensor_converter ! tensor_transform mode=arithmetic option=typecast:float32,add:0.0,div:255.0 ! queue leaky=2 max-size-buffers=10 ! tensor_filter latency=1 framework=tensorflow2-lite model=/opt/imx8-isp/boson/yolov8n_float16.tflite  ! tensor_transform mode=transpose option=1:0:2:3 ! queue leaky=2 max-size-buffers=10 ! tensor_decoder mode=bounding_boxes option1=yolov8 option2=/opt/imx8-isp/boson/coco.txt option4=320:320 option5=320:320 ! videoconvert !  mix.sink_0 t. ! queue leaky=2 max-size-buffers=10 ! videoconvert ! mix.sink_1 compositor name=mix sink_0::zorder=2 sink_1::zorder=1 ! videoconvert ! vpuenc_h264 qp-max=30 qp-min=20 ! fdsink
-
 log:
   format: ""
   level: "info"
