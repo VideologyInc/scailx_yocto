@@ -63,7 +63,7 @@ local_conf_header:
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 8"
   distro: |
-    SCAILX_VERSION="0.13.20"
+    SCAILX_VERSION="0.20.0"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
