@@ -58,7 +58,11 @@ target:
   - scailx-ml
 
 local_conf_header:
-  # Sets the total number of threads BitBake can use for the build
+  shared_state: |
+    SSTATE_DIR ?= "/home/ping/work/scailx_yocto/build/sstate-cache"
+  downloads: |
+    DL_DIR ?= "/home/ping/work/scailx_yocto/build/downloads"
+# Sets the total number of threads BitBake can use for the build
   threads: |
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 8"
