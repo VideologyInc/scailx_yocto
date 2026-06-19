@@ -57,12 +57,13 @@ machine: scailx-imx8mp
 target:
   - scailx-ml
 
+# Add these two lines to specify 2 cached folders from existing build to speed-up building process.
 local_conf_header:
   shared_state: |
-    SSTATE_DIR ?= "/home/ping/work/scailx_yocto/build/sstate-cache"
+    SSTATE_DIR ?= "/mnt/udata/work/scailx_yocto/build/sstate-cache"
   downloads: |
-    DL_DIR ?= "/home/ping/work/scailx_yocto/build/downloads"
-# Sets the total number of threads BitBake can use for the build
+    DL_DIR ?= "/mnt/udata/work/scailx_yocto/build/downloads"
+# Sets 2 numbers to download in parallel (network bandwidth) and build in parallel (cpu and memory).
   threads: |
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 8"

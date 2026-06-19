@@ -9,7 +9,8 @@ header:
 
 repos:
   meta-security:
-    url: git://git.yoctoproject.org/meta-security
+    url: https://git.yoctoproject.org/meta-security
+#    git://git.yoctoproject.org/meta-security
     layers:
       meta-parsec:
       meta-tpm:
