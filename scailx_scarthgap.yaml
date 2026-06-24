@@ -60,15 +60,15 @@ target:
 # Add these two lines to specify 2 cached folders from existing build to speed-up building process.
 local_conf_header:
   shared_state: |
-    SSTATE_DIR ?= "/mnt/udata/work/scailx_yocto/build/sstate-cache"
+    SSTATE_DIR ?= "/home/ping/work/scailx_yocto/build/sstate-cache"
   downloads: |
-    DL_DIR ?= "/mnt/udata/work/scailx_yocto/build/downloads"
+    DL_DIR ?= "/home/ping/work/scailx_yocto/build/downloads"
 # Sets 2 numbers to download in parallel (network bandwidth) and build in parallel (cpu and memory).
   threads: |
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 8"
   distro: |
-    SCAILX_VERSION="0.20.2"
+    SCAILX_VERSION="0.20.3"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
