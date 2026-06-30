@@ -19,3 +19,12 @@ copy current new bb file in this folder to target folder as shown above.
 - bitbake nnstreamer
 - Build scailx-ml as usual.
 
+----------------------------------------------
+
+Rocketsan's linux-imx driver fix.
+
+devtool modify linux-imx
+
+Then copy imx-isi-cap.c to override 
+
+~./build/workspace/sources/linux-imx/drivers/staging/media/imx/imx8-isi-cap.c
