@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000001 Mon Sep 17 00:00:00 2001
+From: kas <kas@example.com>
+Date: Mon, 30 Jun 2026 00:00:00 +0000
+Subject: [PATCH] fetch2/crate: download from static.crates.io
+
+crates.io now returns HTTP 403 Forbidden for the legacy
+https://crates.io/api/v1/crates/NAME/VERSION/download endpoint, which
+breaks all do_fetch tasks for cargo/rust recipes. Fetch the crate
+tarball directly from https://static.crates.io/crates/... instead, which
+is the upstream bitbake fix.
+---
+ bitbake/lib/bb/fetch2/crate.py | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/bitbake/lib/bb/fetch2/crate.py b/bitbake/lib/bb/fetch2/crate.py
+index 01d49435c3..6b2cb6c629 100644
+--- a/bitbake/lib/bb/fetch2/crate.py
++++ b/bitbake/lib/bb/fetch2/crate.py
+@@ -67,9 +67,9 @@ class Crate(Wget):
+
+         # if using upstream just fix it up nicely
+         if host == 'crates.io':
+-            host = 'crates.io/api/v1/crates'
+-
+-        ud.url = "https://%s/%s/%s/download" % (host, name, version)
++            ud.url = "https://static.crates.io/crates/%s/%s-%s.crate" % (name, name, version)
++        else:
++            ud.url = "https://%s/%s/%s/download" % (host, name, version)
+         ud.parm['downloadfilename'] = "%s-%s.crate" % (name, version)
+         if 'name' not in ud.parm:
+             ud.parm['name'] = '%s-%s' % (name, version)
+--
+2.34.1
