@@ -1,0 +1,10 @@
+
+Rebuild Hailo on Scailx Yocto
+
+
+bitbake -c cleansstate libhailort hailortcli pyhailort libgsthailo
+
+bitbake -c cleansstate scailx-ml
+
+bitbake scailx-ml
+
