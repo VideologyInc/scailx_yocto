@@ -206,7 +206,7 @@ static int mxc_isi_pipeline_enable(struct mxc_isi_cap_dev *isi_cap, bool enable)
 		}
 
 		if((!strcmp(entity->name, "flir_boson") == 0)) {
-            printk("s_stream -> %s\n", entity->name);
+            // printk("s_stream -> %s\n", entity->name);
 			ret = v4l2_subdev_call(subdev, video, s_stream, enable);
 			if (ret < 0 && ret != -ENOIOCTLCMD) {
 				dev_info(dev, "subdev %s s_stream failed\n", subdev->name);
@@ -216,7 +216,7 @@ static int mxc_isi_pipeline_enable(struct mxc_isi_cap_dev *isi_cap, bool enable)
 
 	}
 
-    msleep(20);
+    msleep(100);
 
     /* second pass */
 
@@ -241,7 +241,7 @@ static int mxc_isi_pipeline_enable(struct mxc_isi_cap_dev *isi_cap, bool enable)
 		}
 
 		if((strcmp(entity->name, "flir_boson") == 0)) {
-            printk("s_stream -> %s\n", entity->name);
+            // printk("s_stream -> %s\n", entity->name);
 			ret = v4l2_subdev_call(subdev, video, s_stream, enable);
 			if (ret < 0 && ret != -ENOIOCTLCMD) {
 				dev_info(dev, "subdev %s s_stream failed\n", subdev->name);
