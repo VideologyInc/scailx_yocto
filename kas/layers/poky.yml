@@ -12,3 +12,6 @@ repos:
       patch0:
         path: kas/layers/poky-py-shebang.patch
         repo: scailx
+      patch1:
+        path: kas/layers/poky-crate-static-fetch.patch
+        repo: scailx
