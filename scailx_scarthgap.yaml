@@ -57,17 +57,7 @@ machine: scailx-imx8mp
 target:
   - scailx-ml
 
-# Add these two lines to specify 2 cached folders from existing build to speed-up building process.
 local_conf_header:
-
-  mirrors: |
-    INHERIT += "own-mirrors"
-    SOURCE_MIRROR_URL = "file:///home/ping/work/scailx_yocto/build/downloads"
-
-  shared_state: |
-    SSTATE_DIR ?= "${TOPDIR}/sstate-cache"
-  downloads: |
-    DL_DIR ?= "${TOPDIR}/downloads"
 # Sets 2 numbers to download in parallel (network bandwidth) and build in parallel (cpu and memory).
   threads: |
     BB_NUMBER_THREADS = "4"
