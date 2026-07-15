@@ -28,3 +28,27 @@ devtool modify linux-imx
 Then copy imx-isi-cap.c to override 
 
 ~./build/workspace/sources/linux-imx/drivers/staging/media/imx/imx8-isi-cap.c
+
+----------------------------------------------------
+
+# Full clean build from scratch
+
+First step download everything using fetch
+
+  kas shell
+
+  bitbake --runall fetch scailx-ml
+
+It has about 2292 tasks (vs around 13000 if build all)
+
+~/build/sstate-cache + ~/build/downloads folder size = 64 GB
+
+Back up these two folders to do OFFLINE build afterwards.
+
+Offline build
+
+  BB_NO_NETWORK=1 bitbake scailx-ml
+
+
+
+
