@@ -1,0 +1,89 @@
+# scailx yocto for Videology
+#
+# Authors:
+#   Kobus Goosen and Jianping Ye
+#
+# SPDX-License-Identifier: MIT
+#
+---
+header:
+  version: 14
+  includes:
+    - nxp-imx-scarthgap.yaml
+    - kas/scarthgap.yml
+    - lf-6.6.52-2.2.1-scarthgap.yaml
+    - kas/layers/meta-swupdate.yml
+    - kas/layers/meta-security.yml
+    - kas/layers/meta-hailo-kirkstone.yml
+    - kas/layers/meta-webserver.yml
+    - kas/lts-mixins-rust-scarthgap.yml
+
+repos:
+  scailx:
+    layers:
+      videology-bsp-karo:
+      videology-distro:
+  meta-swupdate:
+    # Fix top before image-linkname removal
+    commit: 3421a7063a58e4e027130326ab3acccbe3230b30
+  meta-browser:
+    commit: 40ef1d0799124a36b22df11a7562868c0edb23b1
+  scailx-sony:
+    branch: master
+    url: https://github.com/VideologyInc/scailx_sony_sensors.git
+    # Latest update from framos-vvcam-module =>
+    # devtool modify-recipe command => bbappend file etc.
+    commit: 7530d4bf85bb1e0707bb74fae3b3825a374cacba
+    # commit: a2d0b865de418034068054fe19c0b1cd007fedd4
+    layers:
+      framos-layer:
+  meta-scailx-flir:
+    branch: master
+    url: https://github.com/VideologyInc/meta-scailx-flir.git
+    # commit: ad991dbf0780b63f7c2fbef6528075c2b07c21ba
+    # Latest update of flir boson kernel on
+    # Boson 320 vs Boson 640 video formats.
+    commit: cd9469f6848ef3a3bbc110163ed181acdaf9502c
+    layers:
+      meta-scailx-flir:
+
+bblayers_conf_header:
+  standard: |
+    # BBPATH = "${TOPDIR}"
+    # BBFILES ?= ""
+
+distro: scailx
+machine: scailx-imx8mp
+target:
+  - scailx-ml
+
+local_conf_header:
+  build-directory: |
+    TMPDIR ?= "/temp"
+  shared_state: |
+    SSTATE_DIR ?= "/home/ping/work/scailx_yocto/build/sstate-cache"
+  downloads: |
+    DL_DIR ?= "/home/ping/work/scailx_yocto/build/downloads"
+# use sstate mirror copied from existing build external project.
+  sstate: |
+    SSTATE_MIRRORS ?= "file://.* file:///home/ping/vmshare/sstate-cache/PATH"
+# Sets 2 numbers to download in parallel (network bandwidth) and build in parallel (cpu and memory).
+  threads: |
+    BB_NUMBER_THREADS = "4"
+    PARALLEL_MAKE = "-j 16"
+  distro: |
+    SCAILX_VERSION="0.20.8"
+    PACKAGE_CLASSES = "package_ipk"
+  folders: |
+    BB_GENERATE_MIRROR_TARBALLS = "1"
+    DEPLOY_DIR = "${TOPDIR}/deploy"
+
+  rmwork: |
+    INHERIT += "rm_work"
+  other: |
+    EXTRA_IMAGE_FEATURES ?= "debug-tweaks"
+    USER_CLASSES ?= "buildstats"
+    PATCHRESOLVE = "noop"
+  buildinfo: |
+    INHERIT += " image-buildinfo"
+    IMAGE_BUILDINFO_VARS:append = " BUILD_SYS COMMON_FEATURES DEFAULTTUNE DISTRO DISTRO_FEATURES DISTRO_NAME DISTRO_VERSION IMAGE_BASENAME IMAGE_FEATURES KERNEL_DEVICETREE MACHINE MACHINEOVERRIDES MACHINE_FEATURES NATIVELSBSTRING PREFERRED_PROVIDER_virtual/bootloader PREFERRED_PROVIDER_virtual/kernel PREFERRED_PROVIDER_virtual/mesa SERIAL_CONSOLE SOC_FAMILY UBOOT_MACHINE"
