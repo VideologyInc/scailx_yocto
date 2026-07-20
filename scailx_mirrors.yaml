@@ -58,12 +58,13 @@ target:
   - scailx-ml
 
 local_conf_header:
-  build-directory: |
-    TMPDIR ?= "/temp"
-  shared_state: |
-    SSTATE_DIR ?= "/home/ping/work/scailx_yocto/build/sstate-cache"
-  downloads: |
-    DL_DIR ?= "/home/ping/work/scailx_yocto/build/downloads"
+# Use local mirrors
+  my_mirrors: |
+    PREMIRRORS:prepend = "git://.*/.* http://10.195.53.146:8000/downloads/ \n"
+    PREMIRRORS:prepend = "ftp://.*/.* http://10.195.53.146:8000/downloads/ \n"	
+    PREMIRRORS:prepend = "http://.*/.* http://10.195.53.146:8000/downloads/ \n"	
+    PREMIRRORS:prepend = "https://.*/.* http://10.195.53.146:8000/downloads/ \n"	
+
 # use sstate mirror copied from existing build external project.
   sstate: |
     SSTATE_MIRRORS ?= "file://.* file:///home/ping/vmshare/sstate-cache/PATH"

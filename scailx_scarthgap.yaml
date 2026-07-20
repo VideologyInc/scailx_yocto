@@ -58,6 +58,10 @@ target:
   - scailx-ml
 
 local_conf_header:
+# for binutils
+  my_layer_config: |
+      PACKAGECONFIG:append:pn-binutils = " --disable-debuginfod"
+
 # Sets 2 numbers to download in parallel (network bandwidth) and build in parallel (cpu and memory).
   threads: |
     BB_NUMBER_THREADS = "4"
