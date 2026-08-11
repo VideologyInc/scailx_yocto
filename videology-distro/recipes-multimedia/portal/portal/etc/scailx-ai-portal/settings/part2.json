@@ -1,0 +1,1396 @@
+{
+  "components": [
+    {
+      "id": "filesrc0",
+      "type": "element",
+      "extent": "parent",
+      "position": {
+        "x": 105,
+        "y": 37
+      },
+      "draggable": true,
+      "connectable": true,
+      "selectable": true,
+      "deletable": true,
+      "hidden": false,
+      "data": {
+        "internalLinksSettings": {
+          "id": "filesrc0",
+          "outputIds": [
+            "qtdemux0"
+          ],
+          "binRoot": true
+        },
+        "category": "inputs",
+        "type": "filesrc",
+        "settings": {
+          "location": "/etc/scailx-ai-portal/local-video/lpr.mp4"
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "qtdemux0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "qtdemux0",
+      "type": "element",
+      "extent": "parent",
+      "position": {
+        "x": 300,
+        "y": 37
+      },
+      "draggable": true,
+      "connectable": true,
+      "selectable": true,
+      "deletable": true,
+      "hidden": false,
+      "data": {
+        "internalLinksSettings": {
+          "id": "qtdemux0",
+          "outputIds": [
+            "h264parse0"
+          ]
+        },
+        "category": "processing",
+        "type": "qtdemux",
+        "initiallyOpen": false,
+        "outputIds": [
+          "h264parse0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "h264parse0",
+      "type": "element",
+      "extent": "parent",
+      "position": {
+        "x": 495,
+        "y": 37
+      },
+      "draggable": true,
+      "connectable": true,
+      "selectable": true,
+      "deletable": true,
+      "hidden": false,
+      "data": {
+        "internalLinksSettings": {
+          "id": "h264parse0",
+          "outputIds": [
+            "videodec0"
+          ]
+        },
+        "category": "processing",
+        "type": "h264parse",
+        "initiallyOpen": false,
+        "outputIds": [
+          "vpudec0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "vpudec0",
+      "type": "element",
+      "extent": "parent",
+      "position": {
+        "x": 690,
+        "y": 37
+      },
+      "draggable": true,
+      "connectable": true,
+      "selectable": true,
+      "deletable": true,
+      "hidden": false,
+      "data": {
+        "internalLinksSettings": {
+          "id": "videodec0",
+          "outputIds": [
+            "videoconvert0"
+          ]
+        },
+        "category": "processing",
+        "type": "vpudec",
+        "initiallyOpen": false,
+        "outputIds": [
+          "imxvideoconvert_g2d0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "imxvideoconvert_g2d0",
+      "type": "element",
+      "extent": "parent",
+      "position": {
+        "x": 915.5,
+        "y": 37
+      },
+      "draggable": true,
+      "connectable": true,
+      "selectable": true,
+      "deletable": true,
+      "hidden": false,
+      "data": {
+        "internalLinksSettings": {
+          "id": "videoconvert0",
+          "outputIds": [
+            "queue0"
+          ]
+        },
+        "category": "processing",
+        "type": "imxvideoconvert_g2d",
+        "initiallyOpen": false,
+        "outputIds": [
+          "videoconvert0"
+        ]
+      },
+      "measured": {
+        "width": 181,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue0",
+      "type": "element",
+      "extent": "parent",
+      "position": {
+        "x": 495,
+        "y": 217
+      },
+      "draggable": true,
+      "connectable": true,
+      "selectable": true,
+      "deletable": true,
+      "hidden": false,
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailonet0"
+        ]
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "hailonet0",
+      "type": "element",
+      "position": {
+        "x": 715,
+        "y": 218
+      },
+      "data": {
+        "type": "hailonet",
+        "category": "processing",
+        "settings": {
+          "hef-path": "/etc/scailx-ai-portal/models/yolov5m_vehicles_no_ddr_yuy2.hef",
+          "batch-size": 0,
+          "device-id": "",
+          "device-count": 0,
+          "vdevice-group-id": "1",
+          "is-active": false,
+          "outputs-min-pool-size": 16,
+          "outputs-max-pool-size": 64,
+          "scheduling-algorithm": "1",
+          "scheduler-timeout-ms": 0,
+          "scheduler-threshold": 0,
+          "scheduler-priority": 16,
+          "input-format-type": "0",
+          "output-format-type": "0",
+          "nms-score-threshold": 0,
+          "nms-iou-threshold": 0,
+          "nms-max-proposals-per-class": 0,
+          "nms-max-proposals-total": 0,
+          "input-from-meta": false,
+          "no-transform": false,
+          "multi-process-service": false,
+          "pass-through": false,
+          "force-writable": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue1"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "videoconvert0",
+      "type": "element",
+      "position": {
+        "x": 1150,
+        "y": 38
+      },
+      "data": {
+        "type": "videoconvert",
+        "category": "processing",
+        "settings": {},
+        "initiallyOpen": false,
+        "outputIds": [
+          "capsfilter0"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "capsfilter0",
+      "type": "element",
+      "position": {
+        "x": 1390,
+        "y": 38
+      },
+      "data": {
+        "type": "capsfilter",
+        "category": "processing",
+        "settings": {
+          "qos": false,
+          "caps": "video/x-raw,format=YUY2",
+          "caps-change-mode": "0"
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue0"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue1",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailofilter0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 420,
+      "positionAbsoluteY": 285,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 1000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 930,
+        "y": 217
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "hailofilter0",
+      "type": "element",
+      "position": {
+        "x": 1150,
+        "y": 218
+      },
+      "data": {
+        "type": "hailofilter",
+        "category": "processing",
+        "settings": {
+          "qos": false,
+          "so-path": "/usr/lib/hailo-post-processes/libyolo_post.so",
+          "function-name": "yolov5_vehicles_only",
+          "use-gst-buffer": false,
+          "config-path": "/etc/scailx-ai-portal/text-files/yolov5_vehicle_detection.json",
+          "remove-tensors": true
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue2"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue2",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailotracker0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 855,
+      "positionAbsoluteY": 285,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 2000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 1365,
+        "y": 217
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "hailotracker0",
+      "type": "element",
+      "position": {
+        "x": 1600,
+        "y": 218
+      },
+      "data": {
+        "type": "hailotracker",
+        "category": "processing",
+        "settings": {
+          "qos": true,
+          "class-id": -1,
+          "kalman-dist-thr": 0.5,
+          "iou-thr": 0.6,
+          "init-iou-thr": 0.8999999761581421,
+          "keep-tracked-frames": 2,
+          "keep-new-frames": 2,
+          "keep-lost-frames": 2,
+          "keep-past-metadata": true,
+          "std-weight-position": 0.009999999776482582,
+          "std-weight-position-box": 9.99999993922529e-9,
+          "std-weight-velocity": 0.0010000000474974513,
+          "std-weight-velocity-box": 9.99999993922529e-9,
+          "debug": false,
+          "hailo-objects-blacklist": "hailo_landmarks,hailo_depth_mask,hailo_class_mask,"
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue3"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue3",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "tee0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 420,
+      "positionAbsoluteY": 285,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 1000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 1815,
+        "y": 217
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "tee0",
+      "type": "element",
+      "position": {
+        "x": 670,
+        "y": 413
+      },
+      "data": {
+        "type": "tee",
+        "category": "processing",
+        "settings": {},
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue4",
+          "queue6"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue4",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "videobox0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 1740,
+      "positionAbsoluteY": 195,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 2000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 930,
+        "y": 412
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "videobox0",
+      "type": "element",
+      "position": {
+        "x": 1150,
+        "y": 413
+      },
+      "data": {
+        "type": "videobox",
+        "category": "processing",
+        "settings": {
+          "qos": true,
+          "left": 0,
+          "right": 0,
+          "top": 1,
+          "bottom": 1,
+          "fill": "0",
+          "alpha": 1,
+          "border-alpha": 1,
+          "autocrop": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue5"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue5",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailooverlay0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 855,
+      "positionAbsoluteY": 390,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 3000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 1365,
+        "y": 412
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "hailooverlay0",
+      "type": "element",
+      "position": {
+        "x": 1600,
+        "y": 413
+      },
+      "data": {
+        "type": "hailooverlay",
+        "category": "processing",
+        "settings": {},
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailofilter1"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "hailofilter1",
+      "type": "element",
+      "position": {
+        "x": 1855,
+        "y": 413
+      },
+      "data": {
+        "type": "hailofilter",
+        "category": "processing",
+        "settings": {
+          "qos": false,
+          "so-path": "/opt/hailo/apps/license_plate_recognition/resources/liblpr_overlay.so",
+          "function-name": "",
+          "use-gst-buffer": true,
+          "config-path": "NULL",
+          "remove-tensors": true
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "browser_preview0"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue6",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailocropper0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 855,
+      "positionAbsoluteY": 390,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 3000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 930,
+        "y": 562
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "hailocropper0",
+      "type": "element",
+      "position": {
+        "x": 1150,
+        "y": 563
+      },
+      "data": {
+        "type": "hailocropper",
+        "category": "processing",
+        "settings": {
+          "internal-offset": true,
+          "drop-uncropped-buffers": false,
+          "cropping-period": 1,
+          "filter-streams": "<>",
+          "so-path": "/usr/lib/hailo-post-processes/cropping_algorithms/liblpr_croppers.so",
+          "function-name": "vehicles_without_ocr",
+          "resize-method": "1",
+          "use-letterbox": false,
+          "no-scaling-bbox": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue7",
+          "queue8"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue7",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailoaggregator0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 855,
+      "positionAbsoluteY": 540,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 4000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 1365,
+        "y": 562
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "hailoaggregator0",
+      "type": "element",
+      "position": {
+        "x": 2530,
+        "y": 563
+      },
+      "data": {
+        "type": "hailoaggregator",
+        "category": "processing",
+        "settings": {},
+        "initiallyOpen": false,
+        "outputIds": [
+          "fakesink0"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "fakesink0",
+      "type": "element",
+      "position": {
+        "x": 2815,
+        "y": 563
+      },
+      "data": {
+        "type": "fakesink",
+        "category": "outputs",
+        "settings": {},
+        "initiallyOpen": false,
+        "outputIds": []
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue8",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailonet1"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 1290,
+      "positionAbsoluteY": 540,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 5000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 1365,
+        "y": 697
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "hailonet1",
+      "type": "element",
+      "position": {
+        "x": 1600,
+        "y": 698
+      },
+      "data": {
+        "type": "hailonet",
+        "category": "processing",
+        "settings": {
+          "hef-path": "/etc/scailx-ai-portal/models/tiny_yolov4_license_plates_yuy2.hef",
+          "batch-size": 0,
+          "device-id": "",
+          "device-count": 0,
+          "vdevice-group-id": "1",
+          "is-active": false,
+          "outputs-min-pool-size": 16,
+          "outputs-max-pool-size": 64,
+          "scheduling-algorithm": "1",
+          "scheduler-timeout-ms": 0,
+          "scheduler-threshold": 0,
+          "scheduler-priority": 16,
+          "input-format-type": "0",
+          "output-format-type": "0",
+          "nms-score-threshold": 0,
+          "nms-iou-threshold": 0,
+          "nms-max-proposals-per-class": 0,
+          "nms-max-proposals-total": 0,
+          "input-from-meta": false,
+          "no-transform": false,
+          "multi-process-service": false,
+          "pass-through": false,
+          "force-writable": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue9"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue9",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailofilter2"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 1290,
+      "positionAbsoluteY": 675,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 6000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 1830,
+        "y": 697
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "hailofilter2",
+      "type": "element",
+      "position": {
+        "x": 2065,
+        "y": 698
+      },
+      "data": {
+        "type": "hailofilter",
+        "category": "processing",
+        "settings": {
+          "qos": false,
+          "so-path": "/usr/lib/hailo-post-processes/libyolo_post.so",
+          "function-name": "tiny_yolov4_license_plates",
+          "use-gst-buffer": false,
+          "config-path": "/etc/scailx-ai-portal/text-files/yolov4_license_plate.json",
+          "remove-tensors": true
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue10"
+        ]
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "queue10",
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "processing",
+        "type": "queue",
+        "settings": {
+          "max-size-buffers": 3,
+          "max-size-bytes": 0,
+          "max-size-time": "0",
+          "min-threshold-buffers": 0,
+          "min-threshold-bytes": 0,
+          "min-threshold-time": 0,
+          "leaky": "0",
+          "silent": false,
+          "flush-on-eos": false
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "hailoaggregator0"
+        ]
+      },
+      "type": "element",
+      "positionAbsoluteX": 1755,
+      "positionAbsoluteY": 675,
+      "selected": false,
+      "selectable": true,
+      "draggable": true,
+      "deletable": true,
+      "isConnectable": true,
+      "dragging": false,
+      "zIndex": 7000,
+      "width": 150,
+      "height": 44,
+      "position": {
+        "x": 2310,
+        "y": 697
+      },
+      "measured": {
+        "width": 150,
+        "height": 44
+      }
+    },
+    {
+      "id": "browser_preview0",
+      "type": "bin",
+      "position": {
+        "x": 2125,
+        "y": 413
+      },
+      "data": {
+        "type": "browser_preview",
+        "category": "outputs",
+        "settings": {},
+        "initiallyOpen": false,
+        "outputIds": [],
+        "binRootId": "perf0",
+        "binOutputNodeId": "websink0",
+        "expanded": false,
+        "expandedWidth": 1540,
+        "expandedHeight": 200
+      },
+      "style": {
+        "width": 200,
+        "height": 46
+      },
+      "measured": {
+        "width": 200,
+        "height": 46
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "perf0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 150,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "hidden": true,
+      "data": {
+        "internalLinksSettings": {
+          "id": "perf0",
+          "outputIds": [
+            "videoconvert0"
+          ],
+          "binRoot": true
+        },
+        "category": "processing",
+        "type": "perf",
+        "initiallyOpen": false,
+        "outputIds": [
+          "imxvideoconvert_g2d1"
+        ]
+      }
+    },
+    {
+      "id": "imxvideoconvert_g2d1",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 400,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "hidden": true,
+      "data": {
+        "internalLinksSettings": {
+          "id": "videoconvert0",
+          "outputIds": [
+            "queue0"
+          ]
+        },
+        "category": "processing",
+        "type": "imxvideoconvert_g2d",
+        "initiallyOpen": false,
+        "outputIds": [
+          "queue11"
+        ]
+      }
+    },
+    {
+      "id": "queue11",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 650,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "hidden": true,
+      "data": {
+        "internalLinksSettings": {
+          "id": "queue0",
+          "outputIds": [
+            "videoenc0"
+          ]
+        },
+        "category": "processing",
+        "type": "queue",
+        "initiallyOpen": false,
+        "outputIds": [
+          "vpuenc_h2640"
+        ]
+      }
+    },
+    {
+      "id": "vpuenc_h2640",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 900,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "hidden": true,
+      "data": {
+        "internalLinksSettings": {
+          "id": "videoenc0",
+          "outputIds": [
+            "capsfilter0"
+          ]
+        },
+        "category": "processing",
+        "type": "vpuenc_h264",
+        "settings": {
+          "bitrate": 3000,
+          "gop-size": 30
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "capsfilter1"
+        ]
+      }
+    },
+    {
+      "id": "capsfilter1",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 1150,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "hidden": true,
+      "data": {
+        "internalLinksSettings": {
+          "id": "capsfilter0",
+          "outputIds": [
+            "websink0"
+          ]
+        },
+        "category": "processing",
+        "type": "capsfilter",
+        "settings": {
+          "caps": "video/x-h264,profile=baseline,stream-format=byte-stream"
+        },
+        "initiallyOpen": false,
+        "outputIds": [
+          "websink0"
+        ]
+      }
+    },
+    {
+      "id": "websink0",
+      "type": "element",
+      "parentId": "browser_preview0",
+      "extent": "parent",
+      "position": {
+        "x": 1400,
+        "y": 100
+      },
+      "draggable": false,
+      "connectable": false,
+      "selectable": false,
+      "deletable": false,
+      "hidden": true,
+      "data": {
+        "internalLinksSettings": {
+          "id": "websink0",
+          "outputIds": [],
+          "binOutput": true
+        },
+        "category": "outputs",
+        "type": "websink",
+        "settings": {
+          "port": 8091,
+          "stun-server": ""
+        },
+        "initiallyOpen": false,
+        "outputIds": []
+      }
+    }
+  ],
+  "inputIds": [
+    "filesrc0"
+  ],
+  "autoStart": false
+}
