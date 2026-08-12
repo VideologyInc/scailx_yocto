@@ -25,6 +25,6 @@ Rocketsan's linux-imx driver fix.
 
 devtool modify linux-imx
 
-Then copy imx-isi-cap.c to override 
+Then copy imx8-isi-cap.c to override 
 
 ~./build/workspace/sources/linux-imx/drivers/staging/media/imx/imx8-isi-cap.c
