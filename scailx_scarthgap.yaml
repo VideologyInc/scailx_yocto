@@ -38,12 +38,11 @@ repos:
     layers:
       framos-layer:
   meta-scailx-flir:
-    branch: master
+    branch: AB#2623-boson2
     url: https://github.com/VideologyInc/meta-scailx-flir.git
-    # commit: ad991dbf0780b63f7c2fbef6528075c2b07c21ba
-    # Latest update of flir boson kernel on
-    # Boson 320 vs Boson 640 video formats.
-    commit: cd9469f6848ef3a3bbc110163ed181acdaf9502c
+    # Dual Boson dts file updates
+    # commit: cd9469f6848ef3a3bbc110163ed181acdaf9502c
+    commit: 84eafc10127ce4cf53a9815745eb7360150fa731
     layers:
       meta-scailx-flir:
 
