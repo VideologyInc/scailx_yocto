@@ -38,11 +38,11 @@ repos:
     layers:
       framos-layer:
   meta-scailx-flir:
-    branch: AB#2623-boson2
+    branch: master
     url: https://github.com/VideologyInc/meta-scailx-flir.git
     # Dual Boson dts file updates
     # commit: cd9469f6848ef3a3bbc110163ed181acdaf9502c
-    commit: 84eafc10127ce4cf53a9815745eb7360150fa731
+    commit: b7b25f7bfb318d6c568614ff5b70898f835dd5b5
     layers:
       meta-scailx-flir:
 
@@ -62,8 +62,9 @@ local_conf_header:
   threads: |
     BB_NUMBER_THREADS = "4"
     PARALLEL_MAKE = "-j 8"
+# This version is for public release
   distro: |
-    SCAILX_VERSION="0.20.9"
+    SCAILX_VERSION="0.20.1"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
