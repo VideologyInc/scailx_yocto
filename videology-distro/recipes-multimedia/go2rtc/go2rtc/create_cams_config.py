@@ -27,6 +27,8 @@ File:   create_cams_config.py
 
 2026.0527.  Added get camera v4l2 sundev path using media-ctl and v4l2-ctl commands.
 
+2026.0819.  Changed camera_id as csi0 and csi1 for non-usb cameras.
+
 By:			Kobus (in 2025 and before), jye@videologyinc.com and mmikhaliuk@piesoft.us
 
 """
@@ -154,7 +156,9 @@ def create_cam_config() -> (list[tuple], list[dict]):
 
         # Get camera name and check its duplicate count as id.
         name = detect_camera_by_name(cam)
-        camera_id = get_camera_id_by_name(name, cam_name_dict)
+        # camera_id = get_camera_id_by_name(name, cam_name_dict)
+        # Now use csi0 or csi1 as camera id for non-usb cameras ;-)
+        camera_id = "csi" + str(idn)
         cam_real_path = str(Path(vdev).resolve())
 
         # Get camera v4l2 subdev if on camera list
@@ -164,7 +168,7 @@ def create_cam_config() -> (list[tuple], list[dict]):
         info_list = get_camera_gst(name, vdev)
         settings_list = get_camera_settings(name, vdev)
         if settings_list != []:
-            cam_settings_list.append((name+ "_" + str(camera_id), settings_list, vdev, subdev))
+            cam_settings_list.append((name+ "_" + camera_id, settings_list, vdev, subdev))
 
         # VPU quality settings: qp above35 gives a grainy image. Below 20 the bitrate starts getting excessive.
         # Parse all resolutions and formats of the camera, may be >=2 ;-)
@@ -175,7 +179,7 @@ def create_cam_config() -> (list[tuple], list[dict]):
                 fps = int(framerate)
             if name == "ar0234":
                 format_str += f"_fps={fps}"
-            cam_config.append((cam+ "_" + str(camera_id), vdev, width, height, fps, format_str, gst_str))
+            cam_config.append((cam+ "_" + camera_id, vdev, width, height, fps, format_str, gst_str))
 
     # Do the same for usb camera if any. Just one now ;-)
     usb_list = glob.glob("/dev/v4l/by-path/*")
@@ -216,6 +220,7 @@ def main():
         print(f"Start get camera config from device tree path to file {f.name}")
         cam_config, cam_settings_list = create_cam_config()
 
+        cam_settings_list.sort()
         print(cam_settings_list)
 
         json.dump(cam_settings_list, f, indent=4)
