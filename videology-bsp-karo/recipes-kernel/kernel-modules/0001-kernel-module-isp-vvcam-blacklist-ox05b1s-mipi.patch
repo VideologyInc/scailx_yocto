@@ -1,0 +1,27 @@
+diff --git a/recipes-kernel/kernel-modules/kernel-module-isp-vvcam_%.bbappend b/recipes-kernel/kernel-modules/kernel-module-isp-vvcam_%.bbappend
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/recipes-kernel/kernel-modules/kernel-module-isp-vvcam_%.bbappend
+@@ -0,0 +1,10 @@
++FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
++
++SRC_URI += "file://0001-media-vvcam-fix-OS08A20-format-and-mode-handling.patch;patchdir=../.."
++SRC_URI += "file://ox05b1s_mipi.conf"
++
++do_install:append() {
++    install -d ${D}${sysconfdir}/modprobe.d
++    install -m 0644 ${WORKDIR}/ox05b1s_mipi.conf ${D}${sysconfdir}/modprobe.d/ox05b1s_mipi.conf
++}
++
+diff --git a/recipes-kernel/kernel-modules/kernel-module-isp-vvcam/ox05b1s_mipi.conf b/recipes-kernel/kernel-modules/kernel-module-isp-vvcam/ox05b1s_mipi.conf
+new file mode 100644
+index 0000000..2222222
+--- /dev/null
++++ b/recipes-kernel/kernel-modules/kernel-module-isp-vvcam/ox05b1s_mipi.conf
+@@ -0,0 +1,5 @@
++# Prevent ox05b1s_mipi from auto-loading when an os08a20 sensor is present.
++# The ox05b1s_mipi driver claims the "ovti,os08a20" compatible string and would
++# probe the sensor before the vvcam os08a20 driver gets a chance to bind.
++# To use an ox05b1s sensor, remove this file and run: modprobe ox05b1s_mipi
++blacklist ox05b1s_mipi

@@ -1,0 +1,478 @@
+From 1a08a5843e03fed31eb3fe99209a3f4411cdca56 Mon Sep 17 00:00:00 2001
+From: kas User <kas@example.com>
+Date: Tue, 11 Aug 2026 10:12:42 -0400
+Subject: [PATCH] media: vvcam: fix OS08A20 format and mode handling
+
+Signed-off-by: kas User <kas@example.com>
+---
+ vvcam/v4l2/sensor/os08a20/os08a20_mipi_v3.c | 342 ++++++++++++++++----
+ 1 file changed, 281 insertions(+), 61 deletions(-)
+
+diff --git a/vvcam/v4l2/sensor/os08a20/os08a20_mipi_v3.c b/vvcam/v4l2/sensor/os08a20/os08a20_mipi_v3.c
+index 05cee49..ae13b42 100644
+--- a/vvcam/v4l2/sensor/os08a20/os08a20_mipi_v3.c
++++ b/vvcam/v4l2/sensor/os08a20/os08a20_mipi_v3.c
+@@ -737,85 +737,227 @@ static int os08a20_set_test_pattern(struct os08a20 *sensor, void * arg)
+ 
+ static int os08a20_s_stream(struct v4l2_subdev *sd, int enable)
+ {
+-	struct i2c_client *client = v4l2_get_subdevdata(sd);
+-	struct os08a20 *sensor = client_to_os08a20(client);
++    struct i2c_client *client = v4l2_get_subdevdata(sd);
++    struct os08a20 *sensor = client_to_os08a20(client);
+ 
+-	if (enable)
+-		os08a20_write_reg(sensor, 0x0100, 0x01);
+-	else
+-		os08a20_write_reg(sensor, 0x0100, 0x00);
++    dev_info(&client->dev, "s_stream(%d)\n", enable);
+ 
+-	sensor->stream_status = enable;
+-	return 0;
++    if (enable)
++        os08a20_write_reg(sensor, 0x0100, 0x01);
++    else
++        os08a20_write_reg(sensor, 0x0100, 0x00);
++
++    sensor->stream_status = enable;
++
++	dev_info(&client->dev,
++         "s_stream(%d), mode=%u %ux%u bit_width=%u\n",
++         enable,
++         sensor->cur_mode.index,
++         sensor->cur_mode.size.width,
++         sensor->cur_mode.size.height,
++         sensor->cur_mode.bit_width);
++
++    return 0;
+ }
+ 
+-static int os08a20_get_format_code(struct os08a20 *sensor, u32 *code)
++static int os08a20_get_mode_format_code(
++	const struct vvcam_mode_info_s *mode, u32 *code)
+ {
+-	switch (sensor->cur_mode.bayer_pattern) {
++	switch (mode->bayer_pattern) {
+ 	case BAYER_RGGB:
+-		if (sensor->cur_mode.bit_width == 8) {
++		if (mode->bit_width == 8)
+ 			*code = MEDIA_BUS_FMT_SRGGB8_1X8;
+-		} else if (sensor->cur_mode.bit_width == 10) {
++		else if (mode->bit_width == 10)
+ 			*code = MEDIA_BUS_FMT_SRGGB10_1X10;
+-		} else {
++		else if (mode->bit_width == 12)
+ 			*code = MEDIA_BUS_FMT_SRGGB12_1X12;
+-		}
++		else
++			return -EINVAL;
+ 		break;
+ 	case BAYER_GRBG:
+-		if (sensor->cur_mode.bit_width == 8) {
++		if (mode->bit_width == 8)
+ 			*code = MEDIA_BUS_FMT_SGRBG8_1X8;
+-		} else if (sensor->cur_mode.bit_width == 10) {
++		else if (mode->bit_width == 10)
+ 			*code = MEDIA_BUS_FMT_SGRBG10_1X10;
+-		} else {
++		else if (mode->bit_width == 12)
+ 			*code = MEDIA_BUS_FMT_SGRBG12_1X12;
+-		}
++		else
++			return -EINVAL;
+ 		break;
+ 	case BAYER_GBRG:
+-		if (sensor->cur_mode.bit_width == 8) {
++		if (mode->bit_width == 8)
+ 			*code = MEDIA_BUS_FMT_SGBRG8_1X8;
+-		} else if (sensor->cur_mode.bit_width == 10) {
++		else if (mode->bit_width == 10)
+ 			*code = MEDIA_BUS_FMT_SGBRG10_1X10;
+-		} else {
++		else if (mode->bit_width == 12)
+ 			*code = MEDIA_BUS_FMT_SGBRG12_1X12;
+-		}
++		else
++			return -EINVAL;
+ 		break;
+ 	case BAYER_BGGR:
+-		if (sensor->cur_mode.bit_width == 8) {
++		if (mode->bit_width == 8)
+ 			*code = MEDIA_BUS_FMT_SBGGR8_1X8;
+-		} else if (sensor->cur_mode.bit_width == 10) {
++		else if (mode->bit_width == 10)
+ 			*code = MEDIA_BUS_FMT_SBGGR10_1X10;
+-		} else {
++		else if (mode->bit_width == 12)
+ 			*code = MEDIA_BUS_FMT_SBGGR12_1X12;
+-		}
++		else
++			return -EINVAL;
+ 		break;
+ 	default:
+-		/*nothing need to do*/
+-		break;
++		return -EINVAL;
+ 	}
++
+ 	return 0;
+ }
++
++static int os08a20_get_format_code(struct os08a20 *sensor, u32 *code)
++{
++	return os08a20_get_mode_format_code(&sensor->cur_mode, code);
++}
++
++/*
++ * Find a sensor mode matching the requested pad format.
++ *
++ * Prefer the current mode when it already matches. This is important for HDR:
++ * 1920x1080 RAW10 exists as both linear and HDR, and pad format alone cannot
++ * distinguish those modes. VVSENSORIOC_S_SENSOR_MODE remains authoritative
++ * for explicitly selecting HDR/linear mode.
++ */
++static const struct vvcam_mode_info_s *
++os08a20_find_mode(struct os08a20 *sensor,
++		  const struct v4l2_mbus_framefmt *format)
++{
++	const struct vvcam_mode_info_s *mode;
++	u32 code;
++	int i;
++
++	/*
++	 * VVCAM/isp_media_server may call S_FMT with code == 0 after first
++	 * selecting the sensor mode through VVSENSORIOC_S_SENSOR_MODE.
++	 * Treat code == 0 as "unspecified" and preserve cur_mode when the
++	 * requested dimensions match it. set_fmt() will fill in the actual
++	 * media-bus code from cur_mode.
++	 */
++	if (sensor->cur_mode.size.bounds_width == format->width &&
++	    sensor->cur_mode.size.bounds_height == format->height &&
++	    !os08a20_get_mode_format_code(&sensor->cur_mode, &code) &&
++	    (format->code == 0 || code == format->code))
++		return &sensor->cur_mode;
++
++	/*
++	 * For normal V4L2 callers with an explicit media-bus code, find the
++	 * matching mode by width/height/code. Do not guess another mode for
++	 * code == 0: VVCAM already selected the authoritative cur_mode above.
++	 */
++	if (format->code == 0)
++		return NULL;
++
++	for (i = 0; i < ARRAY_SIZE(pos08a20_mode_info); i++) {
++		mode = &pos08a20_mode_info[i];
++
++		if (mode->size.bounds_width != format->width ||
++		    mode->size.bounds_height != format->height)
++			continue;
++
++		if (os08a20_get_mode_format_code(mode, &code))
++			continue;
++
++		if (code == format->code)
++			return mode;
++	}
++
++	return NULL;
++}
++
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(5, 12, 0)
+ static int os08a20_enum_mbus_code(struct v4l2_subdev *sd,
+-				struct v4l2_subdev_state *state,
+-				struct v4l2_subdev_mbus_code_enum *code)
++				  struct v4l2_subdev_state *state,
++				  struct v4l2_subdev_mbus_code_enum *code)
+ #else
+ static int os08a20_enum_mbus_code(struct v4l2_subdev *sd,
+-			         struct v4l2_subdev_pad_config *cfg,
+-			         struct v4l2_subdev_mbus_code_enum *code)
++				  struct v4l2_subdev_pad_config *cfg,
++				  struct v4l2_subdev_mbus_code_enum *code)
+ #endif
+ {
+-	struct i2c_client *client = v4l2_get_subdevdata(sd);
+-	struct os08a20 *sensor = client_to_os08a20(client);
++	/*
++	 * All current OS08A20 modes are BGGR and use either RAW10 or RAW12.
++	 * Expose both codes instead of only the code of cur_mode.
++	 */
++	switch (code->index) {
++	case 0:
++		code->code = MEDIA_BUS_FMT_SBGGR10_1X10;
++		break;
++	case 1:
++		code->code = MEDIA_BUS_FMT_SBGGR12_1X12;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
+ 
+-	u32 cur_code = MEDIA_BUS_FMT_SBGGR12_1X12;
++#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 12, 0)
++static int os08a20_enum_frame_size(struct v4l2_subdev *sd,
++				   struct v4l2_subdev_state *state,
++				   struct v4l2_subdev_frame_size_enum *fse)
++#else
++static int os08a20_enum_frame_size(struct v4l2_subdev *sd,
++				   struct v4l2_subdev_pad_config *cfg,
++				   struct v4l2_subdev_frame_size_enum *fse)
++#endif
++{
++	u32 code;
++	unsigned int match = 0;
++	int i;
+ 
+-	if (code->index > 0)
++	if (fse->pad != OS08A20_SENS_PAD_SOURCE)
+ 		return -EINVAL;
+-	os08a20_get_format_code(sensor,&cur_code);
+-	code->code = cur_code;
+ 
+-	return 0;
++	/*
++	 * Enumerate unique width/height combinations for the requested code.
++	 * Duplicate linear/HDR modes with identical pad format are returned once.
++	 */
++	for (i = 0; i < ARRAY_SIZE(pos08a20_mode_info); i++) {
++		const struct vvcam_mode_info_s *mode = &pos08a20_mode_info[i];
++		int j;
++		bool duplicate = false;
++
++		if (os08a20_get_mode_format_code(mode, &code) || code != fse->code)
++			continue;
++
++		for (j = 0; j < i; j++) {
++			const struct vvcam_mode_info_s *prev = &pos08a20_mode_info[j];
++			u32 prev_code;
++
++			if (os08a20_get_mode_format_code(prev, &prev_code) ||
++			    prev_code != fse->code)
++				continue;
++
++			if (prev->size.bounds_width == mode->size.bounds_width &&
++			    prev->size.bounds_height == mode->size.bounds_height) {
++				duplicate = true;
++				break;
++			}
++		}
++
++		if (duplicate)
++			continue;
++
++		if (match++ != fse->index)
++			continue;
++
++		fse->min_width = mode->size.bounds_width;
++		fse->max_width = mode->size.bounds_width;
++		fse->min_height = mode->size.bounds_height;
++		fse->max_height = mode->size.bounds_height;
++		return 0;
++	}
++
++	return -EINVAL;
+ }
++
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(5, 12, 0)
+ static int os08a20_set_fmt(struct v4l2_subdev *sd,
+ 			   struct v4l2_subdev_state *state,
+@@ -826,38 +968,85 @@ static int os08a20_set_fmt(struct v4l2_subdev *sd,
+ 			   struct v4l2_subdev_format *fmt)
+ #endif
+ {
+-	int ret = 0;
+ 	struct i2c_client *client = v4l2_get_subdevdata(sd);
+ 	struct os08a20 *sensor = client_to_os08a20(client);
+-	mutex_lock(&sensor->lock);
++	const struct vvcam_mode_info_s *mode;
++	u32 code;
++	int ret = 0;
+ 
+-	if ((fmt->format.width != sensor->cur_mode.size.bounds_width) ||
+-	    (fmt->format.height != sensor->cur_mode.size.bounds_height)) {
+-		pr_err("%s:set sensor format %dx%d error\n",
+-			__func__,fmt->format.width,fmt->format.height);
+-		mutex_unlock(&sensor->lock);
++	if (fmt->pad != OS08A20_SENS_PAD_SOURCE)
+ 		return -EINVAL;
++
++	mutex_lock(&sensor->lock);
++
++	mode = os08a20_find_mode(sensor, &fmt->format);
++	if (!mode) {
++		dev_err(&client->dev,
++			"unsupported sensor format %ux%u code=0x%08x (current mode=%u %ux%u)\n",
++			fmt->format.width, fmt->format.height, fmt->format.code,
++			sensor->cur_mode.index,
++			sensor->cur_mode.size.bounds_width,
++			sensor->cur_mode.size.bounds_height);
++		ret = -EINVAL;
++		goto out_unlock;
++	}
++
++	/*
++	 * A TRY format must not change sensor state or touch hardware.
++	 * Return the exact format represented by the matched mode.
++	 */
++	if (os08a20_get_mode_format_code(mode, &code)) {
++		ret = -EINVAL;
++		goto out_unlock;
+ 	}
+ 
+-	os08a20_write_reg(sensor, 0x100, 0x00);
+-	os08a20_write_reg(sensor, 0x103, 0x01);
++	fmt->format.width = mode->size.bounds_width;
++	fmt->format.height = mode->size.bounds_height;
++	fmt->format.code = code;
++	fmt->format.field = V4L2_FIELD_NONE;
++
++	if (fmt->which == V4L2_SUBDEV_FORMAT_TRY)
++		goto out_unlock;
++
++	/*
++	 * Keep VVSENSORIOC_S_SENSOR_MODE authoritative when the current mode
++	 * already has the same pad format (for example 1080p RAW10 linear/HDR).
++	 * Otherwise select the unique mode identified by width/height/code.
++	 */
++	if (mode != &sensor->cur_mode)
++		memcpy(&sensor->cur_mode, mode, sizeof(sensor->cur_mode));
++
++	ret = os08a20_write_reg(sensor, 0x0100, 0x00);
++	if (ret < 0)
++		goto out_unlock;
++
++	ret = os08a20_write_reg(sensor, 0x0103, 0x01);
++	if (ret < 0)
++		goto out_unlock;
++
+ 	msleep(20);
+ 
+ 	ret = os08a20_write_reg_arry(sensor,
+ 		(struct vvcam_sccb_data_s *)sensor->cur_mode.preg_data,
+ 		sensor->cur_mode.reg_data_count);
+ 	if (ret < 0) {
+-		pr_err("%s:os08a20_write_reg_arry error\n",__func__);
+-		mutex_unlock(&sensor->lock);
+-		return -EINVAL;
++		dev_err(&client->dev, "failed to program sensor mode %u\n",
++			sensor->cur_mode.index);
++		goto out_unlock;
+ 	}
+ 
+-	os08a20_get_format_code(sensor, &fmt->format.code);
+-	fmt->format.field = V4L2_FIELD_NONE;
+ 	sensor->format = fmt->format;
++
++	dev_dbg(&client->dev,
++		"set format %ux%u code=0x%08x mode=%u hdr=%u\n",
++		fmt->format.width, fmt->format.height, fmt->format.code,
++		sensor->cur_mode.index, sensor->cur_mode.hdr_mode);
++
++out_unlock:
+ 	mutex_unlock(&sensor->lock);
+-	return 0;
++	return ret;
+ }
++
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(5, 12, 0)
+ static int os08a20_get_fmt(struct v4l2_subdev *sd,
+ 			   struct v4l2_subdev_state *state,
+@@ -871,9 +1060,13 @@ static int os08a20_get_fmt(struct v4l2_subdev *sd,
+ 	struct i2c_client *client = v4l2_get_subdevdata(sd);
+ 	struct os08a20 *sensor = client_to_os08a20(client);
+ 
++	if (fmt->pad != OS08A20_SENS_PAD_SOURCE)
++		return -EINVAL;
++
+ 	mutex_lock(&sensor->lock);
+ 	fmt->format = sensor->format;
+ 	mutex_unlock(&sensor->lock);
++
+ 	return 0;
+ }
+ 
+@@ -919,8 +1112,17 @@ static long os08a20_priv_ioctl(struct v4l2_subdev *sd,
+ 		ret = os08a20_get_sensor_mode(sensor, arg);
+ 		break;
+ 	case VVSENSORIOC_S_SENSOR_MODE:
++	{
++		struct vvcam_mode_info_s mode;
++
++		if (!copy_from_user(&mode, arg_user, sizeof(mode)))
++			dev_info(&client->dev,
++					"VVSENSORIOC_S_SENSOR_MODE index=%u\n",
++					mode.index);
++
+ 		ret = os08a20_set_sensor_mode(sensor, arg);
+ 		break;
++	}
+ 	case VVSENSORIOC_S_STREAM:
+ 		USER_TO_KERNEL(int);
+ 		ret = os08a20_s_stream(&sensor->subdev, *(int *)arg);
+@@ -985,6 +1187,7 @@ static struct v4l2_subdev_video_ops os08a20_subdev_video_ops = {
+ 
+ static const struct v4l2_subdev_pad_ops os08a20_subdev_pad_ops = {
+ 	.enum_mbus_code = os08a20_enum_mbus_code,
++	.enum_frame_size = os08a20_enum_frame_size,
+ 	.set_fmt = os08a20_set_fmt,
+ 	.get_fmt = os08a20_get_fmt,
+ };
+@@ -1308,6 +1511,26 @@ static int os08a20_probe(struct i2c_client *client,
+ 				sensor->pads);
+ 	if (retval < 0)
+ 		goto probe_err_power_off;
++
++	/*
++	 * Initialize all state used by pad callbacks before async registration.
++	 * v4l2_async_register_subdev_sensor() can make the subdevice visible to
++	 * the media framework immediately.
++	 */
++	mutex_init(&sensor->lock);
++
++	memcpy(&sensor->cur_mode, &pos08a20_mode_info[0],
++	       sizeof(struct vvcam_mode_info_s));
++
++	sensor->format.width = sensor->cur_mode.size.bounds_width;
++	sensor->format.height = sensor->cur_mode.size.bounds_height;
++	sensor->format.field = V4L2_FIELD_NONE;
++	retval = os08a20_get_format_code(sensor, &sensor->format.code);
++	if (retval < 0) {
++		dev_err(dev, "invalid default sensor format\n");
++		goto probe_err_destroy_mutex;
++	}
++
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(5, 12, 0)
+ 	retval = v4l2_async_register_subdev_sensor(sd);
+ #else
+@@ -1316,18 +1539,15 @@ static int os08a20_probe(struct i2c_client *client,
+ 	if (retval < 0) {
+ 		dev_err(&client->dev,"%s--Async register failed, ret=%d\n",
+ 			__func__,retval);
+-		goto probe_err_free_entiny;
++		goto probe_err_destroy_mutex;
+ 	}
+ 
+-	memcpy(&sensor->cur_mode, &pos08a20_mode_info[0],
+-			sizeof(struct vvcam_mode_info_s));
+-
+-	mutex_init(&sensor->lock);
+ 	pr_info("%s camera mipi os08a20, is found\n", __func__);
+ 
+ 	return 0;
+ 
+-probe_err_free_entiny:
++probe_err_destroy_mutex:
++	mutex_destroy(&sensor->lock);
+ 	media_entity_cleanup(&sd->entity);
+ 
+ probe_err_power_off:
+@@ -1417,4 +1637,4 @@ static struct i2c_driver os08a20_i2c_driver = {
+ 
+ module_i2c_driver(os08a20_i2c_driver);
+ MODULE_DESCRIPTION("OS08a20 MIPI Camera Subdev Driver");
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL");
+\ No newline at end of file

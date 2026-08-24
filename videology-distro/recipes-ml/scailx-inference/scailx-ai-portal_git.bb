@@ -1,7 +1,7 @@
 LICENSE = "CLOSED"
 SECTION = "multimedia"
 
-SRC_URI = "https://scailx-ppa.org/scailx-apps/scailx-ai-portal/scailx-ai-portal_${PV}.zip;subdir=git;name=zip"
+SRC_URI = "${SCAILX_ARTIFACTS_URI}/scailx-ai-portal/scailx-ai-portal_${PV}.zip;subdir=git;name=zip"
 SRC_URI += "file://scailx-ai-portal.service"
 SRC_URI += "file://pipeline.json"
 

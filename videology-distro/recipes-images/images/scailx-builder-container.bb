@@ -58,7 +58,6 @@ IMAGE_INSTALL_PKCS11TOOL = " \
     ${@bb.utils.contains('MACHINE_FEATURES', 'optee', 'optee-client optee-os', '', d)}"
 
 IMAGE_INSTALL += " \
-    scailx-ppa-key \
     packagegroup-fsl-gstreamer1.0 \
     packagegroup-imx-ml \
     packagegroup-fsl-tools-gpu \
@@ -161,4 +160,3 @@ rootfs_fixup_var_volatile () {
     install -m 1777 -d ${IMAGE_ROOTFS}/${localstatedir}/volatile/tmp
     install -m 755 -d ${IMAGE_ROOTFS}/${localstatedir}/volatile/log
 }
-

@@ -14,17 +14,5 @@ DEPENDS += " \
     python3-wheel-native \
 "
 
-# Post installation process.
-# Need to copy ~/zoneinfo to /usr/share/zoninfo to make timedatectl see all zones.
-do_install:append() {
-    # 1. Create your target folder on the rootfs
-    install -d ${D}/usr/share/
-
-    # 2. Copy zoneinfo of the generated python site-packages folder to target /usr/share/
-    cp -r ${D}${libdir}/python3.12/site-packages/tzdata/zoneinfo ${D}/usr/share/
-    
-}
-
-# Add target folders and files to the package.
-FILES:${PN} += "/usr/share/"
-
+# Keep the Python tzdata database in site-packages.  The system-wide
+# /usr/share/zoneinfo directory is owned by the tzdata package.

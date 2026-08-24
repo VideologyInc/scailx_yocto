@@ -102,8 +102,8 @@ jobs:
       #   uses: ./.github/workflows/bucket-mount
       #   with:
       #     NAME: deploy
-      #     MOUNT_PATH: ${{ github.workspace }}/build/deploy/deb
-      #     BUCKET_PATH: scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/deb
+      #     MOUNT_PATH: ${{ github.workspace }}/build/deploy/ipk
+      #     BUCKET_PATH: scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/ipk
       - name: mount cache dir
         uses: ./.github/workflows/bucket-mount
         with:
@@ -132,7 +132,7 @@ jobs:
         run: |
           rclone copy ${{ github.workspace }}/build/deploy/images scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/images --transfers 64 --checkers 64 &
           rclone copy ${{ github.workspace }}/build/deploy/sdk scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/sdk --transfers 64 --checkers 64 &
-          rclone copy ${{ github.workspace }}/build/deploy/deb scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/deb --transfers 64 --checkers 64 &
+          rclone copy ${{ github.workspace }}/build/deploy/ipk scailx-storage:scailx-ppa/${{ steps.bbvars.outputs.DISTRO_VERSION }}/deploy_${{ github.sha }}/ipk --transfers 64 --checkers 64 &
           wait
       - name: tag release
         run: |

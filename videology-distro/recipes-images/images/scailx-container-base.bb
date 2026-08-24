@@ -32,7 +32,6 @@ IMAGE_INSTALL = " \
         netbase \
         ${CONTAINER_SHELL} \
         ${INSTALL_VSCODE} \
-        scailx-ppa-key \
         ca-certificates \
         wget \
         bash \
