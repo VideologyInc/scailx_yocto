@@ -164,7 +164,7 @@ def create_cam_config() -> (list[tuple], list[dict]):
         # Get camera v4l2 subdev if on camera list
         subdev = mipi_to_subdev(vdev, subdev_list) if name in Camera_V4l_SubDev_List else ""
 
-        # Get cameramatching gst info
+        # Get camera matching gst info
         info_list = get_camera_gst(name, vdev)
         settings_list = get_camera_settings(name, vdev)
         if settings_list != []:
