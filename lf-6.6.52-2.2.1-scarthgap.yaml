@@ -36,7 +36,7 @@ repos:
     url: https://github.com/Freescale/meta-freescale-distro
   meta-imx:
     branch: scarthgap-6.6.52-2.2.1
-    commit: refs/tags/rel_imx_6.6.52_2.2.1
+    commit: e83d4402acde050d2b2761995761c81c797b5b03
     url: https://github.com/nxp-imx/meta-imx
   # meta-nxp-connectivity:
   #   commit: refs/tags/rel_imx_6.6.52_2.2.0
