@@ -69,7 +69,7 @@ local_conf_header:
     PARALLEL_MAKE = "-j 8"
 # This version is for public release
   distro: |
-    SCAILX_VERSION="0.20.11"
+    SCAILX_VERSION="0.20.12"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
