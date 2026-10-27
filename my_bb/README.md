@@ -5,7 +5,7 @@ On Ubuntu 24.04:
 
 Need extra step to set user space apparmor to 0.
 
-	sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
 
 ----------------------------------------------
