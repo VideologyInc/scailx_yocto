@@ -1,6 +1,15 @@
 Videology Yocto Customized Recipes
 =======================
 
+On Ubuntu 24.04:
+
+Need extra step to set user space apparmor to 0.
+
+	sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+
+----------------------------------------------
+
 # Copy and Build (For incremental build only)
 
 - nnstreamer mqtt update
@@ -28,3 +37,5 @@ devtool modify linux-imx
 Then copy imx8-isi-cap.c to override 
 
 ~./build/workspace/sources/linux-imx/drivers/staging/media/imx/imx8-isi-cap.c
+
+
