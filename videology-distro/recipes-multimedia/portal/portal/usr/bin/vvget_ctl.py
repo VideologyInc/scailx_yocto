@@ -19,32 +19,38 @@ Usage:
     vvget_ctl.py -d /dev/video0 --get-ctrl brightness,contrast
     vvget_ctl.py -d /dev/video0 --set-ctrl brightness=-20
     vvget_ctl.py -d /dev/video0 --set-ctrl brightness=-20,contrast=1.2
-    vvget_ctl.py -d /dev/video0 --save imx0.json
-    vvget_ctl.py -d /dev/video0 --load imx0.json
-    vvget_ctl.py -d /dev/video0 --launch --load imx0.json
-    vvget_ctl.py -d /dev/video0 --launch --load imx0.json --pipeline "v4l2src device=/dev/video0 ! ... ! websink"
+    vvget_ctl.py -d /dev/video0 --save-default /opt/imx8-isp/bin/IMX678_Basic_1920x1080.xml
+    vvget_ctl.py -d /dev/video0 --save-default IMX678_Basic_1920x1080.xml --set-ctrl brightness=-20 --restart-isp
+    # live stream open: set via vvget AND persist to XML in one go
+    vvget_ctl.py -d /dev/video0 --set-ctrl brightness=-20 --save-default IMX678_Basic_1920x1080.xml --apply-live
 
 Notes:
     * vvget takes the numeric camera id (0 for /dev/video0), not the path.
     * imx controls come from the ISP, so vvget cannot report min/max/step;
       those ranges are defined in the CONTROLS table below and may need tuning
       against a real sensor.
-    * Auto Exposure (AEC) / Auto White Balance (AWB) must be OFF before manual
-      values in their group take effect, and CPROC must be ON before the color
-      adjustments apply. This script enforces that ordering automatically.
-    * The Vivante ISP resets every control to its default whenever the v4l2
-      pipeline (go2rtc / gst-launch) restarts. Use --save to snapshot the live
-      values to a JSON file, and --load to re-apply that snapshot before the
-      pipeline comes back up so user settings survive a restart.
+    * --set-ctrl writes values straight through to vvget in the order given
+      (explicit on/off toggles first). It does NOT force any ISP state, so for a
+      manual value to take effect its gate must already be set: AEC/AWB OFF for
+      manual exposure/gain/white-balance, CPROC ON for brightness/contrast/etc.
+      Set those toggles yourself (same --set-ctrl works: auto_exposure=0,gain=5).
+    * --set-ctrl writes are runtime-only and are lost when the ISP library
+      reloads its baked defaults. To make a brightness (or any cproc) value the
+      ISP's *default* -- surviving an ISP restart -- use --save-default to bake
+      the cproc values into the sensor tuning XML's <cproc><config> block, which
+      libcam_device.so loads at stream open. See
+      docs/imx678-cproc-brightness-tuning.md for details.
 
 """
 
 import argparse
+import base64
 import json
-import shlex
+import os
+import re
+import struct
 import subprocess
 import sys
-import time
 
 
 # ---------------------------------------------------------------------------
@@ -59,22 +65,36 @@ import time
 # min/max/step/default: ranges vvget can't report. Best-guess; verify on device.
 CONTROLS = [
     # --- Color processing (CPROC) ---
+    # Ranges verified on imx900 hardware (2026-10): brightness -128 is rejected
+    # (falls back to the baked default), so the usable floor is -127. hue is only
+    # linear within [-90, 89] -- below -90 reads back 0, above 89 clamps to 89.
+    # contrast/saturation span 0.0..1.99 and quantise to ~1/256 internally.
     {"id": "brightness", "window": "Adjust brightness", "type": "int",
-     "group": "cproc", "min": -128, "max": 127, "step": 1, "default": 0},
+     "group": "cproc", "min": -127, "max": 127, "step": 1, "default": 0},
     {"id": "contrast", "window": "Adjust contrast", "type": "float",
      "group": "cproc", "min": 0.0, "max": 1.99, "step": 0.01, "default": 1.0},
     {"id": "saturation", "window": "Adjust saturation", "type": "float",
      "group": "cproc", "min": 0.0, "max": 1.99, "step": 0.01, "default": 1.0},
     {"id": "hue", "window": "Adjust HUE", "type": "int",
-     "group": "cproc", "min": -128, "max": 127, "step": 1, "default": 0},
+     "group": "cproc", "min": -90, "max": 89, "step": 1, "default": 0},
 
     # --- Auto exposure (AEC) manual values ---
+    # UNLIKE cproc, these ranges are NOT fixed: vvext reads them live from the ISP
+    # per sensor/mode (gain -> EC_GAIN_MIN/MAX, exposure -> EC_INTEGRATION_MIN/MAX
+    # divided by the HDR extension factor 2^extBit, iso -> AE_SENSITIVITY_MIN/MAX;
+    # see isp-imx appshell/vvext/vvext.cpp PageAec*). --list-ctrls now parses the
+    # live range out of vvget's prompt (see read_control/_extract_limits), so the
+    # reported min/max reflect the connected sensor -- which differs between
+    # imx662/678/900 and across modes. vvget only prints the range with a stream
+    # OPEN and AEC OFF (otherwise it bails); the min/max below are the fallback for
+    # that case, measured on imx900 (1920x1080@30, 2026-10-14). The ISP clamps any
+    # out-of-range write to its own live min/max regardless.
     {"id": "gain", "window": "AEC Gain", "type": "float",
-     "group": "aec", "min": 0.0, "max": 48.0, "step": 0.1, "default": 1.0},
+     "group": "aec", "min": 0.000000, "max": 0.000000, "step": 0.1, "default": 0.000000},
     {"id": "exposure_time", "window": "AEC ExposureTime", "type": "float",
-     "group": "aec", "min": 0.0, "max": 0.033, "step": 0.0001, "default": 0.009},
+     "group": "aec", "min": 0.000000, "max": 0.000000, "step": 0.000001, "default": 0.000000},
     {"id": "sensitivity", "window": "AEC Sensitivity", "type": "int",
-     "group": "aec", "min": 100, "max": 3200, "step": 100, "default": 100},
+     "group": "aec", "min": 100, "max": 1600, "step": 100, "default": 100},
 
     # --- Toggles ---
     {"id": "auto_exposure", "window": "AEC On/Off", "type": "bool",
@@ -90,11 +110,6 @@ CONTROLS = [
 ]
 
 CONTROL_BY_ID = {c["id"]: c for c in CONTROLS}
-
-# vvget windows that gate a group.
-AEC_ONOFF = "AEC On/Off"
-AWB_ONOFF = "AWB On/Off"
-CPROC_ONOFF = "CPROC ON/OFF"
 
 
 # ---------------------------------------------------------------------------
@@ -156,6 +171,29 @@ def _extract_value(stdout, window):
     return candidate.split(":", 1)[1].strip()
 
 
+# vvext prints the live AEC range inside the dump() input prompt, in three
+# slightly different shapes (gain "[%f ~ %f]", exposure "(%f~%f)", iso
+# "[%d ~ %d]"). This matches a "<min> ~ <max>" pair inside [] or ().
+_LIMITS_RE = re.compile(r"[\[(]\s*(-?\d+(?:\.\d+)?)\s*~\s*(-?\d+(?:\.\d+)?)\s*[\])]")
+
+
+def _extract_limits(stdout):
+    """Parse a '[min ~ max]' / '(min~max)' range out of vvget stdout.
+
+    AEC gain/exposure/iso ranges are not fixed: the ISP computes them live per
+    sensor and mode, and vvext only exposes them in the prompt line of each
+    control's dump (e.g. "please input new gain: [1.000000 ~ 2013.0]"). Returns
+    (min, max) as floats, or (None, None) when no range is present -- vvget omits
+    the prompt unless the stream is open AND AEC is off (otherwise it logs
+    "aec is enabled, need disable first" and prints no range).
+    """
+    for line in stdout.splitlines():
+        m = _LIMITS_RE.search(line)
+        if m:
+            return float(m.group(1)), float(m.group(2))
+    return None, None
+
+
 def _cast(ctrl, raw):
     """Cast a raw string value to the control's numeric type; fall back to raw."""
     raw = raw.strip().strip("[]")
@@ -182,53 +220,53 @@ def get_control(cam_id, ctrl):
     return _cast(ctrl, raw)
 
 
-def _get_toggle(cam_id, window):
-    """Read a raw on/off window as an int (0/1); -1 if unknown."""
-    try:
-        raw = _extract_value(_run(cam_id, window), window).strip().strip("[]")
-        return int(float(raw))
-    except (ValueError, RuntimeError, TypeError):
-        return -1
+def read_control(cam_id, ctrl):
+    """Read a control in one vvget call; return (value, min, max).
 
-
-def _ensure_off(cam_id, window, retries=10):
-    """Turn an auto window off, polling until it reads 0 (AEC is unreliable)."""
-    for _ in range(retries):
-        if _get_toggle(cam_id, window) == 0:
-            return True
-        _run(cam_id, window, 0)
-    return _get_toggle(cam_id, window) == 0
-
-
-def _ensure_on(cam_id, window, retries=5):
-    """Turn a window on, polling until it reads 1."""
-    for _ in range(retries):
-        if _get_toggle(cam_id, window) == 1:
-            return True
-        _run(cam_id, window, 1)
-    return _get_toggle(cam_id, window) == 1
+    For aec-group controls the min/max come back live from the ISP (parsed from
+    vvget's prompt) instead of the static best-guess in CONTROLS, so --list-ctrls
+    reports the true per-sensor range -- which now differs between imx662/678/900
+    and across modes. When the live range is unavailable (stream closed or AEC
+    on) we fall back to the table values. Non-aec controls always use the table.
+    """
+    stdout = _run(cam_id, ctrl["window"])
+    raw = _extract_value(stdout, ctrl["window"])
+    value = None if raw == "" else _cast(ctrl, raw)
+    cmin, cmax = ctrl["min"], ctrl["max"]
+    if ctrl["group"] == "aec":
+        lo, hi = _extract_limits(stdout)
+        if lo is not None:
+            cmin, cmax = lo, hi
+    return value, cmin, cmax
 
 
 # ---------------------------------------------------------------------------
 # operations (mirror v4l2-ctl)
 # ---------------------------------------------------------------------------
+def _control_item(cam_id, ctrl):
+    """Build one Control[] entry (the portal's shape) for a control.
+
+    Reads value + range in a single vvget call; aec controls get the live
+    per-sensor min/max, every other control the static table range.
+    """
+    try:
+        value, cmin, cmax = read_control(cam_id, ctrl)
+    except RuntimeError:
+        value, cmin, cmax = None, ctrl["min"], ctrl["max"]
+    return {
+        "control": ctrl["window"],
+        "id": ctrl["id"],
+        "minimum": cmin,
+        "maximum": cmax,
+        "step": ctrl["step"],
+        "default": ctrl["default"],
+        "value": value,
+    }
+
+
 def list_ctrls(cam_id, as_json=False):
     """--list-ctrls: dump every control with ranges + current value."""
-    items = []
-    for ctrl in CONTROLS:
-        try:
-            value = get_control(cam_id, ctrl)
-        except RuntimeError:
-            value = None
-        items.append({
-            "control": ctrl["window"],
-            "id": ctrl["id"],
-            "minimum": ctrl["min"],
-            "maximum": ctrl["max"],
-            "step": ctrl["step"],
-            "default": ctrl["default"],
-            "value": value,
-        })
+    items = [_control_item(cam_id, ctrl) for ctrl in CONTROLS]
 
     if as_json:
         # Shape matches the portal's Control[] type for easy backend consumption.
@@ -243,8 +281,26 @@ def list_ctrls(cam_id, as_json=False):
         )
 
 
-def get_ctrls(cam_id, ids):
-    """--get-ctrl id[,id...]: print 'id: value' lines (v4l2-ctl format)."""
+def get_ctrls(cam_id, ids, as_json=False):
+    """--get-ctrl id[,id...]: print 'id: value' lines (v4l2-ctl format).
+
+    With --json, emit the same Control[] shape as --list-ctrls but only for the
+    requested ids -- crucially including the live per-sensor min/max for aec
+    controls (parsed from the same vvget call, no extra latency). The portal's
+    fast partial read uses this so the AEC sliders pick up their real range the
+    moment Auto Exposure turns off, instead of a stale 0..0 fallback.
+    """
+    if as_json:
+        items = []
+        for cid in ids:
+            ctrl = CONTROL_BY_ID.get(cid)
+            if not ctrl:
+                print(f"{cid}: unknown control", file=sys.stderr)
+                continue
+            items.append(_control_item(cam_id, ctrl))
+        print(json.dumps(items, indent=2))
+        return
+
     for cid in ids:
         ctrl = CONTROL_BY_ID.get(cid)
         if not ctrl:
@@ -254,7 +310,13 @@ def get_ctrls(cam_id, ids):
 
 
 def set_ctrls(cam_id, pairs):
-    """--set-ctrl id=value[,id=value...]: apply, honouring group ordering."""
+    """--set-ctrl id=value[,id=value...]: write each control directly.
+
+    Values are passed straight through to vvget. Explicit on/off toggles are
+    applied first so they gate their group's manual values (e.g. an explicit
+    auto_exposure=0 before gain=5). Any required ISP state is the caller's
+    responsibility -- manual AEC needs AEC off, color needs CPROC on, etc.
+    """
     parsed = []
     for pair in pairs:
         if "=" not in pair:
@@ -268,186 +330,193 @@ def set_ctrls(cam_id, pairs):
             continue
         parsed.append((ctrl, value))
 
-    if not parsed:
-        return
-
-    groups = {c["group"] for c, _ in parsed}
-    explicit = {c["id"] for c, _ in parsed}
-
-    # Pre-conditions, mirroring detect_imx_live.py ordering rules.
-    if "cproc" in groups and "color_processing" not in explicit:
-        _ensure_on(cam_id, CPROC_ONOFF)
-    if "aec" in groups and "auto_exposure" not in explicit:
-        # Manual AEC values only apply with auto exposure off.
-        _ensure_off(cam_id, AEC_ONOFF)
-
-    # Apply toggles first (so e.g. turning AWB off precedes its values), then rest.
+    # Apply toggles first so an explicit on/off gates its group's manual values.
     parsed.sort(key=lambda cv: 0 if cv[0]["group"] == "toggle" else 1)
     for ctrl, value in parsed:
         try:
             _run(cam_id, ctrl["window"], value)
-            print(f"set {ctrl['id']} = {value}")
         except RuntimeError as e:
             print(f"failed to set {ctrl['id']}: {e}", file=sys.stderr)
-
-    # Post-condition: the ISP 3A daemon can re-enable AEC *after* a manual value
-    # write (auto exposure re-asserts its on/auto default), silently overriding
-    # the value we just set. Re-assert AEC off once the writes are in.
-    if "aec" in groups and "auto_exposure" not in explicit:
-        _ensure_off(cam_id, AEC_ONOFF)
-
-
-# ---------------------------------------------------------------------------
-# persistence (survive a pipeline restart)
-# ---------------------------------------------------------------------------
-def save_ctrls(cam_id, path):
-    """--save FILE: snapshot every readable control to a JSON {id: value} file.
-
-    Written so --load can round-trip it straight back through set_ctrls. Controls
-    that read back as None (e.g. manual AEC values while auto exposure is on) are
-    skipped so we never persist a null the reload can't apply.
-    """
-    settings = {}
-    for ctrl in CONTROLS:
+            continue
+        # vvget clamps writes to the ISP's live range, so read the value back and
+        # report what actually took effect rather than the number we requested.
         try:
-            value = get_control(cam_id, ctrl)
+            applied = get_control(cam_id, ctrl)
         except RuntimeError:
-            value = None
-        if value is not None:
-            settings[ctrl["id"]] = value
-
-    try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(settings, f, indent=2)
-            f.write("\n")
-    except OSError as e:
-        print(f"failed to save {path}: {e}", file=sys.stderr)
-        sys.exit(1)
-    print(f"saved {len(settings)} controls to {path}")
-
-
-def load_ctrls(cam_id, path):
-    """--load FILE: read a saved JSON {id: value} snapshot and re-apply it.
-
-    Run this before (or right after) the v4l2 pipeline restarts to restore the
-    user's settings on top of the ISP defaults. Reuses set_ctrls so the same
-    AEC/AWB/CPROC ordering rules are honoured.
-    """
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            settings = json.load(f)
-    except FileNotFoundError:
-        print(f"load file not found: {path}", file=sys.stderr)
-        sys.exit(1)
-    except (OSError, json.JSONDecodeError) as e:
-        print(f"failed to load {path}: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    if not isinstance(settings, dict):
-        print(f"unexpected format in {path}: expected a JSON object", file=sys.stderr)
-        sys.exit(1)
-
-    pairs = [f"{cid}={value}" for cid, value in settings.items()]
-    set_ctrls(cam_id, pairs)
+            applied = None
+        print(f"set {ctrl['id']} = {applied if applied is not None else value}")
 
 
 # ---------------------------------------------------------------------------
-# launch: run a gstreamer pipeline and apply controls once the ISP is live
+# persistent cproc default (survive an ISP restart, not just a pipeline restart)
 # ---------------------------------------------------------------------------
-# The Vivante ISP only accepts control writes while something is actively pulling
-# frames. Rather than poll for a stream we didn't start (detect_imx_live's model),
-# this owns the pipeline: launch gst -> wait until it opens the device -> settle
-# -> apply the snapshot/sets -> keep streaming in the foreground.
-def _default_pipeline(device, width, height, fps):
-    """A minimal NV12->H264 pipeline that keeps the ISP live (fakesink drops it).
+# --save / --load above round-trip runtime values through vvget, so they are lost
+# whenever the ISP library reloads its baked defaults. To make a brightness (or any
+# cproc) value the *default* the ISP comes up with, it has to go into the sensor
+# tuning XML: camdev::Calibration::load() parses <matfile><tuning><cproc><config>
+# and that <config> replaces the CalibCproc constructor default (baked brightness
+# -15). See docs/imx678-cproc-brightness-tuning.md for the full reverse-engineering.
+CPROC_FIELDS = ["brightness", "contrast", "saturation", "hue"]
 
-    Pass your real pipeline via --pipeline for an actual sink (websink, udpsink,
-    etc.); this default only exists to hold the stream open so controls apply.
+AEC_FIELDS = ["gain","exposure_time", "sensitivity"]
+
+# Baked CalibCproc defaults, used only as a fallback when a field can't be read
+# live (cproc values are only readable while a stream is open) and wasn't supplied.
+BAKED_CPROC = {"brightness": -15, "contrast": 1.1, "saturation": 1.0, "hue": 0.0}
+
+ISP_SERVICE = "isp-imx-scailx.service"
+
+# Match an existing <cproc ...>...</cproc> block (possibly multi-line), and the
+# opening <tuning> tag we insert after when no <cproc> exists yet.
+_CPROC_RE = re.compile(r"<cproc\b.*?</cproc>", re.DOTALL | re.IGNORECASE)
+_TUNING_OPEN_RE = re.compile(r"<tuning\b[^>]*>", re.IGNORECASE)
+
+
+def encode_cproc_config(brightness, contrast, saturation, hue):
+    """Base64 of the 28-byte Vivante CamEngineCprocConfig_t.
+
+    Layout (little-endian): chromaOut/lumaOut/lumaIn range enums (=2), contrast
+    float, brightness int8 (+3 pad), saturation float, hue float.
     """
-    return (
-        f"v4l2src device={device} ! "
-        f"video/x-raw,format=NV12,width={width},height={height},framerate={fps}/1 ! "
-        f"imxvideoconvert_g2d ! queue ! vpuenc_h264 bitrate=3000 ! fakesink"
+    payload = struct.pack(
+        "<iii f b 3x f f",
+        2, 2, 2,
+        float(contrast),
+        int(round(float(brightness))),
+        float(saturation),
+        float(hue),
     )
+    return base64.b64encode(payload).decode("ascii")
 
 
-def _device_open_by_gst(device):
-    """True if a gst-launch process currently has the device open (ISP live)."""
-    try:
-        out = subprocess.run(
-            ["lsof", device], capture_output=True, text=True
-        ).stdout
-    except FileNotFoundError:
-        return False
-    return "gst-launc" in out
-
-
-def launch_and_apply(cam_id, device, pipeline, load_file, set_pairs,
-                     settle=4.0, wait_open=15.0):
-    """Run a gst-launch pipeline, apply controls once live, then stream.
-
-    Returns the pipeline's exit code. Blocks in the foreground until the pipeline
-    exits or Ctrl-C, forwarding termination to the child so nothing is orphaned.
-    """
-    cmd = ["gst-launch-1.0", "-q"] + shlex.split(pipeline)
-    print(f"launching: {' '.join(shlex.quote(c) for c in cmd)}")
-    try:
-        proc = subprocess.Popen(cmd)
-    except FileNotFoundError:
-        print("gst-launch-1.0 not found on PATH", file=sys.stderr)
-        return 1
-
-    try:
-        # Wait for the pipeline to open the device (ISP starts initialising).
-        waited = 0.0
-        opened = False
-        while waited < wait_open:
-            if proc.poll() is not None:
-                print(
-                    f"pipeline exited early (code {proc.returncode}) before going live",
-                    file=sys.stderr,
-                )
-                return proc.returncode or 1
-            if _device_open_by_gst(device):
-                opened = True
-                break
-            time.sleep(0.5)
-            waited += 0.5
-        if not opened:
+def _collect_cproc_values(cam_id, overrides):
+    """Resolve the four cproc fields: an override wins, else the live read, else
+    the baked fallback (with a warning, since that usually means no stream open)."""
+    values = {}
+    for field in CPROC_FIELDS:
+        if field in overrides:
+            values[field] = overrides[field]
+            continue
+        try:
+            live = get_control(cam_id, CONTROL_BY_ID[field])
+        except RuntimeError:
+            live = None
+        if live is None:
+            values[field] = BAKED_CPROC[field]
             print(
-                "warning: could not confirm the pipeline opened the device; "
-                "applying controls anyway",
+                f"warning: could not read live {field}; using fallback "
+                f"{values[field]} (open a stream first to capture the live value, "
+                f"or pass it via --set-ctrl)",
                 file=sys.stderr,
             )
+        else:
+            values[field] = live
+    return values
 
-        # Let the ISP settle so writes actually stick.
-        time.sleep(settle)
 
-        if set_pairs:
-            set_ctrls(cam_id, set_pairs)
-        if load_file:
-            try:
-                load_ctrls(cam_id, load_file)
-            except SystemExit:
-                # load_ctrls exits on a missing/bad file; keep streaming regardless.
-                print(
-                    f"load file '{load_file}' missing/invalid; streaming without it",
-                    file=sys.stderr,
-                )
+def _write_cproc_block(path, b64, enable=True):
+    """Insert/replace the <cproc> block in a tuning XML, preserving the rest.
 
-        print("controls applied; streaming (Ctrl-C to stop)")
-        proc.wait()
-        return proc.returncode
-    except KeyboardInterrupt:
-        print("\nstopping pipeline...")
-        return 0
-    finally:
-        if proc.poll() is None:
-            proc.terminate()
-            try:
-                proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                proc.kill()
+    Does a targeted string edit (not an XML re-serialise) so comments, formatting
+    and sibling elements are left untouched. Keeps a one-time .bak-cproc backup.
+    Returns 'replaced' or 'inserted'.
+    """
+    with open(path, "r", encoding="utf-8") as f:
+        text = f.read()
+
+    block = (
+        f'<cproc enable="{"true" if enable else "false"}">'
+        f"<config>{b64}</config></cproc>"
+    )
+
+    if _CPROC_RE.search(text):
+        new_text = _CPROC_RE.sub(lambda _m: block, text, count=1)
+        action = "replaced"
+    else:
+        m = _TUNING_OPEN_RE.search(text)
+        if not m:
+            raise RuntimeError(
+                "no <tuning> section found; cannot insert <cproc> (is this the "
+                "sensor tuning XML, e.g. IMX678_Basic_1920x1080.xml?)"
+            )
+        new_text = text[:m.end()] + "\n      " + block + text[m.end():]
+        action = "inserted"
+
+    backup = path + ".bak-cproc"
+    if not os.path.exists(backup):
+        with open(backup, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(new_text)
+    return action
+
+
+def _parse_cproc_overrides(set_ctrl_arg):
+    """Pull cproc field overrides out of a --set-ctrl string for --save-default.
+
+    Non-cproc controls (aec/toggles) can't live in the <cproc> block, so they're
+    ignored with a note rather than silently dropped.
+    """
+    overrides = {}
+    for pair in [s.strip() for s in set_ctrl_arg.split(",") if s.strip()]:
+        if "=" not in pair:
+            print(f"Skipping malformed pair: {pair}", file=sys.stderr)
+            continue
+        cid, value = pair.split("=", 1)
+        cid, value = cid.strip(), value.strip()
+        ctrl = CONTROL_BY_ID.get(cid)
+        if not ctrl or ctrl["group"] != "cproc":
+            print(
+                f"Ignoring non-cproc control for --save-default: {cid}",
+                file=sys.stderr,
+            )
+            continue
+        overrides[cid] = _cast(ctrl, value)
+    return overrides
+
+
+def save_default(cam_id, path, overrides, restart=False, service=ISP_SERVICE):
+    """--save-default XML: bake the current cproc values into the tuning XML so the
+    ISP comes up with them as its default (survives a pipeline/ISP restart).
+
+    Values come from --set-ctrl overrides when given, otherwise the live device
+    reads. Writes the <cproc><config> block and (optionally) restarts the ISP.
+    """
+    # Empty overrides => read every field live (used by --apply-live, where the
+    # values were just pushed via vvget and the live read is the source of truth).
+    values = _collect_cproc_values(cam_id, overrides)
+    b64 = encode_cproc_config(
+        values["brightness"], values["contrast"],
+        values["saturation"], values["hue"],
+    )
+    try:
+        action = _write_cproc_block(path, b64)
+    except (OSError, RuntimeError) as e:
+        print(f"failed to write {path}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    print(
+        f"{action} <cproc> in {path}: brightness={values['brightness']} "
+        f"contrast={values['contrast']} saturation={values['saturation']} "
+        f"hue={values['hue']}"
+    )
+    print(f"  config base64: {b64}")
+
+    if restart:
+        print(
+            f"restarting {service} (SSH may drop briefly; the device does not "
+            f"reboot)..."
+        )
+        rc = subprocess.run(["systemctl", "restart", service]).returncode
+        if rc != 0:
+            print(f"warning: systemctl restart {service} exited {rc}", file=sys.stderr)
+    else:
+        print(
+            f"  XML written but NOT yet loaded by the ISP (the live stream keeps "
+            f"its current values until a restart).\n"
+            f"  when ready, apply it manually with: systemctl restart {service}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -455,7 +524,7 @@ def launch_and_apply(cam_id, device, pipeline, load_file, set_pairs,
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="v4l2-ctl-like control tool for Sony imx cameras via vvget",
+        description="v4l2-ctl-like control tool for Sony imx cameras via vvget, version 1.20",
         prog="vvget_ctl",
     )
     parser.add_argument(
@@ -468,7 +537,8 @@ def main():
     )
     parser.add_argument(
         "--json", action="store_true",
-        help="with --list-ctrls, emit JSON (portal Control[] shape)",
+        help="with --list-ctrls or --get-ctrl, emit JSON (portal Control[] shape, "
+             "with the live per-sensor min/max for aec controls)",
     )
     parser.add_argument(
         "--get-ctrl", type=str, default="",
@@ -479,33 +549,27 @@ def main():
         help="set control value(s): id=value or id=value,id=value,...",
     )
     parser.add_argument(
-        "--save", type=str, default="", metavar="FILE",
-        help="snapshot current control values to a JSON file",
+        "--save-default", type=str, default="", metavar="XML",
+        help="bake the current cproc values (brightness/contrast/saturation/hue) "
+             "into a sensor tuning XML's <cproc> block so the ISP uses them as its "
+             "default (survives an ISP restart). Reads live values unless overridden "
+             "via --set-ctrl; use --restart-isp to apply immediately",
     )
     parser.add_argument(
-        "--load", type=str, default="", metavar="FILE",
-        help="re-apply control values from a saved JSON file "
-             "(run before the v4l2 pipeline restarts)",
+        "--restart-isp", action="store_true",
+        help="with --save-default: restart the ISP service after writing the XML",
     )
     parser.add_argument(
-        "--launch", action="store_true",
-        help="start a gstreamer pipeline, then apply --load/--set-ctrl once the "
-             "ISP is live, and keep streaming until Ctrl-C",
+        "--isp-service", type=str, default=ISP_SERVICE, metavar="UNIT",
+        help=f"systemd unit restarted by --restart-isp (default {ISP_SERVICE})",
     )
     parser.add_argument(
-        "--pipeline", type=str, default="", metavar="GST",
-        help="with --launch: gst-launch pipeline (args after 'gst-launch-1.0'); "
-             "defaults to an NV12->H264->fakesink pipeline that just holds the ISP open",
+        "--apply-live", action="store_true",
+        help="with --save-default + --set-ctrl: first apply the values live via "
+             "vvget (visible immediately on the running stream), then snapshot the "
+             "live result into the XML. Without this, --save-default only writes the "
+             "XML and leaves the live stream untouched",
     )
-    parser.add_argument("--width", type=int, default=1280,
-                        help="default-pipeline width (default 1280)")
-    parser.add_argument("--height", type=int, default=720,
-                        help="default-pipeline height (default 720)")
-    parser.add_argument("--fps", type=int, default=30,
-                        help="default-pipeline framerate (default 30)")
-    parser.add_argument("--settle", type=float, default=4.0,
-                        help="seconds to wait after the stream opens before "
-                             "applying controls (default 4.0)")
     args = parser.parse_args()
 
     try:
@@ -514,26 +578,33 @@ def main():
         print(e, file=sys.stderr)
         sys.exit(2)
 
-    if args.launch:
-        pipeline = args.pipeline or _default_pipeline(
-            args.device, args.width, args.height, args.fps
+    if args.save_default:
+        if args.apply_live and args.set_ctrl:
+            # Apply everything live first, then read the cproc values straight back
+            # so the XML captures what actually stuck on the hardware rather than
+            # the requested value.
+            set_pairs = [s.strip() for s in args.set_ctrl.split(",") if s.strip()]
+            set_ctrls(cam_id, set_pairs)
+            overrides = {}
+        else:
+            overrides = _parse_cproc_overrides(args.set_ctrl)
+        save_default(
+            cam_id, args.save_default, overrides,
+            restart=args.restart_isp, service=args.isp_service,
         )
-        set_pairs = [
-            s.strip() for s in args.set_ctrl.split(",") if s.strip()
-        ] if args.set_ctrl else []
-        sys.exit(launch_and_apply(
-            cam_id, args.device, pipeline, args.load, set_pairs, args.settle
-        ))
     elif args.list_ctrls:
         list_ctrls(cam_id, args.json)
     elif args.get_ctrl:
-        get_ctrls(cam_id, [s.strip() for s in args.get_ctrl.split(",") if s.strip()])
+        get_ctrls(
+            cam_id,
+            [s.strip() for s in args.get_ctrl.split(",") if s.strip()],
+            args.json,
+        )
     elif args.set_ctrl:
-        set_ctrls(cam_id, [s.strip() for s in args.set_ctrl.split(",") if s.strip()])
-    elif args.save:
-        save_ctrls(cam_id, args.save)
-    elif args.load:
-        load_ctrls(cam_id, args.load)
+        set_ctrls(
+            cam_id,
+            [s.strip() for s in args.set_ctrl.split(",") if s.strip()],
+        )
     else:
         parser.print_help()
 

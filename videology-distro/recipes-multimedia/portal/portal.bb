@@ -58,12 +58,34 @@ do_install:append() {
     touch ${D}${sysconfdir}/scailx-ai-portal/duration.txt
 }
 
-RDEPENDS:${PN} += "libmosquitto1 gstreamer1.0 glib-2.0 json-glib libcurl nnstreamer python3-core python3-pyyaml"
+# RDEPENDS:${PN} += "libmosquitto1 gstreamer1.0 glib-2.0 json-glib libcurl nnstreamer python3-core python3-pyyaml"
+RDEPENDS:${PN} += " \
+    libmosquitto1 \
+    gstreamer1.0 \
+    glib-2.0 \
+    json-glib \
+    libcurl \
+    nnstreamer \
+    python3-core \
+    python3-pyyaml \
+"
 
 # Add target folders and files to the package.
-FILES:${PN} += "/usr/"
-# FILES:${PN} += "/tmp/"
-FILES:${PN} += "/etc/"
-FILES_${PN} += "${sysconfdir}/scailx-ai-portal/usenpu.txt"
-FILES_${PN} += "${sysconfdir}/scailx-ai-portal/duration.txt"
+# FILES:${PN} += "/usr/"
+# FILES:${PN} += "/etc/"
+# FILES_${PN} += "${sysconfdir}/scailx-ai-portal/usenpu.txt"
+# FILES_${PN} += "${sysconfdir}/scailx-ai-portal/duration.txt"
+
+# Explicitly map individual application assets to avoid system directory conflicts
+FILES:${PN} += " \
+    ${bindir}/* \
+    ${libdir}/* \
+    ${exec_prefix}/scailx-ai-portal/* \
+	${exec_prefix}/scailx-ai-portal/.* \
+    ${sysconfdir}/scailx-ai-portal/* \
+    ${systemd_system_unitdir}/scailx-ai-portal.service \
+"
+
+
+
 
