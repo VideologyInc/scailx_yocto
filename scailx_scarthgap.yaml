@@ -31,11 +31,9 @@ repos:
   scailx-sony:
     branch: master
     url: https://github.com/VideologyInc/scailx_sony_sensors.git
-    # Latest update from framos-vvcam-module with new imx drivers for vvget controls =>
+    # Latest update from framos-vvcam-module with fixed imx drivers 
     # devtool modify => update-recipe command  => bbappend file etc.
-    commit: 69180f20150f98d79545a5e0fd0d9fa693350c85
-    # commit: 7530d4bf85bb1e0707bb74fae3b3825a374cacba
-    # commit: a2d0b865de418034068054fe19c0b1cd007fedd4
+    commit: 87682b57bfd067a1822ed6ce9b5e6778688779f1
     layers:
       framos-layer:
   meta-scailx-flir:
