@@ -4,6 +4,7 @@
 
 File:   vvget_ctl.py
 
+2026.1111.  Version 1.21 with new unit in controls. It synchronizes the new vvget 1.21 with gain probe flicker fixes.
 2026.0909.  Created a v4l2-ctl-like wrapper around vvget for Sony imx camera
             sensors (imx900 global shutter, imx678, imx662) that run through the
             Vivante ISP. Provides --list-ctrls / --get-ctrl / --set-ctrl so the
@@ -62,6 +63,10 @@ import sys
 # group  : 'cproc' -> needs CPROC ON before it applies.
 #          'aec'   -> needs AEC On/Off = 0 before manual value applies.
 #          'toggle'-> the on/off switch itself.
+# unit   : ISP-native unit of value/min/max (not scaled here). Surfaced in --json so
+#          the portal can format for display -- notably exposure_time is seconds, so
+#          the portal multiplies by 1e6 to show microseconds and divides on write.
+#          "" means unitless. vvget_ctl.py never scales values; it stays raw.
 # min/max/step/default: ranges vvget can't report. Best-guess; verify on device.
 CONTROLS = [
     # --- Color processing (CPROC) ---
@@ -70,13 +75,13 @@ CONTROLS = [
     # linear within [-90, 89] -- below -90 reads back 0, above 89 clamps to 89.
     # contrast/saturation span 0.0..1.99 and quantise to ~1/256 internally.
     {"id": "brightness", "window": "Adjust brightness", "type": "int",
-     "group": "cproc", "min": -127, "max": 127, "step": 1, "default": 0},
+     "group": "cproc", "unit": "", "min": -127, "max": 127, "step": 1, "default": 0},
     {"id": "contrast", "window": "Adjust contrast", "type": "float",
-     "group": "cproc", "min": 0.0, "max": 1.99, "step": 0.01, "default": 1.0},
+     "group": "cproc", "unit": "", "min": 0.0, "max": 1.99, "step": 0.01, "default": 1.0},
     {"id": "saturation", "window": "Adjust saturation", "type": "float",
-     "group": "cproc", "min": 0.0, "max": 1.99, "step": 0.01, "default": 1.0},
+     "group": "cproc", "unit": "", "min": 0.0, "max": 1.99, "step": 0.01, "default": 1.0},
     {"id": "hue", "window": "Adjust HUE", "type": "int",
-     "group": "cproc", "min": -90, "max": 89, "step": 1, "default": 0},
+     "group": "cproc", "unit": "deg", "min": -90, "max": 89, "step": 1, "default": 0},
 
     # --- Auto exposure (AEC) manual values ---
     # UNLIKE cproc, these ranges are NOT fixed: vvext reads them live from the ISP
@@ -90,23 +95,23 @@ CONTROLS = [
     # that case, measured on imx900 (1920x1080@30, 2026-10-14). The ISP clamps any
     # out-of-range write to its own live min/max regardless.
     {"id": "gain", "window": "AEC Gain", "type": "float",
-     "group": "aec", "min": 0.000000, "max": 0.000000, "step": 0.1, "default": 0.000000},
+     "group": "aec", "unit": "", "min": 0.000000, "max": 0.000000, "step": 0.1, "default": 0.000000},
     {"id": "exposure_time", "window": "AEC ExposureTime", "type": "float",
-     "group": "aec", "min": 0.000000, "max": 0.000000, "step": 0.000001, "default": 0.000000},
+     "group": "aec", "unit": "s", "min": 0.000000, "max": 0.000000, "step": 0.000001, "default": 0.000000},
     {"id": "sensitivity", "window": "AEC Sensitivity", "type": "int",
-     "group": "aec", "min": 100, "max": 1600, "step": 100, "default": 100},
+     "group": "aec", "unit": "ISO", "min": 100, "max": 1600, "step": 100, "default": 100},
 
     # --- Toggles ---
     {"id": "auto_exposure", "window": "AEC On/Off", "type": "bool",
-     "group": "toggle", "min": 0, "max": 1, "step": 1, "default": 1},
+     "group": "toggle", "unit": "", "min": 0, "max": 1, "step": 1, "default": 1},
     {"id": "auto_white_balance", "window": "AWB On/Off", "type": "bool",
-     "group": "toggle", "min": 0, "max": 1, "step": 1, "default": 1},
+     "group": "toggle", "unit": "", "min": 0, "max": 1, "step": 1, "default": 1},
     {"id": "color_processing", "window": "CPROC ON/OFF", "type": "bool",
-     "group": "toggle", "min": 0, "max": 1, "step": 1, "default": 1},
+     "group": "toggle", "unit": "", "min": 0, "max": 1, "step": 1, "default": 1},
     {"id": "gamma", "window": "GAMMA ON/OFF", "type": "bool",
-     "group": "toggle", "min": 0, "max": 1, "step": 1, "default": 1},
+     "group": "toggle", "unit": "", "min": 0, "max": 1, "step": 1, "default": 1},
     {"id": "denoise", "window": "DPF ON/OFF", "type": "bool",
-     "group": "toggle", "min": 0, "max": 1, "step": 1, "default": 1},
+     "group": "toggle", "unit": "", "min": 0, "max": 1, "step": 1, "default": 1},
 ]
 
 CONTROL_BY_ID = {c["id"]: c for c in CONTROLS}
@@ -256,6 +261,7 @@ def _control_item(cam_id, ctrl):
     return {
         "control": ctrl["window"],
         "id": ctrl["id"],
+        "unit": ctrl["unit"],
         "minimum": cmin,
         "maximum": cmax,
         "step": ctrl["step"],
@@ -524,7 +530,7 @@ def save_default(cam_id, path, overrides, restart=False, service=ISP_SERVICE):
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="v4l2-ctl-like control tool for Sony imx cameras via vvget, version 1.20",
+        description="v4l2-ctl-like control tool for Sony imx cameras via vvget, ver 1.21",
         prog="vvget_ctl",
     )
     parser.add_argument(
