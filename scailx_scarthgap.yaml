@@ -34,7 +34,7 @@ repos:
     # Latest update from framos-vvcam-module with fixed imx drivers 
     # devtool modify => update-recipe command  => bbappend file etc.
     # commit: 87682b57bfd067a1822ed6ce9b5e6778688779f1
-    commit:	d9dfe613b8bcbbc14e16b508d8363ce1c0e6edda
+    commit: 095fd3a6fd7d1ed6913ed780c661f57a230f7e9b
     layers:
       framos-layer:
   meta-scailx-flir:
