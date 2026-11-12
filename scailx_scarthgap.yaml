@@ -33,7 +33,8 @@ repos:
     url: https://github.com/VideologyInc/scailx_sony_sensors.git
     # Latest update from framos-vvcam-module with fixed imx drivers 
     # devtool modify => update-recipe command  => bbappend file etc.
-    commit: 87682b57bfd067a1822ed6ce9b5e6778688779f1
+    # commit: 87682b57bfd067a1822ed6ce9b5e6778688779f1
+    commit: 095fd3a6fd7d1ed6913ed780c661f57a230f7e9b
     layers:
       framos-layer:
   meta-scailx-flir:
@@ -63,7 +64,7 @@ local_conf_header:
     PARALLEL_MAKE = "-j 8"
 # This version is for public release
   distro: |
-    SCAILX_VERSION="0.20.14"
+    SCAILX_VERSION="0.20.15"
     PACKAGE_CLASSES = "package_ipk"
   folders: |
     BB_GENERATE_MIRROR_TARBALLS = "1"
