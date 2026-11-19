@@ -4,7 +4,7 @@
 
 File:   vvget_ctl.py
 
-2026.1111.  Version 1.21 with new unit in controls. It synchronizes the new vvget 1.21 with gain probe flicker fixes.
+2026.1119:  Added white balance RGB gains controls.
 2026.0909.  Created a v4l2-ctl-like wrapper around vvget for Sony imx camera
             sensors (imx900 global shutter, imx678, imx662) that run through the
             Vivante ISP. Provides --list-ctrls / --get-ctrl / --set-ctrl so the
@@ -24,6 +24,10 @@ Usage:
     vvget_ctl.py -d /dev/video0 --save-default IMX678_Basic_1920x1080.xml --set-ctrl brightness=-20 --restart-isp
     # live stream open: set via vvget AND persist to XML in one go
     vvget_ctl.py -d /dev/video0 --set-ctrl brightness=-20 --save-default IMX678_Basic_1920x1080.xml --apply-live
+    # manual white-balance gains (AWB off first so the manual values apply)
+    vvget_ctl.py -d /dev/video0 --get-ctrl awb_gains_r
+    vvget_ctl.py -d /dev/video0 --set-ctrl auto_white_balance=0,awb_gains_r=1.5,awb_gains_b=2.4
+
 
 Notes:
     * vvget takes the numeric camera id (0 for /dev/video0), not the path.
@@ -112,10 +116,37 @@ CONTROLS = [
      "group": "toggle", "unit": "", "min": 0, "max": 1, "step": 1, "default": 1},
     {"id": "denoise", "window": "DPF ON/OFF", "type": "bool",
      "group": "toggle", "unit": "", "min": 0, "max": 1, "step": 1, "default": 1},
+
+    # --- AWB reset (write-only control) ---
+    # vvget "AWB Reset" re-drives the white-balance gains from the current scene
+    # (the AWB On/Off toggle alone does not). It has no readable state, so it is
+    # write-only: --list-ctrls / --get-ctrl report its resting value (0) WITHOUT
+    # touching the device, and --set-ctrl fires it (any value triggers a reset).
+    # group 'awb' sorts it after the toggles, so an auto_white_balance=0 in the
+    # same --set-ctrl call is applied before the reset fires.
+    {"id": "awb_reset", "window": "AWB Reset", "type": "bool", "group": "awb",
+     "unit": "", "min": 0, "max": 1, "step": 1, "default": 0, "writeonly": True},
+    # --- AWB manual gains (the vvget "GAIN INPUT" window) ---
+    # GAIN INPUT is a 4-tuple [r, gr, gb, b] (red, green-on-red, green-on-blue,
+    # blue); vvget always reads/writes all four at once -- a single value is
+    # rejected with "input error [r, gr, gb, b]". Each channel is exposed as its
+    # own control via "wbindex" (its slot in the tuple), and a set does a
+    # read-modify-write: read the live tuple, swap in this channel, write all four
+    # back (see _set_wb_gain). Like the manual AEC values these only apply with AWB
+    # OFF, so group 'awb' (sorted after the toggles) lets an auto_white_balance=0
+    # in the same --set-ctrl call land first. Range is vvext's enforced 1.0..3.999;
+    # in normal use only r/b move while the greens stay at 1.0 (the AWB anchor).
+    {"id": "awb_gains_r", "window": "GAIN INPUT", "type": "float", "group": "awb",
+     "wbindex": 0, "unit": "", "min": 1.0, "max": 3.999, "step": 0.01, "default": 1.0},
+    {"id": "awb_gains_gr", "window": "GAIN INPUT", "type": "float", "group": "awb",
+     "wbindex": 1, "unit": "", "min": 1.0, "max": 3.999, "step": 0.01, "default": 1.0},
+    {"id": "awb_gains_gb", "window": "GAIN INPUT", "type": "float", "group": "awb",
+     "wbindex": 2, "unit": "", "min": 1.0, "max": 3.999, "step": 0.01, "default": 1.0},
+    {"id": "awb_gains_b", "window": "GAIN INPUT", "type": "float", "group": "awb",
+     "wbindex": 3, "unit": "", "min": 1.0, "max": 3.999, "step": 0.01, "default": 1.0},
 ]
 
 CONTROL_BY_ID = {c["id"]: c for c in CONTROLS}
-
 
 # ---------------------------------------------------------------------------
 # device / vvget plumbing
@@ -199,6 +230,27 @@ def _extract_limits(stdout):
     return None, None
 
 
+# vvget's GAIN INPUT dump prints the current AWB gains as "wb gain:[r, gr, gb, b]".
+_WB_GAINS_RE = re.compile(r"wb\s*gain\s*:\s*\[([^\]]*)\]", re.IGNORECASE)
+
+
+def _parse_wb_gains(stdout):
+    """Parse 'wb gain:[r, gr, gb, b]' out of vvget GAIN INPUT output.
+
+    Returns the four gains as a list of floats, or None when the line is absent
+    -- which is what happens when AWB is still enabled (vvget prints "awb is
+    enabled, need disable first" and no gains) or the stream is closed.
+    """
+    m = _WB_GAINS_RE.search(stdout)
+    if not m:
+        return None
+    try:
+        vals = [float(x) for x in m.group(1).split(",")]
+    except ValueError:
+        return None
+    return vals if len(vals) == 4 else None
+
+
 def _cast(ctrl, raw):
     """Cast a raw string value to the control's numeric type; fall back to raw."""
     raw = raw.strip().strip("[]")
@@ -218,6 +270,14 @@ def get_control(cam_id, ctrl):
     Some controls report nothing depending on state (e.g. manual AEC Gain while
     auto-exposure is on). Return None so callers/JSON emit null rather than ''.
     """
+    # Write-only controls (awb_reset) have no readable state — a bare get just
+    # dumps the menu header. Report the resting default without touching vvget.
+    if ctrl.get("writeonly"):
+        return ctrl["default"]
+    # AWB gains share the GAIN INPUT 4-tuple; return just this channel's slot.
+    if "wbindex" in ctrl:
+        gains = _parse_wb_gains(_run(cam_id, ctrl["window"]))
+        return None if gains is None else gains[ctrl["wbindex"]]
     stdout = _run(cam_id, ctrl["window"])
     raw = _extract_value(stdout, ctrl["window"])
     if raw == "":
@@ -234,6 +294,15 @@ def read_control(cam_id, ctrl):
     and across modes. When the live range is unavailable (stream closed or AEC
     on) we fall back to the table values. Non-aec controls always use the table.
     """
+    # Write-only controls (awb_reset) aren't read from the device — report the
+    # resting default and the static range.
+    if ctrl.get("writeonly"):
+        return ctrl["default"], ctrl["min"], ctrl["max"]
+    # AWB gains come from the GAIN INPUT 4-tuple; the range is the static table.
+    if "wbindex" in ctrl:
+        gains = _parse_wb_gains(_run(cam_id, ctrl["window"]))
+        value = None if gains is None else gains[ctrl["wbindex"]]
+        return value, ctrl["min"], ctrl["max"]
     stdout = _run(cam_id, ctrl["window"])
     raw = _extract_value(stdout, ctrl["window"])
     value = None if raw == "" else _cast(ctrl, raw)
@@ -315,6 +384,23 @@ def get_ctrls(cam_id, ids, as_json=False):
         print(f"{cid}: {get_control(cam_id, ctrl)}")
 
 
+def _set_wb_gain(cam_id, ctrl, value):
+    """Set one AWB gain channel via the GAIN INPUT 4-tuple (read-modify-write).
+
+    vvget writes all of [r, gr, gb, b] at once, so to change a single channel we
+    read the live tuple, swap in the new value (clamped to vvext's 1.0..3.999),
+    and write the whole tuple back. Requires AWB OFF, same as a bare GAIN INPUT
+    write; with AWB still on the live read returns nothing and we fall back to a
+    neutral [1,1,1,1] baseline. When several channels are set in one --set-ctrl
+    call each read-modify-write sees the previous write, so they compose.
+    """
+    gains = _parse_wb_gains(_run(cam_id, ctrl["window"]))
+    if gains is None:
+        gains = [1.0, 1.0, 1.0, 1.0]
+    gains[ctrl["wbindex"]] = max(1.0, min(3.999, float(value)))
+    return _run(cam_id, ctrl["window"], ",".join(f"{g:.6f}" for g in gains))
+
+
 def set_ctrls(cam_id, pairs):
     """--set-ctrl id=value[,id=value...]: write each control directly.
 
@@ -336,13 +422,23 @@ def set_ctrls(cam_id, pairs):
             continue
         parsed.append((ctrl, value))
 
-    # Apply toggles first so an explicit on/off gates its group's manual values.
+    # Apply toggles first so an explicit on/off gates its group's manual values,
+    # then the rest (e.g. awb_reset) so a reset fires after its toggle settled.
     parsed.sort(key=lambda cv: 0 if cv[0]["group"] == "toggle" else 1)
     for ctrl, value in parsed:
         try:
-            _run(cam_id, ctrl["window"], value)
-        except RuntimeError as e:
+            # AWB gains need the read-modify-write of the whole GAIN INPUT tuple;
+            # everything else writes its single value straight through.
+            if "wbindex" in ctrl:
+                _set_wb_gain(cam_id, ctrl, value)
+            else:
+                _run(cam_id, ctrl["window"], value)
+        except (RuntimeError, ValueError) as e:
             print(f"failed to set {ctrl['id']}: {e}", file=sys.stderr)
+            continue
+        # Write-only controls have no readable state to confirm; just report it.
+        if ctrl.get("writeonly"):
+            print(f"set {ctrl['id']} = {value} (write-only)")
             continue
         # vvget clamps writes to the ISP's live range, so read the value back and
         # report what actually took effect rather than the number we requested.
@@ -365,6 +461,8 @@ def set_ctrls(cam_id, pairs):
 CPROC_FIELDS = ["brightness", "contrast", "saturation", "hue"]
 
 AEC_FIELDS = ["gain","exposure_time", "sensitivity"]
+
+AWB_FIELDS = ["awb_reset", "awb_gains_r", "awb_gains_gr", "awb_gains_gb", "awb_gains_b"]
 
 # Baked CalibCproc defaults, used only as a fallback when a field can't be read
 # live (cproc values are only readable while a stream is open) and wasn't supplied.
@@ -530,7 +628,7 @@ def save_default(cam_id, path, overrides, restart=False, service=ISP_SERVICE):
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="v4l2-ctl-like control tool for Sony imx cameras via vvget, ver 1.21",
+        description="v4l2-ctl-like control tool for Sony imx cameras via vvget, ver 1.22",
         prog="vvget_ctl",
     )
     parser.add_argument(
